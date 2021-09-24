@@ -1,10 +1,10 @@
-#include <iostream>
-using namespace std; 
+// #include <iostream>
+// using namespace std; 
 
-int main()
-{
+// int main()
+// {
 
-    cout << "This is a test to set up the GitHub for the project." << endl; 
+//     cout << "This is a test to set up the GitHub for the project." << endl; 
     
-    return 0;
-}
+//     return 0;
+// }
