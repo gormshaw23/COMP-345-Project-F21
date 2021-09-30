@@ -2,6 +2,9 @@
 Part 4: Cards deck/hand. 
 This part implements a group of C++ classes that includes a deck and hand of Warzone cards. 
 */
+#ifdef _DEBUG
+#define new new( _NORMAL_BLOCK , __FILE__ , __LINE__ ) // test for memory leaks 
+#endif
 
 #ifndef CARDS_H 
 #define CARDS_H 
@@ -23,7 +26,7 @@ class Cards {
    public: 
 
    // Overloaded constructor: A different way of calling the function if needed
-    Cards(cardType); 
+    Cards(); 
 
     // Copy constructor
     Cards(const Cards& c); 
@@ -54,13 +57,13 @@ class Deck {
 
 // Member variables of class Deck 
 private: 
-    std::vector<Cards*> deck; // A deck usually contains a certain number of cards. Hence, the creation of a vector for Card objects. 
-    int numOfCards; 
-    int numOfBombCards; 
-    int numOfReinforcementCards;
-    int numOfBlockadeCards;
-    int numOfAirliftCards;
-    int numOfDiplomacyCards; 
+    std::vector<Cards*>* deck; // A deck usually contains a certain number of cards. Hence, the creation of a vector for Card objects. 
+    int *numOfCards; 
+    int *numOfBombCards; 
+    int *numOfReinforcementCards;
+    int *numOfBlockadeCards;
+    int *numOfAirliftCards;
+    int *numOfDiplomacyCards; 
 
 public: 
 
@@ -108,7 +111,7 @@ class Hand{
 // Member variables 
 
     private: 
-    std::vector<Cards*> hand;
+    std::vector<Cards*>* hand;
     int numOfCards; 
 
     public: 
