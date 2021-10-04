@@ -1,41 +1,55 @@
+/**
+ * The driver file for the Order class and its subclasses
+ * Deploy, Advance, Bomb, Blockade, Airlift, and Negotiate.
+ * The driver file also has the OrdersList class.
+ * 
+ * @author Mark Nasol
+ */
+
 #include <iostream>
+#include <vector>
 using namespace std;
 
 #include "Orders.cpp"
 
 int main()
 {
-    //Create every kind of order
-    Deploy *dOrder = new Deploy;
-    Advance *aOrder = new Advance;
-    Bomb *bOrder = new Bomb;
-    Blockade *blOrder = new Blockade;
-    Airlift *aiOrder = new Airlift;
-    Negotiate *nOrder = new Negotiate;
+     //Create every kind of order
+     Deploy *dOrder = new Deploy;
+     Advance *aOrder = new Advance;
+     Bomb *bOrder = new Bomb;
+     Blockade *blOrder = new Blockade;
+     Airlift *aiOrder = new Airlift;
+     Negotiate *nOrder = new Negotiate;
 
-    //Place orders in the OrderList object
+     // if(dOrder->validate())
+     //      cout << "The given order is valid\n" << endl;
+     // else
+     //      cout << "The given order is invalid\n" << endl;
 
-    //Demonstrate all orders
-    cout << "Order: " << dOrder->getType() << "\nDescription: " << dOrder->getDescription() << "\nEffect: " << dOrder->getEffect() << "\n"
-         << endl;
-    cout << "Order: " << aOrder->getType() << "\nDescription: " << aOrder->getDescription() << "\nEffect: " << aOrder->getEffect() << "\n"
-         << endl;
-    cout << "Order: " << bOrder->getType() << "\nDescription: " << bOrder->getDescription() << "\nEffect: " << bOrder->getEffect() << "\n"
-         << endl;
-    cout << "Order: " << blOrder->getType() << "\nDescription: " << blOrder->getDescription() << "\nEffect: " << blOrder->getEffect() << "\n"
-         << endl;
-    cout << "Order: " << aiOrder->getType() << "\nDescription: " << aiOrder->getDescription() << "\nEffect: " << aiOrder->getEffect() << "\n"
-         << endl;
-    cout << "Order: " << nOrder->getType() << "\nDescription: " << nOrder->getDescription() << "\nEffect: " << nOrder->getEffect() << "\n"
-         << endl;
+     //     Order *oOrder = new Deploy;
 
-    //Delete orders from memory
-    delete dOrder;
-    delete aOrder;
-    delete bOrder;
-    delete blOrder;
-    delete aiOrder;
-    delete nOrder;
+     //TODO Place orders in the OrderList object
 
-    return 0;
+     // vector<Order*> vOrders;
+     // vOrders.push_back(dOrder);
+     // vOrders.push_back(aOrder);
+     // vOrders.push_back(bOrder);
+     // vOrders.push_back(blOrder);
+     // vOrders.push_back(aiOrder);
+     // vOrders.push_back(nOrder);
+
+     // for(int i = 0; i < vOrders.size(); i++){
+     //      vOrders[i]->execute();
+     // }
+
+     //Delete orders from memory
+     delete dOrder;
+     delete aOrder;
+     delete bOrder;
+     delete blOrder;
+     delete aiOrder;
+     delete nOrder;
+
+     return 0;
 }
