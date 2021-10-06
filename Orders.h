@@ -8,8 +8,8 @@
 #pragma once
 
 #include <string>
+#include <list>
 using namespace std;
-
 
 /**
  * The function and member declarations of the Order class 
@@ -17,11 +17,11 @@ using namespace std;
 class Order
 {
 public:
-    Order(); //Constructor
-    ~Order(); //Destructor
-    Order(const Order &od); //Copy constructor
-    Order &operator =(const Order &od); //Assignment operator
-    friend ostream &operator <<(ostream &out, Order *od); //Stream insertion operator
+    Order();                                             //Constructor
+    ~Order();                                            //Destructor
+    Order(const Order &od);                              //Copy constructor
+    Order &operator=(const Order &od);                   //Assignment operator
+    friend ostream &operator<<(ostream &out, Order *od); //Stream insertion operator
 
     Order(string typeValue, string descValue);
     bool validate();
@@ -36,10 +36,10 @@ public:
     void setNumArmies(int newNumArmies);
 
 private:
-    string *type; //The order type
+    string *type;        //The order type
     string *description; //The order description
-    int *territory; //The territory id
-    int *numArmies; //The number of armies to be deployed
+    int *territory;      //The territory id
+    int *numArmies;      //The number of armies to be deployed
 };
 
 /**
@@ -48,11 +48,11 @@ private:
 class Deploy : public Order
 {
 public:
-    Deploy(); //Constructor
-    ~Deploy(); //Destructor
-    Deploy(const Deploy &dep); //Copy constructor
-    Deploy &operator =(const Deploy &dep); //Assignment operator
-    friend ostream &operator <<(ostream &out, Deploy *dep); //Stream insertion operator
+    Deploy();                                              //Constructor
+    ~Deploy();                                             //Destructor
+    Deploy(const Deploy &dep);                             //Copy constructor
+    Deploy &operator=(const Deploy &dep);                  //Assignment operator
+    friend ostream &operator<<(ostream &out, Deploy *dep); //Stream insertion operator
 
     void execute() override;
 };
@@ -63,11 +63,11 @@ public:
 class Advance : public Order
 {
 public:
-    Advance(); //Constructor
-    ~Advance(); //Destructor
-    Advance(const Advance &adv); //Copy constructor
-    Advance &operator =(const Advance &adv); //Assignment operator
-    friend ostream &operator <<(ostream &out, const Advance &adv); //Stream insertion operator
+    Advance();                                              //Constructor
+    ~Advance();                                             //Destructor
+    Advance(const Advance &adv);                            //Copy constructor
+    Advance &operator=(const Advance &adv);                 //Assignment operator
+    friend ostream &operator<<(ostream &out, Advance *adv); //Stream insertion operator
 
     void execute() override;
 };
@@ -78,11 +78,11 @@ public:
 class Bomb : public Order
 {
 public:
-    Bomb(); //Constructor
-    ~Bomb(); //Destructor
-    Bomb(const Bomb &bom); //Copy constructor
-    Bomb &operator =(const Bomb &bom); //Assignment operator
-    friend ostream &operator <<(ostream &out, const Bomb &bom); //Stream insertion operator
+    Bomb();                                              //Constructor
+    ~Bomb();                                             //Destructor
+    Bomb(const Bomb &bom);                               //Copy constructor
+    Bomb &operator=(const Bomb &bom);                    //Assignment operator
+    friend ostream &operator<<(ostream &out, Bomb *bom); //Stream insertion operator
 
     void execute() override;
 };
@@ -93,11 +93,11 @@ public:
 class Blockade : public Order
 {
 public:
-    Blockade(); //Constructor
-    ~Blockade(); //Destructor
-    Blockade(const Blockade &blo); //Copy constructor
-    Blockade &operator =(const Blockade &blo); //Assignment operator
-    friend ostream &operator <<(ostream &out, const Blockade &blo); //Stream insertion operator
+    Blockade();                                              //Constructor
+    ~Blockade();                                             //Destructor
+    Blockade(const Blockade &blo);                           //Copy constructor
+    Blockade &operator=(const Blockade &blo);                //Assignment operator
+    friend ostream &operator<<(ostream &out, Blockade *blo); //Stream insertion operator
 
     void execute() override;
 };
@@ -108,11 +108,11 @@ public:
 class Airlift : public Order
 {
 public:
-    Airlift(); //Constructor
-    ~Airlift(); //Destructor
-    Airlift(const Airlift &air); //Copy constructor
-    Airlift &operator =(const Airlift &air); //Assignment operator
-    friend ostream &operator <<(ostream &out, const Airlift &air); //Stream insertion operator
+    Airlift();                                              //Constructor
+    ~Airlift();                                             //Destructor
+    Airlift(const Airlift &air);                            //Copy constructor
+    Airlift &operator=(const Airlift &air);                 //Assignment operator
+    friend ostream &operator<<(ostream &out, Airlift *air); //Stream insertion operator
 
     void execute() override;
 };
@@ -123,11 +123,11 @@ public:
 class Negotiate : public Order
 {
 public:
-    Negotiate(); //Constructor
-    ~Negotiate(); //Destructor
-    Negotiate(const Negotiate &ngo); //Copy constructor
-    Negotiate &operator =(const Negotiate &ngo); //Assignment operator
-    friend ostream &operator <<(ostream &out, const Negotiate &ngo); //Stream insertion operator
+    Negotiate();                                              //Constructor
+    ~Negotiate();                                             //Destructor
+    Negotiate(const Negotiate &ngo);                          //Copy constructor
+    Negotiate &operator=(const Negotiate &ngo);               //Assignment operator
+    friend ostream &operator<<(ostream &out, Negotiate *ngo); //Stream insertion operator
 
     void execute() override;
 };
@@ -138,12 +138,22 @@ public:
 class OrderList
 {
 public:
-    OrderList(); //Constructor
-    ~OrderList(); //Destructor
-    OrderList(const OrderList &ol); //Copy constructor
-    OrderList &operator =(const OrderList &ol); //Assignment operator
-    friend ostream &operator <<(ostream &out, const OrderList &ol); //Stream insertion operator
+    OrderList();                                             //Constructor
+    ~OrderList();                                            //Destructor
+    OrderList(const OrderList &ol);                          //Copy constructor
+    OrderList &operator=(const OrderList &ol);               //Assignment operator
+    friend ostream &operator<<(ostream &out, OrderList *ol); //Stream insertion operator
 
-    void move(); //Need parameters
-    void remove(); //Need parameters
+    void add(Order *o);
+    Order *get(int index);
+    void move(int oldIndex, int newIndex);
+    void remove(int index);
+    list<Order *> getOList();
+    int getSize();
+    void setOList(list<Order *> newOList);
+    void setSize(int newSize);
+
+private:
+    list<Order *> *oList; //The list of Orders
+    int *size;            //The list size
 };
