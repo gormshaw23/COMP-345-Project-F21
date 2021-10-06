@@ -24,6 +24,8 @@ Order::Order()
 {
     type = new string("");
     description = new string("");
+    territory = new int(1);
+    numArmies = new int(0);
 }
 
 /**
@@ -33,6 +35,8 @@ Order::~Order()
 {
     delete type;
     delete description;
+    delete territory;
+    delete numArmies;
 }
 
 /**
@@ -42,6 +46,8 @@ Order::Order(const Order &od)
 {
     this->type = new string(*(od.type));
     this->description = new string(*(od.description));
+    this->territory = new int(*(od.territory));
+    this->numArmies = new int(*(od.numArmies));
 }
 
 /**
@@ -51,6 +57,8 @@ Order &Order::operator=(const Order &od)
 {
     this->type = new string(*(od.type));
     this->description = new string(*(od.description));
+    this->territory = new int(*(od.territory));
+    this->numArmies = new int(*(od.numArmies));
     return *this;
 }
 
@@ -66,11 +74,16 @@ ostream &operator<<(ostream &out, Order *od)
 
 /**
  * 2-parameter constructor of the Order class
+ * 
+ * @param typeValue the Order type
+ * @param descValue the Order description
  */
 Order::Order(string typeValue, string descValue)
 {
     type = new string(typeValue);
     description = new string(descValue);
+    territory = new int(1);
+    numArmies = new int(0);
 }
 
 /**
@@ -97,6 +110,9 @@ bool Order::validate()
             isValid = true;
     }
 
+    string validStr = (isValid) ? "valid" : "not valid";
+
+    cout << "\nThe order of type " << this->getType() << " is " << validStr << endl;
     return isValid;
 }
 
@@ -115,6 +131,8 @@ void Order::execute()
 
 /**
  * Getter for the Order's type
+ * 
+ * @return the Order's type
  */
 string Order::getType()
 {
@@ -123,6 +141,8 @@ string Order::getType()
 
 /**
  * Getter for the Order's description
+ * 
+ * @return the Order's description
  */
 string Order::getDescription()
 {
@@ -131,6 +151,8 @@ string Order::getDescription()
 
 /**
  * Getter for the Order's territory
+ * 
+ * @return the Order's territory
  */
 int Order::getTerritory()
 {
@@ -139,6 +161,8 @@ int Order::getTerritory()
 
 /**
  * Getter for the Order's number of armies
+ * 
+ * @return the Order's number of armies
  */
 int Order::getNumArmies()
 {
@@ -147,6 +171,8 @@ int Order::getNumArmies()
 
 /**
  * Setter for the Order's type
+ * 
+ * @param newType the new type
  */
 void Order::setType(string newType)
 {
@@ -155,6 +181,8 @@ void Order::setType(string newType)
 
 /**
  * Setter for the Order's description
+ * 
+ * @param newDescription the new description
  */
 void Order::setDescription(string newDescription)
 {
@@ -163,6 +191,8 @@ void Order::setDescription(string newDescription)
 
 /**
  * Setter for the Order's territory
+ * 
+ * @param newTerritory the new territory
  */
 void Order::setTerritory(int newTerritory)
 {
@@ -171,6 +201,8 @@ void Order::setTerritory(int newTerritory)
 
 /**
  * Setter for the Order's number of armies
+ * 
+ * @param newNumArmies the new number of armies
  */
 void Order::setNumArmies(int newNumArmies)
 {
@@ -271,7 +303,7 @@ Advance &Advance::operator=(const Advance &adv)
 /**
  * Stream insertion operator of the Advance class
  */
-ostream &operator<<(ostream &out, Advance*adv)
+ostream &operator<<(ostream &out, Advance *adv)
 {
     out << "Order: " << adv->getType() << "\nDescription: " << adv->getDescription()
         << "\nTerritory: " << adv->getTerritory() << "\nNumber of armies: " << adv->getNumArmies() << "\n";
@@ -326,7 +358,7 @@ Bomb &Bomb::operator=(const Bomb &bom)
 /**
  * Stream insertion operator of the Bomb class
  */
-ostream &operator<<(ostream &out, Bomb*bom)
+ostream &operator<<(ostream &out, Bomb *bom)
 {
     out << "Order: " << bom->getType() << "\nDescription: " << bom->getDescription()
         << "\nTerritory: " << bom->getTerritory() << "\nNumber of armies: " << bom->getNumArmies() << "\n";
@@ -382,7 +414,7 @@ Blockade &Blockade::operator=(const Blockade &blo)
 /**
  * Stream insertion operator of the Blockade class
  */
-ostream &operator<<(ostream &out, Blockade*blo)
+ostream &operator<<(ostream &out, Blockade *blo)
 {
     out << "Order: " << blo->getType() << "\nDescription: " << blo->getDescription()
         << "\nTerritory: " << blo->getTerritory() << "\nNumber of armies: " << blo->getNumArmies() << "\n";
@@ -438,7 +470,7 @@ Airlift &Airlift::operator=(const Airlift &air)
 /**
  * Stream insertion operator of the Airlift class
  */
-ostream &operator<<(ostream &out, Airlift*air)
+ostream &operator<<(ostream &out, Airlift *air)
 {
     out << "Order: " << air->getType() << "\nDescription: " << air->getDescription()
         << "\nTerritory: " << air->getTerritory() << "\nNumber of armies: " << air->getNumArmies() << "\n";
@@ -453,7 +485,7 @@ void Airlift::execute()
     //Check if the order is valid
     if (validate())
     {
-        cout << "Airlifting " << this->getNumArmies << " armies to territory " << this->getTerritory() << endl;
+        cout << "Airlifting " << this->getNumArmies() << " armies to territory " << this->getTerritory() << endl;
     }
 }
 
@@ -492,7 +524,7 @@ Negotiate &Negotiate::operator=(const Negotiate &ngo)
 /**
  * Stream insertion operator of the Negotiate class
  */
-ostream &operator<<(ostream &out, Negotiate*ngo)
+ostream &operator<<(ostream &out, Negotiate *ngo)
 {
     out << "Order: " << ngo->getType() << "\nDescription: " << ngo->getDescription()
         << "\nTerritory: " << ngo->getTerritory() << "\nNumber of armies: " << ngo->getNumArmies() << "\n";
@@ -509,35 +541,167 @@ void Negotiate::execute()
     {
         cout << "An attack has been prevented from a negotiation between 2 players." << endl;
     }
+}
 
 /********************************************************************
  * OrderList class function definitions
  ********************************************************************/
 
 /**
- * Constructor of the Order class
+ * Constructor of the OrderList class
  */
 OrderList::OrderList()
 {
+    oList = new list<Order *>;
+    size = new int(0);
 }
 
 /**
- * Destructor of the Order class
+ * Destructor of the OrderList class
  */
 OrderList::~OrderList()
 {
 }
 
+/**
+ * Copy constructor of the OrderList class
+ */
 OrderList::OrderList(const OrderList &ol)
 {
+    this->oList = new list<Order *>(*(ol.oList));
+    this->size = new int(*(ol.size));
 }
 
-// OrderList &OrderList::operator=(const OrderList &ol)
-// {
+/**
+ * Assignment operator of the OrderList class
+ */
+OrderList &OrderList::operator=(const OrderList &ol)
+{
+    this->oList = new list<Order *>(*(ol.oList));
+    this->size = new int(*(ol.size));
+    return *this;
+}
 
-// }
+/**
+ * Stream insertion operator of the OrderList class
+ */
+ostream &operator<<(ostream &out, OrderList *ol)
+{
+    // list<Order*> displayOList = ;
+    out << "\nContents of OrderList" << endl;
+    out << "List size: " << ol->getSize() << endl;
+    for (Order *o : ol->getOList()){
+        out << "\nOrder: " << o->getType() << "\n";
+    }
+        
+    return out;
+}
 
-// ostream &operator<<(ostream &out, const OrderList &ol)
-// {
+/**
+ * Adds an element to the OrderList
+ * 
+ * @param o an Order object
+ */
+void OrderList::add(Order *o)
+{
+    list<Order *> newList = getOList();
+    newList.push_back(o); //Add Order to the back of the list
+    setSize(getSize() + 1);
+    setOList(newList);
+}
 
-// }
+/**
+ * Gets an Order from the OrderList
+ * 
+ * @param index
+ */
+Order *OrderList::get(int index)
+{
+    list<Order *> tempList = getOList();
+    auto o = tempList.begin();
+    advance(o, index); //Iterate the list to the given index
+    return *o;
+}
+
+/**
+ * Moves an Order from one position to another
+ * 
+ * @param oldIndex the original position
+ * @param newIndex the new position
+ */
+void OrderList::move(int oldIndex, int newIndex)
+{
+    Order *order1 = get(oldIndex); //Order to be swapped
+    Order *order2 = get(newIndex);
+    list<Order *> *newList = new list<Order *>; //Create new list to add the swapped Orders
+    int size = getSize();
+
+    for (int i = 0; i < size; i++)
+    {
+        if (i == newIndex)
+            newList->push_back(order1);
+        else if (i == oldIndex)
+            newList->push_back(order2);
+        else
+        {
+            Order *o = get(i);
+            newList->push_back(o);
+        }
+    }
+    setOList(*newList);
+}
+
+/**
+ * Removes an Order from the OrderList
+ * 
+ * @param index
+ */
+void OrderList::remove(int index)
+{
+    list<Order *> newList = getOList();
+    Order *o = get(index);
+    newList.remove(o);
+    setSize(getSize() - 1);
+    setOList(newList);
+    delete o; //Remove order from memory
+}
+
+/**
+ * Getter for the list of Orders
+ * 
+ * @return a list of Orders
+ */
+list<Order *> OrderList::getOList()
+{
+    return *oList;
+}
+
+/**
+ * Getter for the OrderList size
+ * 
+ * @return the OrderList size
+ */
+int OrderList::getSize()
+{
+    return *size;
+}
+
+/**
+ * Setter for the list of Orders
+ * 
+ * @param newOList the new OrderList
+ */
+void OrderList::setOList(list<Order *> newOList)
+{
+    *oList = newOList;
+}
+
+/**
+ * Setter for the OrderList size
+ * 
+ * @param newSize the new OrderList size
+ */
+void OrderList::setSize(int newSize)
+{
+    *size = newSize;
+}
