@@ -1,7 +1,7 @@
 /**
- * The driver file for the Order class and its subclasses
+ * The driver file for the OrdersList and Order classes
+ * and its subclasses
  * Deploy, Advance, Bomb, Blockade, Airlift, and Negotiate.
- * The driver file also has the OrdersList class.
  * 
  * @author Mark Nasol
  */
@@ -14,7 +14,7 @@ using namespace std;
 
 int main()
 {
-     //Create every kind of order
+     //Create every kind of order and adding them to the OrderList
      Deploy *dOrder = new Deploy;
      Advance *aOrder = new Advance;
      Bomb *bOrder = new Bomb;
@@ -22,34 +22,44 @@ int main()
      Airlift *aiOrder = new Airlift;
      Negotiate *nOrder = new Negotiate;
 
-     // if(dOrder->validate())
-     //      cout << "The given order is valid\n" << endl;
-     // else
-     //      cout << "The given order is invalid\n" << endl;
+     Order *invalidOrder = new Order("invalid", "an invalid order");
 
-     //     Order *oOrder = new Deploy;
+     cout << "\nAdding orders to OrderList" << endl;
+     OrderList *ol = new OrderList;
+     ol->add(dOrder);
+     ol->add(aOrder);
+     ol->add(bOrder);
+     ol->add(blOrder);
+     ol->add(aiOrder);
+     ol->add(invalidOrder);
+     ol->add(nOrder);
+     cout << ol;
 
-     //TODO Place orders in the OrderList object
+     //Testing move function
+     cout << "\nMoving first order with the last order" << endl;
+     ol->move(0, 5);
+     cout << ol;
 
-     // vector<Order*> vOrders;
-     // vOrders.push_back(dOrder);
-     // vOrders.push_back(aOrder);
-     // vOrders.push_back(bOrder);
-     // vOrders.push_back(blOrder);
-     // vOrders.push_back(aiOrder);
-     // vOrders.push_back(nOrder);
+     cout << "\nMoving 4th order with 2nd order" << endl;
+     ol->move(3, 1);
+     cout << ol;
 
-     // for(int i = 0; i < vOrders.size(); i++){
-     //      vOrders[i]->execute();
-     // }
+     //Testing remove function
+     cout << "\nRemoving last order" << endl;
+     ol->remove(ol->getSize() - 1);
+     cout << ol;
 
-     //Delete orders from memory
-     delete dOrder;
-     delete aOrder;
-     delete bOrder;
-     delete blOrder;
-     delete aiOrder;
-     delete nOrder;
+     //Testing validate() and execute() functions
+     //The orders are then removed
+     cout << "\nExecuting orders" << endl;
+     for(Order *o : ol->getOList()){
+          o->execute();
+          ol->remove(0); //Removes executed Order
+     }
+     cout << ol;
+
+     //Delete OrderList from memory
+     delete ol;
 
      return 0;
 }
