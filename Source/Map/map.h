@@ -2,13 +2,17 @@
 #include <iostream>
 #include <vector>
 
+class Player {
+public:
+	int id;
+};
 class Territory {
 private:
 	int id;
 	int continent;
 	int posx;
 	int posy;
-	int player;
+	Player* player;
 	int nbArmy;
 	std::string name;
 	
@@ -20,21 +24,21 @@ public:
 	void setPosy(int);
 	void setName(std::string);
 
-	int getID() { return id; };
-	int getContinent() { return continent; };
-	int getPosx() { return posx; };
-	int getPosy() { return posy; };
-	std::string getName() { return name; };
-	int getPlayer() { return player; };
-	int getNbArmy() { return nbArmy; };
-	std::vector<Territory*>* getBorderList() { return &listBorder; };
+	int getID() ;
+	int getContinent();
+	int getPosx();
+	int getPosy();
+	std::string getName();
+	Player* getPlayer();
+	int getNbArmy();
+	std::vector<Territory*>* getBorderList();
 
 	friend std::ostream& operator << (std::ostream& out, Territory& t);
 	friend std::istream& operator >> (std::istream& in, Territory& t);
 
 	Territory();
 	Territory( const Territory &);
-	Territory(int, int, int ,int ,int ,int, std::string, std::vector<Territory*>);
+	Territory(int, int, Player* ,int ,int ,int, std::string, std::vector<Territory*>);
 	~Territory();
 
 
@@ -92,7 +96,7 @@ public:
 	void addBorderToTerritory(std::string);
 	void addTerritoryToContinent(Territory*);
 	
-	bool check();
+	bool validate();
 	bool checkValidGraph();				//check if the the map is a graph
 	bool checkValidSubgraph();			//check if the continents are valid subgraph
 	bool checkContinents();				//check if every contri only belong to a sigle continents.
@@ -115,6 +119,21 @@ private:
 	//Continent* arrayContinent[];
 };
 
+
+class MapLoader {
+public:
+	bool loadMap(std::string);
+	int getSize();
+	std::vector<Map*>* getListMap();
+
+	MapLoader();
+	MapLoader(std::vector<Map*>, int);
+	MapLoader(const MapLoader&);
+	~MapLoader();
+private:
+	std::vector<Map*> listMap;
+	int size;
+};
 
 
 

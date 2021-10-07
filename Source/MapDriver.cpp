@@ -10,16 +10,26 @@ using namespace std;
 
 int main()
 {
-     Map* map = new Map();
-    // map->creatGraph("simpsons_world.map");
-     map->creatGraph("map/myImortal.map");
-     
-     map->check();
+   
+    MapLoader* mapL = new MapLoader();
+    mapL->loadMap("canada");
+    mapL->loadMap("caribbean");
+    mapL->loadMap("chutes");
+    mapL->loadMap("simpsons_world");
+    mapL->loadMap("startrek");
+    mapL->loadMap("myImortal");
 
+    
+    cout << "MapLoader contain " << mapL->getSize() << " valid map. When you will press anny key, the third Map will be printed." << endl;
+    
+    std::string comand;
+    cin >> comand;
+    cout << *mapL->getListMap()->at(2);
+    
      /*
      //Demo constructor Territory
      std::cout << "Befor the copy constructor for Territory";
-     Territory& ref = *map->listTerritory.at(0);
+     Territory& ref = *mapL->getListMap()->at(2)->listTerritory.at(0);
      Territory* paramT = new Territory(ref.getID(), ref.getContinent(), ref.getPlayer(), ref.getNbArmy(), ref.getPosx(), ref.getPosy(), ref.getName(), *ref.getBorderList());
      Territory* copyT = new Territory(*paramT);
      std::cout <<"Copy constructor : " << *copyT << endl;
@@ -32,7 +42,7 @@ int main()
      /*
      //Demo constructor Continent
      std::cout << "Befor the constructor for Continent";
-     Continent& ref = *map->listContinents.at(0);
+     Continent& ref = *mapL->getListMap()->at(2)->listContinents.at(0);
      Continent* paramC = new Continent(ref.getArmyValu(),ref.getName(),ref.getColour(),*ref.getCountryList());
      Continent* copyC = new Continent(*paramC);
 
@@ -42,6 +52,7 @@ int main()
      delete copyC;
      delete paramC;
      */
+     
 
      /*
      //Demo Map
@@ -55,7 +66,7 @@ int main()
      */
 
 
-    // copyMap->listTerritory.at(41)->setName("Hi Mark");
+  
     
 
  
