@@ -2,10 +2,8 @@
 #include <iostream>
 #include <vector>
 
-class Player {
-public:
-	int id;
-};
+class Player;
+
 class Territory {
 private:
 	int id;
