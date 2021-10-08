@@ -24,8 +24,6 @@ Order::Order()
 {
     type = new string("");
     description = new string("");
-    territory = new int(1);
-    numArmies = new int(0);
 }
 
 /**
@@ -35,8 +33,6 @@ Order::~Order()
 {
     delete type;
     delete description;
-    delete territory;
-    delete numArmies;
 }
 
 /**
@@ -46,8 +42,6 @@ Order::Order(const Order &od)
 {
     this->type = new string(*(od.type));
     this->description = new string(*(od.description));
-    this->territory = new int(*(od.territory));
-    this->numArmies = new int(*(od.numArmies));
 }
 
 /**
@@ -57,8 +51,6 @@ Order &Order::operator=(const Order &od)
 {
     this->type = new string(*(od.type));
     this->description = new string(*(od.description));
-    this->territory = new int(*(od.territory));
-    this->numArmies = new int(*(od.numArmies));
     return *this;
 }
 
@@ -67,8 +59,7 @@ Order &Order::operator=(const Order &od)
  */
 ostream &operator<<(ostream &out, Order *od)
 {
-    out << "Order: " << od->getType() << "\nDescription: " << od->getDescription()
-        << "\nTerritory: " << od->getTerritory() << "\nNumber of armies: " << od->getNumArmies() << "\n";
+    out << "Order: " << od->getType() << "\nDescription: " << od->getDescription();
     return out;
 }
 
@@ -82,8 +73,6 @@ Order::Order(string typeValue, string descValue)
 {
     type = new string(typeValue);
     description = new string(descValue);
-    territory = new int(1);
-    numArmies = new int(0);
 }
 
 /**
@@ -121,12 +110,7 @@ bool Order::validate()
  */
 void Order::execute()
 {
-    //Check if the order is valid
-    if (validate())
-    {
-        cout << "Order executed\n"
-             << endl;
-    }
+    cout << "Executing " << this->getType() << " order" << endl;
 }
 
 /**
@@ -134,7 +118,7 @@ void Order::execute()
  * 
  * @return the Order's type
  */
-string Order::getType()
+const string Order::getType()
 {
     return *type;
 }
@@ -144,69 +128,9 @@ string Order::getType()
  * 
  * @return the Order's description
  */
-string Order::getDescription()
+const string Order::getDescription()
 {
     return *description;
-}
-
-/**
- * Getter for the Order's territory
- * 
- * @return the Order's territory
- */
-int Order::getTerritory()
-{
-    return *territory;
-}
-
-/**
- * Getter for the Order's number of armies
- * 
- * @return the Order's number of armies
- */
-int Order::getNumArmies()
-{
-    return *numArmies;
-}
-
-/**
- * Setter for the Order's type
- * 
- * @param newType the new type
- */
-void Order::setType(string newType)
-{
-    *type = newType;
-}
-
-/**
- * Setter for the Order's description
- * 
- * @param newDescription the new description
- */
-void Order::setDescription(string newDescription)
-{
-    *description = newDescription;
-}
-
-/**
- * Setter for the Order's territory
- * 
- * @param newTerritory the new territory
- */
-void Order::setTerritory(int newTerritory)
-{
-    *territory = newTerritory;
-}
-
-/**
- * Setter for the Order's number of armies
- * 
- * @param newNumArmies the new number of armies
- */
-void Order::setNumArmies(int newNumArmies)
-{
-    *numArmies = newNumArmies;
 }
 
 /********************************************************************
@@ -218,8 +142,6 @@ void Order::setNumArmies(int newNumArmies)
  */
 Deploy::Deploy() : Order("deploy", "Place some armies on one of the current player’s territories.")
 {
-    this->setTerritory(1);
-    this->setNumArmies(0);
 }
 
 /**
@@ -248,21 +170,8 @@ Deploy &Deploy::operator=(const Deploy &dep)
  */
 ostream &operator<<(ostream &out, Deploy *dep)
 {
-    out << "Order: " << dep->getType() << "\nDescription: " << dep->getDescription()
-        << "\nTerritory: " << dep->getTerritory() << "\nNumber of armies: " << dep->getNumArmies() << "\n";
+    out << "Order: " << dep->getType() << "\nDescription: " << dep->getDescription();
     return out;
-}
-
-/**
- * Overidden execute function for the Deploy class
- */
-void Deploy::execute()
-{
-    //Check if the order is valid
-    if (validate())
-    {
-        cout << "Deploying " << this->getNumArmies() << " armies to territory " << this->getTerritory() << endl;
-    }
 }
 
 /********************************************************************
@@ -275,8 +184,6 @@ void Deploy::execute()
 Advance::Advance() : Order("advance",
                            "Move some armies from one of the current player’s territories (source) to an adjacent territory (target). If the target territory belongs to the current player, the armies are moved to the target territory. If the target territory belongs to another player, an attack happens between the two territories")
 {
-    this->setTerritory(1);
-    this->setNumArmies(0);
 }
 
 /**
@@ -305,21 +212,8 @@ Advance &Advance::operator=(const Advance &adv)
  */
 ostream &operator<<(ostream &out, Advance *adv)
 {
-    out << "Order: " << adv->getType() << "\nDescription: " << adv->getDescription()
-        << "\nTerritory: " << adv->getTerritory() << "\nNumber of armies: " << adv->getNumArmies() << "\n";
+    out << "Order: " << adv->getType() << "\nDescription: " << adv->getDescription();
     return out;
-}
-
-/**
- * Overidden execute function for the Advance class
- */
-void Advance::execute()
-{
-    //Check if the order is valid
-    if (validate())
-    {
-        cout << "Moving " << this->getNumArmies() << " armies to territory " << this->getTerritory() << endl;
-    }
 }
 
 /********************************************************************
@@ -331,7 +225,6 @@ void Advance::execute()
  */
 Bomb::Bomb() : Order("bomb", "Destroy half of the armies located on an opponent’s territory that is adjacent to one of the current player’s territories.")
 {
-    this->setTerritory(1);
 }
 
 /**
@@ -360,21 +253,8 @@ Bomb &Bomb::operator=(const Bomb &bom)
  */
 ostream &operator<<(ostream &out, Bomb *bom)
 {
-    out << "Order: " << bom->getType() << "\nDescription: " << bom->getDescription()
-        << "\nTerritory: " << bom->getTerritory() << "\nNumber of armies: " << bom->getNumArmies() << "\n";
+    out << "Order: " << bom->getType() << "\nDescription: " << bom->getDescription();
     return out;
-}
-
-/**
- * Overidden execute function for the Bomb class
- */
-void Bomb::execute()
-{
-    //Check if the order is valid
-    if (validate())
-    {
-        cout << "Bombing territory " << this->getTerritory() << endl;
-    }
 }
 
 /********************************************************************
@@ -386,8 +266,6 @@ void Bomb::execute()
  */
 Blockade::Blockade() : Order("blockade", "triple the number of armies on one of the current player’s territories and make it a neutral territory")
 {
-    this->setTerritory(1);
-    this->setNumArmies(0);
 }
 
 /**
@@ -416,21 +294,8 @@ Blockade &Blockade::operator=(const Blockade &blo)
  */
 ostream &operator<<(ostream &out, Blockade *blo)
 {
-    out << "Order: " << blo->getType() << "\nDescription: " << blo->getDescription()
-        << "\nTerritory: " << blo->getTerritory() << "\nNumber of armies: " << blo->getNumArmies() << "\n";
+    out << "Order: " << blo->getType() << "\nDescription: " << blo->getDescription();
     return out;
-}
-
-/**
- * Overidden execute function for the Blockade class
- */
-void Blockade::execute()
-{
-    //Check if the order is valid
-    if (validate())
-    {
-        cout << "Tripling the number of armies on territory " << this->getTerritory() << endl;
-    }
 }
 
 /********************************************************************
@@ -442,8 +307,6 @@ void Blockade::execute()
  */
 Airlift::Airlift() : Order("airlift", "Advance some armies from one of the current player’s territories to any another territory")
 {
-    this->setTerritory(1);
-    this->setNumArmies(0);
 }
 
 /**
@@ -472,21 +335,8 @@ Airlift &Airlift::operator=(const Airlift &air)
  */
 ostream &operator<<(ostream &out, Airlift *air)
 {
-    out << "Order: " << air->getType() << "\nDescription: " << air->getDescription()
-        << "\nTerritory: " << air->getTerritory() << "\nNumber of armies: " << air->getNumArmies() << "\n";
+    out << "Order: " << air->getType() << "\nDescription: " << air->getDescription();
     return out;
-}
-
-/**
- * Overidden execute function for the Airlift class
- */
-void Airlift::execute()
-{
-    //Check if the order is valid
-    if (validate())
-    {
-        cout << "Airlifting " << this->getNumArmies() << " armies to territory " << this->getTerritory() << endl;
-    }
 }
 
 /********************************************************************
@@ -526,21 +376,8 @@ Negotiate &Negotiate::operator=(const Negotiate &ngo)
  */
 ostream &operator<<(ostream &out, Negotiate *ngo)
 {
-    out << "Order: " << ngo->getType() << "\nDescription: " << ngo->getDescription()
-        << "\nTerritory: " << ngo->getTerritory() << "\nNumber of armies: " << ngo->getNumArmies() << "\n";
+    out << "Order: " << ngo->getType() << "\nDescription: " << ngo->getDescription();
     return out;
-}
-
-/**
- * Overidden execute function for the Negotiate class
- */
-void Negotiate::execute()
-{
-    //Check if the order is valid
-    if (validate())
-    {
-        cout << "An attack has been prevented from a negotiation between 2 players." << endl;
-    }
 }
 
 /********************************************************************
@@ -553,7 +390,6 @@ void Negotiate::execute()
 OrderList::OrderList()
 {
     oList = new list<Order *>;
-    size = new int(0);
 }
 
 /**
@@ -569,7 +405,6 @@ OrderList::~OrderList()
 OrderList::OrderList(const OrderList &ol)
 {
     this->oList = new list<Order *>(*(ol.oList));
-    this->size = new int(*(ol.size));
 }
 
 /**
@@ -578,7 +413,6 @@ OrderList::OrderList(const OrderList &ol)
 OrderList &OrderList::operator=(const OrderList &ol)
 {
     this->oList = new list<Order *>(*(ol.oList));
-    this->size = new int(*(ol.size));
     return *this;
 }
 
@@ -589,11 +423,12 @@ ostream &operator<<(ostream &out, OrderList *ol)
 {
     // list<Order*> displayOList = ;
     out << "\nContents of OrderList" << endl;
-    out << "List size: " << ol->getSize() << endl;
-    for (Order *o : ol->getOList()){
+    out << "List size: " << ol->oList->size() << endl;
+    for (Order *o : ol->getOList())
+    {
         out << "\nOrder: " << o->getType() << "\n";
     }
-        
+
     return out;
 }
 
@@ -604,10 +439,7 @@ ostream &operator<<(ostream &out, OrderList *ol)
  */
 void OrderList::add(Order *o)
 {
-    list<Order *> newList = getOList();
-    newList.push_back(o); //Add Order to the back of the list
-    setSize(getSize() + 1);
-    setOList(newList);
+    oList->push_back(o); //Add Order to the back of the list
 }
 
 /**
@@ -617,8 +449,7 @@ void OrderList::add(Order *o)
  */
 Order *OrderList::get(int index)
 {
-    list<Order *> tempList = getOList();
-    auto o = tempList.begin();
+    auto o = oList->begin();
     advance(o, index); //Iterate the list to the given index
     return *o;
 }
@@ -634,7 +465,7 @@ void OrderList::move(int oldIndex, int newIndex)
     Order *order1 = get(oldIndex); //Order to be swapped
     Order *order2 = get(newIndex);
     list<Order *> *newList = new list<Order *>; //Create new list to add the swapped Orders
-    int size = getSize();
+    int size = oList->size();
 
     for (int i = 0; i < size; i++)
     {
@@ -648,7 +479,8 @@ void OrderList::move(int oldIndex, int newIndex)
             newList->push_back(o);
         }
     }
-    setOList(*newList);
+    oList->swap(*newList);
+    delete newList;
 }
 
 /**
@@ -658,11 +490,8 @@ void OrderList::move(int oldIndex, int newIndex)
  */
 void OrderList::remove(int index)
 {
-    list<Order *> newList = getOList();
     Order *o = get(index);
-    newList.remove(o);
-    setSize(getSize() - 1);
-    setOList(newList);
+    oList->remove(o);
     delete o; //Remove order from memory
 }
 
@@ -671,37 +500,7 @@ void OrderList::remove(int index)
  * 
  * @return a list of Orders
  */
-list<Order *> OrderList::getOList()
+const list<Order *> OrderList::getOList()
 {
     return *oList;
-}
-
-/**
- * Getter for the OrderList size
- * 
- * @return the OrderList size
- */
-int OrderList::getSize()
-{
-    return *size;
-}
-
-/**
- * Setter for the list of Orders
- * 
- * @param newOList the new OrderList
- */
-void OrderList::setOList(list<Order *> newOList)
-{
-    *oList = newOList;
-}
-
-/**
- * Setter for the OrderList size
- * 
- * @param newSize the new OrderList size
- */
-void OrderList::setSize(int newSize)
-{
-    *size = newSize;
 }
