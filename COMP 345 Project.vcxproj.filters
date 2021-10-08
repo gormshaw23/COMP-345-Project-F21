@@ -16,8 +16,20 @@
     <Filter Include="Source Files\Player">
       <UniqueIdentifier>{54b61adf-54f5-429a-8d5d-03a4f005c09a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Card">
+    <Filter Include="Source Files\Cards">
       <UniqueIdentifier>{30382a9a-dab6-4fe2-a30c-9e2565542bac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Map">
+      <UniqueIdentifier>{e536a53f-70de-4275-81f8-80b6aaa08873}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{fb077975-3427-4f8a-8125-1fa3ac0b4008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Order">
+      <UniqueIdentifier>{8e0e3f8c-372e-4e7b-b1c5-67d7635352e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Common">
+      <UniqueIdentifier>{8b6d18e5-8ad0-4c76-8f9d-e77c08901e9c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -27,10 +39,37 @@
     <ClCompile Include="Source\PlayerDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Cards\Cards.cpp">
+      <Filter>Source Files\Cards</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Map\map.cpp">
+      <Filter>Source Files\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\gameEngine.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Order\Orders.cpp">
+      <Filter>Source Files\Order</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Player\Player.h">
       <Filter>Source Files\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Cards\Cards.h">
+      <Filter>Source Files\Cards</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Map\map.h">
+      <Filter>Source Files\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\gameEngine.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Order\Orders.h">
+      <Filter>Source Files\Order</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Common\CommonTypes.h">
+      <Filter>Source Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,6 +4,9 @@
 #include <fstream>
 #include <string>
 #include <vector>
+
+#include "Player/Player.h"
+
 using namespace std;
 
 
