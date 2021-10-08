@@ -10,7 +10,6 @@
 #include <iterator>
 #include <list>
 #include <string>
-//using namespace std;
 
 #include "Orders.h"
 
@@ -55,7 +54,7 @@ Order &Order::operator=(const Order &od)
 /**
  * Stream insertion operator of the Order class
  */
-ostream &operator<<(ostream &out, Order &od)
+std::ostream &operator<<(std::ostream &out, Order &od)
 {
     out << "Order: " << od.getTypeName() << "\nDescription: " << od.getDescription();
     return out;
@@ -99,7 +98,7 @@ bool Order::validate()
 
     std::string validStr = (isValid) ? "valid" : "not valid";
 
-    cout << "\nThe order of type " << this->getTypeName() << " is " << validStr << endl;
+    std::cout << "\nThe order of type " << this->getTypeName() << " is " << validStr << std::endl;
     return isValid;
 }
 
@@ -108,7 +107,7 @@ bool Order::validate()
  */
 void Order::execute()
 {
-    cout << "Executing " << this->getTypeName() << " order" << endl;
+    std::cout << "Executing " << this->getTypeName() << " order" << std::endl;
 }
 
 /**
@@ -199,7 +198,7 @@ Deploy &Deploy::operator=(const Deploy &dep)
 /**
  * Stream insertion operator of the Deploy class
  */
-ostream &operator<<(ostream &out, Deploy &dep)
+std::ostream &operator<<(std::ostream &out, Deploy &dep)
 {
     out << "Order: " << dep.getTypeName() << "\nDescription: " << dep.getDescription();
     return out;
@@ -241,7 +240,7 @@ Advance &Advance::operator=(const Advance &adv)
 /**
  * Stream insertion operator of the Advance class
  */
-ostream &operator<<(ostream &out, Advance &adv)
+std::ostream &operator<<(std::ostream &out, Advance &adv)
 {
     out << "Order: " << adv.getTypeName() << "\nDescription: " << adv.getDescription();
     return out;
@@ -282,7 +281,7 @@ Bomb &Bomb::operator=(const Bomb &bom)
 /**
  * Stream insertion operator of the Bomb class
  */
-ostream &operator<<(ostream &out, Bomb &bom)
+std::ostream &operator<<(std::ostream &out, Bomb &bom)
 {
     out << "Order: " << bom.getTypeName() << "\nDescription: " << bom.getDescription();
     return out;
@@ -323,7 +322,7 @@ Blockade &Blockade::operator=(const Blockade &blo)
 /**
  * Stream insertion operator of the Blockade class
  */
-ostream &operator<<(ostream &out, Blockade &blo)
+std::ostream &operator<<(std::ostream &out, Blockade &blo)
 {
     out << "Order: " << blo.getTypeName() << "\nDescription: " << blo.getDescription();
     return out;
@@ -364,7 +363,7 @@ Airlift &Airlift::operator=(const Airlift &air)
 /**
  * Stream insertion operator of the Airlift class
  */
-ostream &operator<<(ostream &out, Airlift &air)
+std::ostream &operator<<(std::ostream &out, Airlift &air)
 {
     out << "Order: " << air.getTypeName() << "\nDescription: " << air.getDescription();
     return out;
@@ -405,55 +404,55 @@ Negotiate &Negotiate::operator=(const Negotiate &ngo)
 /**
  * Stream insertion operator of the Negotiate class
  */
-ostream &operator<<(ostream &out, Negotiate &ngo)
+std::ostream &operator<<(std::ostream &out, Negotiate &ngo)
 {
     out << "Order: " << ngo.getTypeName() << "\nDescription: " << ngo.getDescription();
     return out;
 }
 
 /********************************************************************
- * OrderList class function definitions
+ * OrdersList class function definitions
  ********************************************************************/
 
 /**
- * Constructor of the OrderList class
+ * Constructor of the OrdersList class
  */
-OrderList::OrderList()
+OrdersList::OrdersList()
 {
 }
 
 /**
- * Destructor of the OrderList class
+ * Destructor of the OrdersList class
  */
-OrderList::~OrderList()
+OrdersList::~OrdersList()
 {
 }
 
 /**
- * Copy constructor of the OrderList class
+ * Copy constructor of the OrdersList class
  */
-OrderList::OrderList(const OrderList &ol)
+OrdersList::OrdersList(const OrdersList &ol)
 {
     this->oList = ol.oList;
 }
 
 /**
- * Assignment operator of the OrderList class
+ * Assignment operator of the OrdersList class
  */
-OrderList &OrderList::operator=(const OrderList &ol)
+OrdersList &OrdersList::operator=(const OrdersList &ol)
 {
     this->oList = ol.oList;
     return *this;
 }
 
 /**
- * Stream insertion operator of the OrderList class
+ * Stream insertion operator of the OrdersList class
  */
-ostream &operator<<(ostream &out, OrderList &ol)
+std::ostream &operator<<(std::ostream &out, OrdersList &ol)
 {
     // list<Order*> displayOList = ;
-    out << "\nContents of OrderList" << endl;
-    out << "List size: " << ol.oList.size() << endl;
+    out << "\nContents of OrdersList" << std::endl;
+    out << "List size: " << ol.oList.size() << std::endl;
     for (Order *o : ol.getOList())
     {
         out << "\nOrder: " << o->getTypeName() << "\n";
@@ -463,21 +462,21 @@ ostream &operator<<(ostream &out, OrderList &ol)
 }
 
 /**
- * Adds an element to the OrderList
+ * Adds an element to the OrdersList
  * 
  * @param o an Order object
  */
-void OrderList::add(Order *o)
+void OrdersList::add(Order *o)
 {
     oList.push_back(o); //Add Order to the back of the list
 }
 
 /**
- * Gets an Order from the OrderList
+ * Gets an Order from the OrdersList
  * 
  * @param index
  */
-Order *OrderList::get(int index)
+Order *OrdersList::get(int index)
 {
     auto o = oList.begin();
     std::advance(o, index); //Iterate the list to the given index
@@ -490,7 +489,7 @@ Order *OrderList::get(int index)
  * @param oldIndex the original position
  * @param newIndex the new position
  */
-void OrderList::move(int oldIndex, int newIndex)
+void OrdersList::move(int oldIndex, int newIndex)
 {
     Order *order1 = get(oldIndex); //Order to be swapped
     Order *order2 = get(newIndex);
@@ -513,11 +512,11 @@ void OrderList::move(int oldIndex, int newIndex)
 }
 
 /**
- * Removes an Order from the OrderList
+ * Removes an Order from the OrdersList
  * 
  * @param index
  */
-void OrderList::remove(int index)
+void OrdersList::remove(int index)
 {
     Order *o = get(index);
     oList.remove(o);
@@ -529,7 +528,7 @@ void OrderList::remove(int index)
  * 
  * @return a list of Orders
  */
-const list<Order *> OrderList::getOList()
+const std::list<Order *> OrdersList::getOList()
 {
     return oList;
 }

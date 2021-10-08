@@ -124,16 +124,16 @@ public:
 };
 
 /**
- * The function and member declarations of the OrderList class 
+ * The function and member declarations of the OrdersList class 
  */
-class OrderList
+class OrdersList
 {
 public:
-    OrderList();                                                       //Constructor
-    ~OrderList();                                                      //Destructor
-    OrderList(const OrderList &ol);                                    //Copy constructor
-    OrderList &operator=(const OrderList &ol);                         //Assignment operator
-    friend std::ostream &operator<<(std::ostream &out, OrderList &ol); //Stream insertion operator
+    OrdersList();                                                       //Constructor
+    ~OrdersList();                                                      //Destructor
+    OrdersList(const OrdersList &ol);                                    //Copy constructor
+    OrdersList &operator=(const OrdersList &ol);                         //Assignment operator
+    friend std::ostream &operator<<(std::ostream &out, OrdersList &ol); //Stream insertion operator
 
     void add(Order *o);
     Order *get(const int index);
