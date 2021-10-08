@@ -1,0 +1,6 @@
+To test the map section of the project please to the following.
+1) open a new project  in visual studio.
+2) add the file ( MapDriver.cpp , Map.cpp) in the good good folder of the project)
+3) add (Map.h) in the header folder. 
+4) add the map folder (containing the .map file ) in the project file.
+5) Adjust the #include and the and the file concatanation in the loadMap function of the MapLoader in the Map.cpp file.
