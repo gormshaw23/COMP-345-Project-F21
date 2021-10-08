@@ -8,8 +8,8 @@
 #pragma once
 
 #include <string>
+#include <ostream>
 #include <list>
-using namespace std;
 
 /**
  * The function and member declarations of the Order class 
@@ -21,25 +21,17 @@ public:
     ~Order();                                            //Destructor
     Order(const Order &od);                              //Copy constructor
     Order &operator=(const Order &od);                   //Assignment operator
-    friend ostream &operator<<(ostream &out, Order *od); //Stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, Order *od); //Stream insertion operator
 
-    Order(string typeValue, string descValue);
+    Order(std::string typeValue, std::string descValue);
     bool validate();
-    virtual void execute();
-    string getType();
-    string getDescription();
-    int getTerritory();
-    int getNumArmies();
-    void setType(string newType);
-    void setDescription(string newDescription);
-    void setTerritory(int newTerritory);
-    void setNumArmies(int newNumArmies);
+    void execute();
+    const std::string getType();
+    const std::string getDescription();
 
 private:
-    string *type;        //The order type
-    string *description; //The order description
-    int *territory;      //The territory id
-    int *numArmies;      //The number of armies to be deployed
+    std::string *type;        //The order type
+    std::string *description; //The order description
 };
 
 /**
@@ -52,9 +44,8 @@ public:
     ~Deploy();                                             //Destructor
     Deploy(const Deploy &dep);                             //Copy constructor
     Deploy &operator=(const Deploy &dep);                  //Assignment operator
-    friend ostream &operator<<(ostream &out, Deploy *dep); //Stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, Deploy *dep); //Stream insertion operator
 
-    void execute() override;
 };
 
 /**
@@ -67,9 +58,8 @@ public:
     ~Advance();                                             //Destructor
     Advance(const Advance &adv);                            //Copy constructor
     Advance &operator=(const Advance &adv);                 //Assignment operator
-    friend ostream &operator<<(ostream &out, Advance *adv); //Stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, Advance *adv); //Stream insertion operator
 
-    void execute() override;
 };
 
 /**
@@ -82,9 +72,8 @@ public:
     ~Bomb();                                             //Destructor
     Bomb(const Bomb &bom);                               //Copy constructor
     Bomb &operator=(const Bomb &bom);                    //Assignment operator
-    friend ostream &operator<<(ostream &out, Bomb *bom); //Stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, Bomb *bom); //Stream insertion operator
 
-    void execute() override;
 };
 
 /**
@@ -97,9 +86,8 @@ public:
     ~Blockade();                                             //Destructor
     Blockade(const Blockade &blo);                           //Copy constructor
     Blockade &operator=(const Blockade &blo);                //Assignment operator
-    friend ostream &operator<<(ostream &out, Blockade *blo); //Stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, Blockade *blo); //Stream insertion operator
 
-    void execute() override;
 };
 
 /**
@@ -112,9 +100,8 @@ public:
     ~Airlift();                                             //Destructor
     Airlift(const Airlift &air);                            //Copy constructor
     Airlift &operator=(const Airlift &air);                 //Assignment operator
-    friend ostream &operator<<(ostream &out, Airlift *air); //Stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, Airlift *air); //Stream insertion operator
 
-    void execute() override;
 };
 
 /**
@@ -127,9 +114,8 @@ public:
     ~Negotiate();                                             //Destructor
     Negotiate(const Negotiate &ngo);                          //Copy constructor
     Negotiate &operator=(const Negotiate &ngo);               //Assignment operator
-    friend ostream &operator<<(ostream &out, Negotiate *ngo); //Stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, Negotiate *ngo); //Stream insertion operator
 
-    void execute() override;
 };
 
 /**
@@ -142,18 +128,14 @@ public:
     ~OrderList();                                            //Destructor
     OrderList(const OrderList &ol);                          //Copy constructor
     OrderList &operator=(const OrderList &ol);               //Assignment operator
-    friend ostream &operator<<(ostream &out, OrderList *ol); //Stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, OrderList *ol); //Stream insertion operator
 
     void add(Order *o);
-    Order *get(int index);
-    void move(int oldIndex, int newIndex);
-    void remove(int index);
-    list<Order *> getOList();
-    int getSize();
-    void setOList(list<Order *> newOList);
-    void setSize(int newSize);
+    Order *get(const int index);
+    void move(const int oldIndex, const int newIndex);
+    void remove(const int index);
+    const std::list<Order *> getOList();
 
 private:
-    list<Order *> *oList; //The list of Orders
-    int *size;            //The list size
+    std::list<Order *> *oList; //The list of Orders
 };
