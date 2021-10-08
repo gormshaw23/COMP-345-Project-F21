@@ -7,7 +7,7 @@
  */
 
 #include <iostream>
-#include <vector>
+#include <list>
 using namespace std;
 
 #include "Orders.cpp"
@@ -46,14 +46,16 @@ int main()
 
      //Testing remove function
      cout << "\nRemoving last order" << endl;
-     ol->remove(ol->getSize() - 1);
+     ol->remove(5);
      cout << ol;
 
      //Testing validate() and execute() functions
      //The orders are then removed
      cout << "\nExecuting orders" << endl;
-     for(Order *o : ol->getOList()){
-          o->execute();
+     for (Order *o : ol->getOList())
+     {
+          if (o->validate())
+               o->execute();
           ol->remove(0); //Removes executed Order
      }
      cout << ol;
