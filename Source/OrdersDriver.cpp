@@ -10,7 +10,7 @@
 #include <list>
 using namespace std;
 
-#include "Orders.cpp"
+#include "../Source/Order/Orders.cpp"
 
 int main()
 {
@@ -22,46 +22,40 @@ int main()
      Airlift *aiOrder = new Airlift;
      Negotiate *nOrder = new Negotiate;
 
-     Order *invalidOrder = new Order("invalid", "an invalid order");
-
      cout << "\nAdding orders to OrderList" << endl;
-     OrderList *ol = new OrderList;
-     ol->add(dOrder);
-     ol->add(aOrder);
-     ol->add(bOrder);
-     ol->add(blOrder);
-     ol->add(aiOrder);
-     ol->add(invalidOrder);
-     ol->add(nOrder);
+     OrderList ol;
+     ol.add(dOrder);
+     ol.add(aOrder);
+     ol.add(bOrder);
+     ol.add(blOrder);
+     ol.add(aiOrder);
+     ol.add(nOrder);
      cout << ol;
 
      //Testing move function
      cout << "\nMoving first order with the last order" << endl;
-     ol->move(0, 5);
+     ol.move(0, 5);
      cout << ol;
 
      cout << "\nMoving 4th order with 2nd order" << endl;
-     ol->move(3, 1);
+     ol.move(3, 1);
      cout << ol;
 
      //Testing remove function
      cout << "\nRemoving last order" << endl;
-     ol->remove(5);
+     ol.remove(5);
      cout << ol;
 
      //Testing validate() and execute() functions
      //The orders are then removed
      cout << "\nExecuting orders" << endl;
-     for (Order *o : ol->getOList())
+     for (Order *o : ol.getOList())
      {
           if (o->validate())
                o->execute();
-          ol->remove(0); //Removes executed Order
+          ol.remove(0); //Removes executed Order
      }
      cout << ol;
-
-     //Delete OrderList from memory
-     delete ol;
 
      return 0;
 }
