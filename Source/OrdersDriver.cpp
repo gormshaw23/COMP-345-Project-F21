@@ -23,7 +23,7 @@ int main()
      Negotiate *nOrder = new Negotiate;
 
      cout << "\nAdding orders to OrderList" << endl;
-     OrderList ol;
+     OrdersList ol;
      ol.add(dOrder);
      ol.add(aOrder);
      ol.add(bOrder);
