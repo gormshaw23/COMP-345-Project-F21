@@ -32,22 +32,21 @@ Player::Player(const Player& inPlayer)
 
 	if (this->_orders != nullptr) delete _orders;
 
-	if (this->_territoriesOwned.size() > 0)
-	{
-		_territoriesOwned.clear();
-		_territoriesOwned.shrink_to_fit();
-	}
+	_territoriesOwned.clear();
+	_territoriesOwned.shrink_to_fit();
 
 	// copy the data from str to the implicit object
-	this->_hand = _hand;
-	this->_orders = _orders;
+	this->_hand = new Hand(*inPlayer._hand);
+	this->_orders = new OrdersList(*inPlayer._orders);
 
 	for (int i = 0; i < inPlayer._territoriesOwned.size(); i++)
 	{
-		this->_territoriesOwned.push_back(inPlayer._territoriesOwned[i]);
+		this->_territoriesOwned.push_back(new Territory(*inPlayer._territoriesOwned[i]));
 	}
 
 	this->_id = inPlayer._id;
+
+	this->_playerName = inPlayer._playerName;
 }
 
 Player::~Player()
@@ -69,23 +68,22 @@ Player& Player::operator=(const Player& inPlayer)
 
 	if (this->_orders != nullptr) delete _orders;
 
-	if (this->_territoriesOwned.size() > 0)
-	{
-		_territoriesOwned.clear();
-		_territoriesOwned.shrink_to_fit();
-	}
+	_territoriesOwned.clear();
+	_territoriesOwned.shrink_to_fit();
 
 	// copy the data from str to the implicit object
-	this->_hand = _hand;
-	this->_orders = _orders;
+	this->_hand = new Hand(*inPlayer._hand);
+	this->_orders = new OrdersList(*inPlayer._orders);
 
 	for (int i = 0; i < inPlayer._territoriesOwned.size(); i++)
 	{
-		this->_territoriesOwned.push_back(inPlayer._territoriesOwned[i]);
+		this->_territoriesOwned.push_back(new Territory(*inPlayer._territoriesOwned[i]));
 	}
 
 	// I'm not sure about the design of this
 	this->_id = inPlayer._id;
+
+	this->_playerName = inPlayer._playerName;
 
 	// return the existing object so we can chain this operator
 	return *this;

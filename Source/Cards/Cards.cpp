@@ -291,10 +291,11 @@ Hand::Hand(int someCards)
 Hand::~Hand()
 {
 
-	for (auto i : *newHand) {
-		delete i;
-	}
+	//for (auto i : *newHand) {
+	//	delete i;
+	//}
 	newHand->clear();
+	newHand->shrink_to_fit();
 
 	delete newHand;
 	newHand = nullptr;
