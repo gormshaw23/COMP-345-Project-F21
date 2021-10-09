@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #endif
 
-#include "Cards/Card/Cards.h"
+#include "Cards/Cards.h"
 #include <vector>
 #include <iostream>
 #include <string>
