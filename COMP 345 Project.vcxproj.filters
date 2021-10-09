@@ -45,11 +45,11 @@
     <ClCompile Include="Source\Map\map.cpp">
       <Filter>Source Files\Map</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\gameEngine.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Order\Orders.cpp">
       <Filter>Source Files\Order</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\GameEngine.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -62,14 +62,14 @@
     <ClInclude Include="Source\Map\map.h">
       <Filter>Source Files\Map</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\gameEngine.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Order\Orders.h">
       <Filter>Source Files\Order</Filter>
     </ClInclude>
     <ClInclude Include="Source\Common\CommonTypes.h">
       <Filter>Source Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\GameEngine.h">
+      <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

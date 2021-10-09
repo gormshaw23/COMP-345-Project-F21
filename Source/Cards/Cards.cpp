@@ -276,6 +276,8 @@ void Hand::setHandSize(int someCards)
 
 Hand::Hand()
 {
+	newHand = new vector<Card*>();
+	handSize = new int();
 }
 
 Hand::Hand(int someCards)
