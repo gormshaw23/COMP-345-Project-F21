@@ -31,13 +31,13 @@
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{8b6d18e5-8ad0-4c76-8f9d-e77c08901e9c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CommandProcessor">
+      <UniqueIdentifier>{d44296c2-d534-4b67-9bba-affa1a965b3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Player\Player.cpp">
       <Filter>Source Files\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PlayerDriver.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Cards\Cards.cpp">
       <Filter>Source Files\Cards</Filter>
@@ -51,6 +51,12 @@
     <ClCompile Include="Source\Engine\GameEngine.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="CommandProcessing.cpp">
+      <Filter>Source Files\CommandProcessor</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandProcessingDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Player\Player.h">
@@ -62,14 +68,17 @@
     <ClInclude Include="Source\Map\map.h">
       <Filter>Source Files\Map</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Order\Orders.h">
-      <Filter>Source Files\Order</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Common\CommonTypes.h">
       <Filter>Source Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\GameEngine.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Order\Orders.h">
+      <Filter>Source Files\Order</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandProcessing.h">
+      <Filter>Source Files\CommandProcessor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
