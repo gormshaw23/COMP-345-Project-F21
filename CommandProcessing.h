@@ -20,7 +20,10 @@ public:
 	Command& operator=(const Command& com);					//Assignment operator
 	friend ostream& operator<<(ostream& out, Command& com);	//Stream insertion operator
 
-	void saveEffect();
+	const string getCommand();	//Gets Command string
+	const string getEffect();	//Gets Effect
+
+	void saveEffect(string newEffect);
 
 private:
 	string command;
