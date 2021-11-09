@@ -131,7 +131,23 @@ Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 void CommandProcessor::validate(std::string aCommand)
 {
 		//aCommand.compare(LOADMAP)
+
+	//a switch will be better to use  Soya 
+
+	//you need to have acces to the gameEngin to be able to find what state is the game in.  Soya
+
+	//validate should return a bool  indicating if the ccommand is valid.		Soya  
+
 	if(aCommand.compare(LOADMAP)  
+
+
+
+		//to do as a guide ( Soya )
+		// 1) get comand from user
+		// 2)get gameState from GameEngine
+		// 3) if the command is valid for the game state,  trasition the game engine to the next step.
+		// 4) if command is not valid in the current state print the error message  and save the error in the effect of the command. 
+
 
 		// first we compare the acommand with the valid allowed command in the game
 		//if the commande is valid, we check if the command if valid for the current state
