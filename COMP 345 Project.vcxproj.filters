@@ -36,9 +36,6 @@
     <ClCompile Include="Source\Player\Player.cpp">
       <Filter>Source Files\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Source\PlayerDriver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Cards\Cards.cpp">
       <Filter>Source Files\Cards</Filter>
     </ClCompile>
@@ -50,6 +47,9 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\GameEngine.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameEngineDriver.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
