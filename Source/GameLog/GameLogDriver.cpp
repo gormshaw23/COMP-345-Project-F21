@@ -2,6 +2,7 @@
 //
 #include "LoggingObserver.h"
 #include "Engine/GameEngine.h"
+#include "Order/Orders.h"
 #include <iostream>
 #include <list>
 
@@ -23,16 +24,9 @@ int main()
     dummy* domdum = new dummy();
     _listSubject->push_back(domdum);
 
-    dammy* daniel = new dammy();
-    _listSubject->push_back(daniel);
-
-    
-
-    
-
     dumdum->changeName("paule");
     domdum->changeName("Mario");
-    daniel->changeName("maria");
+   
 
 
 
@@ -51,8 +45,32 @@ int main()
     GameEngine* obj = &gameobj;
     _listSubject->push_back(obj);
 
+    Deploy* dOrder = new Deploy;
+    Advance* aOrder = new Advance;
+    _listSubject->push_back(aOrder);
+    _listSubject->push_back(dOrder);
+
+
+    OrdersList ol;
+    OrdersList* pol = &ol;
+    _listSubject->push_back(pol);
+
 
     LogObserver* loglog = new  LogObserver(_listSubject);
+
+    ol.add(dOrder);
+    ol.add(aOrder);
+
+    cout << "\nExecuting orders" << endl;
+    for (Order* o : ol.getOList())
+    {
+        if (o->validate())
+            o->execute();
+        ol.remove(0); //Removes executed Order
+    }
+
+
+
 
     gameobj.game_run();
     cout << "Good Game!\nGood Bye!" << endl;

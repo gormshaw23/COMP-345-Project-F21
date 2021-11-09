@@ -108,6 +108,7 @@ bool Order::validate()
 void Order::execute()
 {
     std::cout << "Executing " << this->getTypeName() << " order" << std::endl;
+    this->Notify(*this);
 }
 
 /**
@@ -163,6 +164,12 @@ const std::string Order::getDescription()
     return description;
 }
 
+
+
+std::string Order::stringToLog() {
+    std::string  toLog = "Temporary info : order executed name : " + this->getTypeName() + " , order description : " + this->getDescription();
+    return toLog;
+}
 /********************************************************************
  * Deploy class function definitions
  ********************************************************************/
@@ -469,6 +476,7 @@ std::ostream &operator<<(std::ostream &out, OrdersList &ol)
 void OrdersList::add(Order *o)
 {
     oList.push_back(o); //Add Order to the back of the list
+    this->Notify(*this);
 }
 
 /**
@@ -532,3 +540,10 @@ const std::list<Order *> OrdersList::getOList()
 {
     return oList;
 }
+
+std::string OrdersList::stringToLog() {
+
+    std::string toLog = "New order added to the OrdersList : " + this->getOList().back()->getTypeName();
+    return toLog;
+
+ }

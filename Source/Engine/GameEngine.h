@@ -51,14 +51,7 @@ class GameEngine : public Subject, ILoggable {
 
 };
 
-class dammy : public Subject,ILoggable {
-public:
-    std::string name;
-    virtual std::string stringToLog();
-    void changeName(std::string);
-    dammy();
-    dammy(std::string);
-    ~dammy();
-};
+
+
 #endif
 

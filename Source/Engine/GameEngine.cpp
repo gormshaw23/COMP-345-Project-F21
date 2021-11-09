@@ -242,7 +242,7 @@ void GameEngine::game_run() {
 
 
 std::string GameEngine::stringToLog() {
-    std::string toLog;
+    std::string toLog  = "New game state : ";
 
     const char* s = 0;
 #define PROCESS_VAL(p) case(p): s = #p; break;
@@ -258,21 +258,8 @@ std::string GameEngine::stringToLog() {
         PROCESS_VAL(GAME_STATE_WIN);
     }
 #undef PROCESS_VAL
-
-    return  s;
+    toLog = toLog + s;
+    return  toLog;
     //toLog  << this->getCurrentState();
     //return toLog;
-}
-dammy::dammy() {
-
-    this->name = "paule";
-}
-
-void dammy::changeName(std::string text) {
-    this->name = text;
-    this->Notify(*this);
-}
-
-std::string dammy::stringToLog() {
-    return this->name;
 }

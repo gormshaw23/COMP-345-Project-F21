@@ -1,0 +1,32 @@
+
+New game state : GAME_STATE_START
+New game state : GAME_STATE_MAP_LOAD
+New game state : GAME_STATE_MAP_VALIDATED
+New game state : GAME_STATE_START
+deploy
+advance
+New game state : GAME_STATE_START
+New game state : GAME_STATE_MAP_LOAD
+New game state : GAME_STATE_MAP_VALIDATED
+New order added to the OrdersList : deploy
+New order added to the OrdersList : advance
+New game state : GAME_STATE_START
+New game state : GAME_STATE_MAP_LOAD
+New game state : GAME_STATE_MAP_VALIDATED
+New order added to the OrdersList : Deploy
+New order added to the OrdersList : Advance
+New game state : GAME_STATE_START
+New game state : GAME_STATE_MAP_LOAD
+New order added to the OrdersList : Deploy
+New order added to the OrdersList : Advance
+New game state : GAME_STATE_START
+New game state : GAME_STATE_MAP_LOAD
+New order added to the OrdersList : Deploy
+New order added to the OrdersList : Advance
+New game state : GAME_STATE_START
+New order added to the OrdersList : deploy
+New order added to the OrdersList : advance
+Temporary info : order executed name : deploy , order description : Place some armies on one of the current player’s territories.
+Temporary info : order executed name : advance , order description : Move some armies from one of the current player’s territories (source) to an adjacent territory (target). If the target territory belongs to the current player, the armies are moved to the target territory. If the target territory belongs to another player, an attack happens between the two territories
+New game state : GAME_STATE_START
+New game state : GAME_STATE_MAP_LOAD
