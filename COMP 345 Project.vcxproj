@@ -21,15 +21,17 @@
   <ItemGroup>
     <ClCompile Include="Source\Cards\Cards.cpp" />
     <ClCompile Include="Source\Engine\GameEngine.cpp" />
+    <ClCompile Include="Source\GameLog\GameLogDriver.cpp" />
+    <ClCompile Include="Source\GameLog\LoggingObserver.cpp" />
     <ClCompile Include="Source\Map\map.cpp" />
     <ClCompile Include="Source\Order\Orders.cpp" />
-    <ClCompile Include="Source\PlayerDriver.cpp" />
     <ClCompile Include="Source\Player\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Cards\Cards.h" />
     <ClInclude Include="Source\Common\CommonTypes.h" />
     <ClInclude Include="Source\Engine\GameEngine.h" />
+    <ClInclude Include="Source\GameLog\LoggingObserver.h" />
     <ClInclude Include="Source\Map\map.h" />
     <ClInclude Include="Source\Order\Orders.h" />
     <ClInclude Include="Source\Player\Player.h" />

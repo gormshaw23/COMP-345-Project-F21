@@ -42,6 +42,7 @@ GameEngine::~GameEngine()
 void GameEngine::setCurrentState(GameState lState)
 {
    *eState = lState;
+   this->Notify(*this);
 }
 /**
  * getter
@@ -238,3 +239,40 @@ void GameEngine::game_run() {
         }
     }//end of while loop
 }//end of game_run()
+
+
+std::string GameEngine::stringToLog() {
+    std::string toLog;
+
+    const char* s = 0;
+#define PROCESS_VAL(p) case(p): s = #p; break;
+    switch (this->getCurrentState()) {
+        PROCESS_VAL(GAME_STATE_UNKNOWN);
+        PROCESS_VAL(GAME_STATE_START);
+        PROCESS_VAL(GAME_STATE_MAP_LOAD);
+        PROCESS_VAL(GAME_STATE_MAP_VALIDATED);
+        PROCESS_VAL(GAME_STATE_PLAYERS_ADDED);
+        PROCESS_VAL(GAME_STATE_ASSIGN_REINFORCEMENT);
+        PROCESS_VAL(GAME_STATE_ISSUE_ORDERS);
+        PROCESS_VAL(GAME_STATE_EXECUTE_ORDERS);
+        PROCESS_VAL(GAME_STATE_WIN);
+    }
+#undef PROCESS_VAL
+
+    return  s;
+    //toLog  << this->getCurrentState();
+    //return toLog;
+}
+dammy::dammy() {
+
+    this->name = "paule";
+}
+
+void dammy::changeName(std::string text) {
+    this->name = text;
+    this->Notify(*this);
+}
+
+std::string dammy::stringToLog() {
+    return this->name;
+}

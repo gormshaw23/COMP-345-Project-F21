@@ -31,13 +31,13 @@
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{8b6d18e5-8ad0-4c76-8f9d-e77c08901e9c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Log">
+      <UniqueIdentifier>{e67db046-56eb-4161-acc7-bf7618445f4c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Player\Player.cpp">
       <Filter>Source Files\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PlayerDriver.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Cards\Cards.cpp">
       <Filter>Source Files\Cards</Filter>
@@ -50,6 +50,12 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\GameEngine.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameLog\LoggingObserver.cpp">
+      <Filter>Source Files\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameLog\GameLogDriver.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\GameEngine.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameLog\LoggingObserver.h">
+      <Filter>Source Files\Log</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

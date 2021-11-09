@@ -1,6 +1,7 @@
 #ifndef GameEngine_h
 #define GameEngine_h
 #include <iostream>
+#include "GameLog/LoggingObserver.h"
 using namespace std;
 
 //game state
@@ -34,19 +35,30 @@ enum game_user_input {
 };
 
 //GameEngine class
-class GameEngine{
+class GameEngine : public Subject, ILoggable {
     public:
         GameEngine(); //constructor
         ~GameEngine(); //destructor
         GameEngine(const GameEngine &gm); //copy constructor
         GameState getCurrentState(); //getter
         void game_run();
+        virtual std::string stringToLog();
         GameEngine &operator=(const GameEngine &obj);//Assignment operator
         friend ostream &operator<<(ostream &out, const GameState value);//stream insertion operator
     private:
         GameState* eState;
         void setCurrentState(GameState eState);//setter
 
+};
+
+class dammy : public Subject,ILoggable {
+public:
+    std::string name;
+    virtual std::string stringToLog();
+    void changeName(std::string);
+    dammy();
+    dammy(std::string);
+    ~dammy();
 };
 #endif
 
