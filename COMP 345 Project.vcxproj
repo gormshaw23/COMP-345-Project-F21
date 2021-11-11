@@ -22,8 +22,8 @@
     <ClCompile Include="Source\Cards\Cards.cpp" />
     <ClCompile Include="Source\Engine\GameEngine.cpp" />
     <ClCompile Include="Source\Map\map.cpp" />
+    <ClCompile Include="Source\OrdersDriver.cpp" />
     <ClCompile Include="Source\Order\Orders.cpp" />
-    <ClCompile Include="Source\PlayerDriver.cpp" />
     <ClCompile Include="Source\Player\Player.cpp" />
   </ItemGroup>
   <ItemGroup>

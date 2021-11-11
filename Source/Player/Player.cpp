@@ -141,7 +141,7 @@ void Player::issueOrder
 	const std::vector<Player*> inPlayers
 )
 {
-	this->_orders->add(new Order());
+	this->_orders->add(new Advance());
 }
 
 OrdersList* Player::getOrders() const

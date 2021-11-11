@@ -8,13 +8,3 @@ enum class ECardTypes
 	Airlift,
 	Diplomacy
 };
-
-enum class EOrderTypes
-{
-	Deploy,
-	Advance,
-	Bomb,
-	Blockade,
-	Airlift,
-	Negotiate
-};

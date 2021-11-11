@@ -11,37 +11,37 @@
 #include <ostream>
 #include <list>
 
+enum class EOrderType
+{
+    Deploy,
+    Advance,
+    Bomb,
+    Blockade,
+    Airlift,
+    Negotiate
+};
+
 /**
  * The function and member declarations of the Order class 
  */
 class Order
 {
 public:
-    enum OrderType
-    {
-        deploy,
-        advance,
-        bomb,
-        blockade,
-        airlift,
-        negotiate
-    };
-
     Order();                                                       //Constructor
     ~Order();                                                      //Destructor
     Order(const Order &od);                                        //Copy constructor
     Order &operator=(const Order &od);                             //Assignment operator
     friend std::ostream &operator<<(std::ostream &out, Order &od); //Stream insertion operator
 
-    Order(OrderType typeValue, std::string descValue);
-    bool validate();
-    void execute();
-    const OrderType getType(); //Gets OrderType enum
+    Order(EOrderType typeValue, std::string descValue);
+    virtual bool validate() =0;
+    virtual void execute() =0;
+    const EOrderType getType(); //Gets OrderType enum
     const std::string getTypeName(); //Gets name of the order type
     const std::string getDescription();
     
 private:
-    OrderType oType;        //The order type
+    EOrderType oType;        //The order type
     std::string description; //The order description
 };
 
@@ -55,6 +55,10 @@ public:
     ~Deploy();                                                       //Destructor
     Deploy(const Deploy &dep);                                       //Copy constructor
     Deploy &operator=(const Deploy &dep);                            //Assignment operator
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Deploy &dep); //Stream insertion operator
 };
 
@@ -68,6 +72,10 @@ public:
     ~Advance();                                                       //Destructor
     Advance(const Advance &adv);                                      //Copy constructor
     Advance &operator=(const Advance &adv);                           //Assignment operator
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Advance &adv); //Stream insertion operator
 };
 
@@ -81,6 +89,10 @@ public:
     ~Bomb();                                                       //Destructor
     Bomb(const Bomb &bom);                                         //Copy constructor
     Bomb &operator=(const Bomb &bom);                              //Assignment operator
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Bomb &bom); //Stream insertion operator
 };
 
@@ -94,6 +106,10 @@ public:
     ~Blockade();                                                       //Destructor
     Blockade(const Blockade &blo);                                     //Copy constructor
     Blockade &operator=(const Blockade &blo);                          //Assignment operator
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Blockade &blo); //Stream insertion operator
 };
 
@@ -106,7 +122,11 @@ public:
     Airlift();                                                        //Constructor
     ~Airlift();                                                       //Destructor
     Airlift(const Airlift &air);                                      //Copy constructor
-    Airlift &operator=(const Airlift &air);                           //Assignment operator
+    Airlift &operator=(const Airlift &air);                           //Assignment 
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Airlift &air); //Stream insertion operator
 };
 
@@ -119,7 +139,11 @@ public:
     Negotiate();                                                        //Constructor
     ~Negotiate();                                                       //Destructor
     Negotiate(const Negotiate &ngo);                                    //Copy constructor
-    Negotiate &operator=(const Negotiate &ngo);                         //Assignment operator
+    Negotiate &operator=(const Negotiate &ngo);                         //Assignment 
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Negotiate &ngo); //Stream insertion operator
 };
 
