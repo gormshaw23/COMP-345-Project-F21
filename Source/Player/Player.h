@@ -46,6 +46,8 @@ public:
 	OrdersList* getOrders() const;
 	Hand* getCurrentHand() const;
 	std::vector<Territory*>& getTerritoriesOwned();
+	int getRPool_temp(); //TEMP reinforcement pool getter
+	void setRPool_temp(int newRPool_temp); //TEMP reinforcement pool setter
 
 protected:
 	Hand* _hand = nullptr;
@@ -57,4 +59,6 @@ private:
 	std::string _playerName = "";
 
 	static std::size_t _globalID;
+	
+	int rPool_temp = 0; //TEMP Reinforcement pool
 };

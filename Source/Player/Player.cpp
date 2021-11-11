@@ -170,3 +170,11 @@ std::ostream& operator<<(std::ostream& out, const Player& inPlayer)
 
 	return out;
 }
+
+int Player::getRPool_temp() {
+	return rPool_temp;
+}
+
+void Player::setRPool_temp(int newRPool_temp) {
+	rPool_temp = newRPool_temp;
+}
