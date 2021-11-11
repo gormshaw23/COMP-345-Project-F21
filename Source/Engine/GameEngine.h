@@ -1,6 +1,11 @@
 #ifndef GameEngine_h
 #define GameEngine_h
 #include <iostream>
+#include <list>
+
+#include "Player/Player.h"
+#include "Map/map.h"
+
 using namespace std;
 
 //game state
@@ -33,6 +38,8 @@ enum game_user_input {
     END,
 };
 
+//class Player;
+
 //GameEngine class
 class GameEngine{
     public:
@@ -43,10 +50,18 @@ class GameEngine{
         void game_run();
         GameEngine &operator=(const GameEngine &obj);//Assignment operator
         friend ostream &operator<<(ostream &out, const GameState value);//stream insertion operator
+
+        void mainGameLoop(list<Player*> players, Map* map); //Game loop function
+        list<Player*> getPlayers_temp(); //Temporary getter for list of players
+
     private:
         GameState* eState;
         void setCurrentState(GameState eState);//setter
+        void reinforcementPhase(Player* p, Map* m);
+        void issueOrdersPhase(Player* p);
+        void executeOrdersPhase(Player* p);
 
+        list<Player*> players_temp; //Temporary variable for list of players
 };
 #endif
 

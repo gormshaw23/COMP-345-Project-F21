@@ -9,18 +9,18 @@ using namespace std;
  */
 GameEngine::GameEngine()
 {
-    eState = new GameState(GAME_STATE_UNKNOWN);
+	eState = new GameState(GAME_STATE_UNKNOWN);
 #ifdef DEBUG_ENABLE
-    cout<<"constructor\n";
+	cout << "constructor\n";
 #endif
 }
 /**
  * Copy constructor of GameEngine class
  */
-GameEngine::GameEngine(const GameEngine &obj)
+GameEngine::GameEngine(const GameEngine& obj)
 {
-    eState = new GameState;
-    *eState = *obj.eState;
+	eState = new GameState;
+	*eState = *obj.eState;
 }
 
 /**
@@ -28,10 +28,10 @@ GameEngine::GameEngine(const GameEngine &obj)
  */
 GameEngine::~GameEngine()
 {
-    delete eState;
-    eState = NULL;
+	delete eState;
+	eState = NULL;
 #ifdef DEBUG_ENABLE
-    cout<<"destructor\n";
+	cout << "destructor\n";
 #endif
 }
 
@@ -41,47 +41,47 @@ GameEngine::~GameEngine()
  */
 void GameEngine::setCurrentState(GameState lState)
 {
-   *eState = lState;
+	*eState = lState;
 }
 /**
  * getter
  * @return lState local state of GameState
  */
-GameState GameEngine:: getCurrentState()
+GameState GameEngine::getCurrentState()
 {
-    return *eState;
+	return *eState;
 }
 
 /**
  * Assignment operator of GameEngine class
  */
 
-GameEngine &GameEngine::operator=(const GameEngine &obj)
+GameEngine& GameEngine::operator=(const GameEngine& obj)
 {
-    this->eState = new GameState(*obj.eState);
-    return *this;
+	this->eState = new GameState(*obj.eState);
+	return *this;
 }
 
 /**
  * Stream insertion operator of GameEngine class
  */
 ostream& operator<<(ostream& out, const GameState value) {
-    const char* s = 0;
+	const char* s = 0;
 #define PROCESS_VAL(p) case(p): s = #p; break;
-    switch (value) {
-        PROCESS_VAL(GAME_STATE_UNKNOWN);
-        PROCESS_VAL(GAME_STATE_START);
-        PROCESS_VAL(GAME_STATE_MAP_LOAD);
-        PROCESS_VAL(GAME_STATE_MAP_VALIDATED);
-        PROCESS_VAL(GAME_STATE_PLAYERS_ADDED);
-        PROCESS_VAL(GAME_STATE_ASSIGN_REINFORCEMENT);
-        PROCESS_VAL(GAME_STATE_ISSUE_ORDERS);
-        PROCESS_VAL(GAME_STATE_EXECUTE_ORDERS);
-        PROCESS_VAL(GAME_STATE_WIN);
-    }
+	switch (value) {
+		PROCESS_VAL(GAME_STATE_UNKNOWN);
+		PROCESS_VAL(GAME_STATE_START);
+		PROCESS_VAL(GAME_STATE_MAP_LOAD);
+		PROCESS_VAL(GAME_STATE_MAP_VALIDATED);
+		PROCESS_VAL(GAME_STATE_PLAYERS_ADDED);
+		PROCESS_VAL(GAME_STATE_ASSIGN_REINFORCEMENT);
+		PROCESS_VAL(GAME_STATE_ISSUE_ORDERS);
+		PROCESS_VAL(GAME_STATE_EXECUTE_ORDERS);
+		PROCESS_VAL(GAME_STATE_WIN);
+	}
 #undef PROCESS_VAL
 
-    return out << s;
+	return out << s;
 }
 /**
  * free function: get user input
@@ -89,11 +89,11 @@ ostream& operator<<(ostream& out, const GameState value) {
  * @return Name string of the user input
  */
 string get_user_input(GameState lState) {
-    string Name;
-    cout << "The current game state is (" << lState << ")\n";
-    cout << "Please type your command with lower-case letters:" << "\n";
-    getline(cin, Name);
-    return Name;
+	string Name;
+	cout << "The current game state is (" << lState << ")\n";
+	cout << "Please type your command with lower-case letters:" << "\n";
+	getline(cin, Name);
+	return Name;
 }
 
 /**
@@ -101,140 +101,239 @@ string get_user_input(GameState lState) {
  * To update the current state by a valid command, reject the command if it is invalid
  */
 void GameEngine::game_run() {
-    //set start state
-    GameEngine::setCurrentState(GAME_STATE_START);
-    string user_input;
-    // map a key to the value
-    map<game_user_input, string> user_input_list;
-    user_input_list[LOADMAP] = "loadmap";
-    user_input_list[VALIDATEMAP] = "validatemap";
-    user_input_list[ADDPLAYER] = "addplayer";
-    user_input_list[ASSIGNCOUNTRIES] = "assigncountries";
-    user_input_list[ISSUEORDER] = "issueorder";
-    user_input_list[ENDEXECORDERS] = "endexecorders";
-    user_input_list[EXECORDER] = "execorder";
-    user_input_list[ENDISSUEORDERS] = "endissueorders";
-    user_input_list[WIN] = "win";
-    user_input_list[PLAY] = "play";
-    user_input_list[END] = "end";
-    //using a loop to read the input until the end of the state
-    while (true) {
+	//set start state
+	GameEngine::setCurrentState(GAME_STATE_START);
+	string user_input;
+	// map a key to the value
+	map<game_user_input, string> user_input_list;
+	user_input_list[LOADMAP] = "loadmap";
+	user_input_list[VALIDATEMAP] = "validatemap";
+	user_input_list[ADDPLAYER] = "addplayer";
+	user_input_list[ASSIGNCOUNTRIES] = "assigncountries";
+	user_input_list[ISSUEORDER] = "issueorder";
+	user_input_list[ENDEXECORDERS] = "endexecorders";
+	user_input_list[EXECORDER] = "execorder";
+	user_input_list[ENDISSUEORDERS] = "endissueorders";
+	user_input_list[WIN] = "win";
+	user_input_list[PLAY] = "play";
+	user_input_list[END] = "end";
+	//using a loop to read the input until the end of the state
+	while (true) {
 
-        user_input = get_user_input(*eState);
-        //compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
-        switch (*eState) {
+		user_input = get_user_input(*eState);
+		//compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
+		switch (*eState) {
 
-            case  GAME_STATE_START:
-                if (!user_input.compare(user_input_list[LOADMAP])) {
-                    setCurrentState(GAME_STATE_MAP_LOAD);
-                }
-                else {
+		case  GAME_STATE_START:
+			if (!user_input.compare(user_input_list[LOADMAP])) {
+				setCurrentState(GAME_STATE_MAP_LOAD);
+			}
+			else {
 
-                    cout << "Error input(please try: loadmap)\n";
-                }
-                break;
-            case  GAME_STATE_MAP_LOAD:
-                if (!user_input.compare(user_input_list[LOADMAP])) {
-                    setCurrentState(GAME_STATE_MAP_LOAD);
+				cout << "Error input(please try: loadmap)\n";
+			}
+			break;
+		case  GAME_STATE_MAP_LOAD:
+			if (!user_input.compare(user_input_list[LOADMAP])) {
+				setCurrentState(GAME_STATE_MAP_LOAD);
 
-                }
-                else if (!user_input.compare(user_input_list[VALIDATEMAP])) {
-                    setCurrentState(GAME_STATE_MAP_VALIDATED);
-                }
-                else {
+			}
+			else if (!user_input.compare(user_input_list[VALIDATEMAP])) {
+				setCurrentState(GAME_STATE_MAP_VALIDATED);
+			}
+			else {
 
-                    cout << "Error input(please try: "<< user_input_list[VALIDATEMAP] << " or "
-                        << user_input_list[LOADMAP] <<"\n" ;
-                }
-                break;
-            case GAME_STATE_MAP_VALIDATED:
-                if (!user_input.compare(user_input_list[ADDPLAYER])) {
-                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
+				cout << "Error input(please try: " << user_input_list[VALIDATEMAP] << " or "
+					<< user_input_list[LOADMAP] << "\n";
+			}
+			break;
+		case GAME_STATE_MAP_VALIDATED:
+			if (!user_input.compare(user_input_list[ADDPLAYER])) {
+				setCurrentState(GAME_STATE_PLAYERS_ADDED);
 
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[ADDPLAYER] << "\n";
-                }
-                break;
+			}
+			else {
+				cout << "Error input(please try: " << user_input_list[ADDPLAYER] << "\n";
+			}
+			break;
 
-            case GAME_STATE_PLAYERS_ADDED:
-                if (!user_input.compare(user_input_list[ADDPLAYER])) {
-                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
+		case GAME_STATE_PLAYERS_ADDED:
+			if (!user_input.compare(user_input_list[ADDPLAYER])) {
+				setCurrentState(GAME_STATE_PLAYERS_ADDED);
 
-                }
-                else if (!user_input.compare(user_input_list[ASSIGNCOUNTRIES])) {
-                    setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[ADDPLAYER] <<" or "
-                        << user_input_list[ASSIGNCOUNTRIES] << ")\n";
-                }
-                break;
-            case GAME_STATE_ASSIGN_REINFORCEMENT:
+			}
+			else if (!user_input.compare(user_input_list[ASSIGNCOUNTRIES])) {
+				setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
+			}
+			else {
+				cout << "Error input(please try: " << user_input_list[ADDPLAYER] << " or "
+					<< user_input_list[ASSIGNCOUNTRIES] << ")\n";
+			}
+			break;
+		case GAME_STATE_ASSIGN_REINFORCEMENT:
 
-                if (!user_input.compare(user_input_list[ISSUEORDER])) {
-                    setCurrentState(GAME_STATE_ISSUE_ORDERS);
+			if (!user_input.compare(user_input_list[ISSUEORDER])) {
+				setCurrentState(GAME_STATE_ISSUE_ORDERS);
 
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[ISSUEORDER] <<")\n";
-                }
+			}
+			else {
+				cout << "Error input(please try: " << user_input_list[ISSUEORDER] << ")\n";
+			}
 
-                break;
-            case GAME_STATE_ISSUE_ORDERS:
-                if (!user_input.compare(user_input_list[ISSUEORDER])) {
-                    setCurrentState(GAME_STATE_ISSUE_ORDERS);
+			break;
+		case GAME_STATE_ISSUE_ORDERS:
+			if (!user_input.compare(user_input_list[ISSUEORDER])) {
+				setCurrentState(GAME_STATE_ISSUE_ORDERS);
 
-                }
-                else if (!user_input.compare(user_input_list[ENDISSUEORDERS])) {
-                    setCurrentState(GAME_STATE_EXECUTE_ORDERS);
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[ISSUEORDER] << " or "
-                        << user_input_list[ENDISSUEORDERS] << ")\n";
-                }
-                break;
+			}
+			else if (!user_input.compare(user_input_list[ENDISSUEORDERS])) {
+				setCurrentState(GAME_STATE_EXECUTE_ORDERS);
+			}
+			else {
+				cout << "Error input(please try: " << user_input_list[ISSUEORDER] << " or "
+					<< user_input_list[ENDISSUEORDERS] << ")\n";
+			}
+			break;
 
-            case GAME_STATE_EXECUTE_ORDERS:
-                if (!user_input.compare(user_input_list[EXECORDER])) {
-                    setCurrentState(GAME_STATE_EXECUTE_ORDERS);
+		case GAME_STATE_EXECUTE_ORDERS:
+			if (!user_input.compare(user_input_list[EXECORDER])) {
+				setCurrentState(GAME_STATE_EXECUTE_ORDERS);
 
-                }
-                else if (!user_input.compare(user_input_list[ENDEXECORDERS])) {
-                    setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
-                }
-                else if (!user_input.compare(user_input_list[WIN])) {
-                    setCurrentState(GAME_STATE_WIN);
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[EXECORDER] << " or "
-                        << user_input_list[ENDEXECORDERS] <<" or "
-                        << user_input_list[WIN] << ")\n";
-                }
-                break;
-            case GAME_STATE_WIN:
-                if (!user_input.compare(user_input_list[PLAY])) {
-                    setCurrentState(GAME_STATE_START);
+			}
+			else if (!user_input.compare(user_input_list[ENDEXECORDERS])) {
+				setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
+			}
+			else if (!user_input.compare(user_input_list[WIN])) {
+				setCurrentState(GAME_STATE_WIN);
+			}
+			else {
+				cout << "Error input(please try: " << user_input_list[EXECORDER] << " or "
+					<< user_input_list[ENDEXECORDERS] << " or "
+					<< user_input_list[WIN] << ")\n";
+			}
+			break;
+		case GAME_STATE_WIN:
+			if (!user_input.compare(user_input_list[PLAY])) {
+				setCurrentState(GAME_STATE_START);
 
-                }
-                else if (!user_input.compare(user_input_list[END])) {
-                    setCurrentState(GAME_STATE_END);
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[PLAY] << " or "
-                        << user_input_list[END] << ")\n";
-                }
-                break;
-            case GAME_STATE_END:
+			}
+			else if (!user_input.compare(user_input_list[END])) {
+				setCurrentState(GAME_STATE_END);
+			}
+			else {
+				cout << "Error input(please try: " << user_input_list[PLAY] << " or "
+					<< user_input_list[END] << ")\n";
+			}
+			break;
+		case GAME_STATE_END:
 
-                break;
-            default:
+			break;
+		default:
 
-                break;
-        }
-        if (*eState == GAME_STATE_END) {
+			break;
+		}
+		if (*eState == GAME_STATE_END) {
 
-            break;
-        }
-    }//end of while loop
+			break;
+		}
+	}//end of while loop
 }//end of game_run()
+
+/*
+* The main game loop of the Warzone game
+*/
+void GameEngine::mainGameLoop(list<Player*> players, Map* map) {
+	while (players.size() != 1) {
+		//Give a number of armies to each player
+		for (Player* p : players)
+			reinforcementPhase(p, map);
+
+		//Have each player issue orders
+		for (Player* p : players)
+			issueOrdersPhase(p);
+
+		//Execute all orders from players
+		for (Player* p : players)
+			executeOrdersPhase(p);
+	}
+}
+
+list<Player*> GameEngine::getPlayers_temp() {
+	return players_temp;
+}
+
+/*
+* Gives a number of armies to the player's reinforcement pool
+* based on the number of territories
+*
+* @param *p pointer to a Player object
+* @param *map pointer to a Map object
+*/
+void GameEngine::reinforcementPhase(Player *p, Map* map) {
+	//Add armies to reinforcement pool based on territories owned
+	vector<Territory*> playerTerritories = p->getTerritoriesOwned();
+	int numTerritoriesOwned = playerTerritories.size();
+	int currentRPool = p->getRPool_temp();
+
+	if (numTerritoriesOwned >= 1 && numTerritoriesOwned < 9)
+		currentRPool = currentRPool + 3;
+	else
+		currentRPool = currentRPool + (floor(numTerritoriesOwned / 3));
+
+	/*
+	* Check if the player owns all territories of a continent,
+	* if so, add continent's bonus to reinforcement pool
+	*/
+	//Sort player territories
+	vector<Territory*> sortedPlayerTerritories = playerTerritories;
+	sort(sortedPlayerTerritories.begin(), sortedPlayerTerritories.end());
+
+	//Iterate through each territory
+	int currentContinentID = 1; 
+	int territoryToContinentCount = 0; //Variable to determine if all owned territories belong to one continent
+	for (Territory* t : sortedPlayerTerritories) {
+
+		/*
+		Reset territoryToContinentCount if the current territory's continent id
+		is different from the previous territory
+		*/
+		if (t->getContinent() != currentContinentID) {
+			currentContinentID = t->getContinent();
+			territoryToContinentCount = 0;
+		}
+
+		territoryToContinentCount++; //Increment territoryToContinentCount
+
+		/*
+		Verify if the territoryToContinentCount is equal to the size of the
+		continent's country list size. If so, add bonus armies to reinforcement pool
+		*/
+		vector<Continent*> mapContinents = map->listContinents;
+		Continent* c = mapContinents.at(currentContinentID - 1);
+		int numCountries = c->getCountryList()->size();
+		if (territoryToContinentCount == numCountries)
+			currentRPool = currentRPool + c->getArmyValu();
+
+	}//end for loop
+
+	p->setRPool_temp(currentRPool); //Update new reinforcement pool
+}
+
+/*
+* Issue players orders and place them in their order list
+*
+* @param *p pointer to a Player object
+*/
+void GameEngine::issueOrdersPhase(Player* p) {
+
+}
+
+/*
+*
+*
+*
+*/
+void GameEngine::executeOrdersPhase(Player* p) {
+
+}
+
