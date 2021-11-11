@@ -243,7 +243,7 @@ void GameEngine::game_run() {
 * The main game loop of the Warzone game
 */
 void GameEngine::mainGameLoop(list<Player*> players, Map* map) {
-	while (players.size() != 1) {
+	while (players.size() != 1) { //Loop if there are 2 or more players left
 		//Give a number of armies to each player
 		for (Player* p : players)
 			reinforcementPhase(p, map);
@@ -278,7 +278,7 @@ void GameEngine::reinforcementPhase(Player *p, Map* map) {
 	if (numTerritoriesOwned >= 1 && numTerritoriesOwned < 9)
 		currentRPool = currentRPool + 3;
 	else
-		currentRPool = currentRPool + (floor(numTerritoriesOwned / 3));
+		currentRPool = currentRPool + (numTerritoriesOwned / 3);
 
 	/*
 	* Check if the player owns all territories of a continent,
@@ -290,7 +290,7 @@ void GameEngine::reinforcementPhase(Player *p, Map* map) {
 
 	//Iterate through each territory
 	int currentContinentID = 1; 
-	int territoryToContinentCount = 0; //Variable to determine if all owned territories belong to one continent
+	int territoryToContinentCount = 0; //Variable to count territories belonging to one continent
 	for (Territory* t : sortedPlayerTerritories) {
 
 		/*
@@ -325,15 +325,30 @@ void GameEngine::reinforcementPhase(Player *p, Map* map) {
 * @param *p pointer to a Player object
 */
 void GameEngine::issueOrdersPhase(Player* p) {
-
+	
 }
 
 /*
+* Execute player orders
 *
-*
-*
+* @param *p pointer to a Player object
 */
 void GameEngine::executeOrdersPhase(Player* p) {
+	OrdersList* ol = p->getOrders();
+	
+	/*
+	Loop player orders for deploy orders and execute them
+	*/
+	for (Order* o : ol->getOList()) {
+		if (o->getTypeName().compare("deploy") == 0)
+			o->execute();
+	}
 
+	/*
+	Loop player orders and execute remaining orders
+	*/
+	for (Order* o : ol->getOList()) {
+		o->execute();
+	}
 }
 
