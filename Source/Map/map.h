@@ -21,6 +21,8 @@ public:
 	void setPosx(int);
 	void setPosy(int);
 	void setName(std::string);
+	void setPlayer(Player* newPlayer);
+	void setNbArmy(int newNbArmy);
 
 	int getID() ;
 	int getContinent();
