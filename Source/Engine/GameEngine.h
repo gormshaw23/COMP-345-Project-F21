@@ -58,7 +58,7 @@ class GameEngine{
         GameState* eState;
         void setCurrentState(GameState eState);//setter
         void reinforcementPhase(Player* p, Map* m);
-        void issueOrdersPhase(Player* p);
+        void issueOrdersPhase(Player* p, Map* map);
         void executeOrdersPhase(Player* p);
 
         list<Player*> players_temp; //Temporary variable for list of players

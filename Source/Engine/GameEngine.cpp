@@ -1,8 +1,10 @@
 #include "GameEngine.h"
 #include <map>
 #include <string>
+#include <algorithm>
 using namespace std;
 #include <iostream>
+#include <Common/CommonTypes.h>
 
 /**
  * constructor of GameEngine class
@@ -250,7 +252,7 @@ void GameEngine::mainGameLoop(list<Player*> players, Map* map) {
 
 		//Have each player issue orders
 		for (Player* p : players)
-			issueOrdersPhase(p);
+			issueOrdersPhase(p, map);
 
 		//Execute all orders from players
 		for (Player* p : players)
@@ -275,10 +277,9 @@ void GameEngine::reinforcementPhase(Player *p, Map* map) {
 	int numTerritoriesOwned = playerTerritories.size();
 	int currentRPool = p->getRPool_temp();
 
-	if (numTerritoriesOwned >= 1 && numTerritoriesOwned < 9)
-		currentRPool = currentRPool + 3;
-	else
-		currentRPool = currentRPool + (numTerritoriesOwned / 3);
+	int newArmies = numTerritoriesOwned / 3;
+	std::cout << "Adding " << newArmies << " armies to reinforcement pool";
+	currentRPool = (numTerritoriesOwned >= 1 && numTerritoriesOwned < 12) ? currentRPool + 3 : currentRPool + newArmies;
 
 	/*
 	* Check if the player owns all territories of a continent,
@@ -311,12 +312,15 @@ void GameEngine::reinforcementPhase(Player *p, Map* map) {
 		vector<Continent*> mapContinents = map->listContinents;
 		Continent* c = mapContinents.at(currentContinentID - 1);
 		int numCountries = c->getCountryList()->size();
-		if (territoryToContinentCount == numCountries)
+		if (territoryToContinentCount == numCountries) {
+			std::cout << "BONUS: Adding " << c->getArmyValu() << " armies to reinforcement pool";
 			currentRPool = currentRPool + c->getArmyValu();
-
+		}
+			
 	}//end for loop
 
 	p->setRPool_temp(currentRPool); //Update new reinforcement pool
+	std::cout << p->getPlayerName() << "\'s reinforcement pool: " << currentRPool << "\n";
 }
 
 /*
@@ -324,8 +328,140 @@ void GameEngine::reinforcementPhase(Player *p, Map* map) {
 *
 * @param *p pointer to a Player object
 */
-void GameEngine::issueOrdersPhase(Player* p) {
-	
+void GameEngine::issueOrdersPhase(Player* p, Map* map) {
+	bool turnEnded = false;
+	std::vector<int> territoryIds = map->getTerritoryIds();
+	std::vector<Territory*> inTerritories;
+	std::vector<int> inArmies;
+
+
+	std::cout << "Issuing orders for " << p->getPlayerName() << "\n";
+	while (!turnEnded) {
+		//Input player order
+		int currentRPool = p->getRPool_temp();
+		int input;
+		bool isValidInput = false;
+		std::cout << "Enter a number for the given options:\n"
+			<< "1 - Deploy Armies\n"
+			<< "2 - Advance Armies\n"
+			<< "3 - Play Card\n"
+			<< "4 - End turn\n";
+		std::cin >> input;
+
+		//Check if the input is valid
+		switch (input) {
+			case 1: //Deploy armies
+				while (!isValidInput) {
+					//Input territory id
+					int territory;
+					std::cout << "Enter the territory id you would like to deploy to: \n";
+					std::cin >> territory;
+
+					//Check if territory exists
+					if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end()) {
+						//Add to list of territories for deploy order
+						inTerritories.push_back(map->listTerritory.at(territory - 1));
+
+						//Input number of armies to deploy
+						int armies;
+						std::cout << "Current reinfrocement pool: " << currentRPool << "\nEnter the number of armies you would like to deploy: \n";
+						std::cin >> armies;
+
+						//Check if number of armies is greater than 0 and less or equal than the reinforcement pool
+						if (armies > 0 && armies <= currentRPool) {
+							inArmies.push_back(armies);
+							currentRPool -= armies;
+							p->setRPool_temp(currentRPool);
+
+							//Input user if they would like to add another territory
+							string yesOrNo;
+							std::cout << "Would you like to add another territory? (y/n)\n";
+							std::cin >> yesOrNo;
+							if (yesOrNo.compare("y") == 0) {
+								isValidInput = true;
+							}
+						}
+						else {
+							cout << "The given number of armies is invalid\n";
+						}
+					}
+					else {
+						cout << "The given territory does not exist\n";
+					}
+				}//end while loop
+				//Create deploy order
+				p->issueOrder(EOrderTypes::Deploy, inTerritories, inArmies);
+
+				//Clear vectors
+				inTerritories.clear();
+				inArmies.clear();
+				break;
+
+			case 2: //Advance armies
+				while (!isValidInput) {
+					//Input territory id
+					int territory;
+					std::cout << "Enter the territory id you would like to advance to: \n";
+					std::cin >> territory;
+
+					//Check if territory exists
+					if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end()) {
+						//Add to list of territories for deploy order
+						inTerritories.push_back(map->listTerritory.at(territory - 1));
+
+						//Input number of armies to advance
+						int armies;
+						std::cout << "Current reinfrocement pool: " << currentRPool << "Enter the number of armies you would like to advance: \n";
+						std::cin >> armies;
+
+						//Check if number of armies is greater than 0 and less or equal than the reinforcement pool
+						if (armies > 0 && armies <= currentRPool) {
+							inArmies.push_back(armies);
+							currentRPool -= armies;
+							p->setRPool_temp(currentRPool);
+
+							//Input user if they would like to add another territory
+							string yesOrNo;
+							std::cout << "Would you like to add another territory? (y/n)\n";
+							std::cin >> yesOrNo;
+							if (yesOrNo.compare("y") == 0) {
+								isValidInput = true;
+							}
+						}
+						else {
+							cout << "The given number of armies is invalid\n";
+						}
+					}
+					else {
+						cout << "The given territory does not exist\n";
+					}
+				}//end loop
+				//Create advance order
+				p->issueOrder(EOrderTypes::Advance, inTerritories, inArmies);
+
+				//Clear vectors
+				inTerritories.clear();
+				inArmies.clear();
+				break;
+
+			case 3: //Play card
+				//Retrieve player's hand
+
+				//Input card
+
+				//Play card
+
+				//Create order based off card
+
+				break;
+			case 4: //End turn
+				std::cout << "Ending turn\n";
+				turnEnded = true;
+				break;
+			default:
+				cout << "The given input is invalid\n";
+		}//end switch
+	}//end while
 }
 
 /*
@@ -334,21 +470,27 @@ void GameEngine::issueOrdersPhase(Player* p) {
 * @param *p pointer to a Player object
 */
 void GameEngine::executeOrdersPhase(Player* p) {
+	std::cout << "Executing " << p->getPlayerName() << "\'s orders\n";
 	OrdersList* ol = p->getOrders();
 	
 	/*
 	Loop player orders for deploy orders and execute them
 	*/
-	for (Order* o : ol->getOList()) {
-		if (o->getTypeName().compare("deploy") == 0)
+	for (int i = 0; i < ol->getOList().size(); i++) {
+		Order* o = ol->get(i);
+		if (o->getTypeName().compare("deploy") == 0) {
 			o->execute();
+		}	
 	}
 
 	/*
 	Loop player orders and execute remaining orders
 	*/
 	for (Order* o : ol->getOList()) {
-		o->execute();
+		if (o->getTypeName().compare("deploy") != 0) {
+			o->execute();
+		}
+		ol->remove(0);
 	}
 }
 
