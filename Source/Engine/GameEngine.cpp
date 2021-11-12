@@ -1,8 +1,14 @@
 #include "GameEngine.h"
+#include "map.h"
+#include "Cards.h"
+#include "Orders.h"
+#include "Player.h"
 #include <map>
 #include <string>
 using namespace std;
 #include <iostream>
+#include <random>
+#include <iterator>
 
 /**
  * constructor of GameEngine class
@@ -11,13 +17,13 @@ GameEngine::GameEngine()
 {
     eState = new GameState(GAME_STATE_UNKNOWN);
 #ifdef DEBUG_ENABLE
-    cout<<"constructor\n";
+    cout << "constructor\n";
 #endif
 }
 /**
  * Copy constructor of GameEngine class
  */
-GameEngine::GameEngine(const GameEngine &obj)
+GameEngine::GameEngine(const GameEngine& obj)
 {
     eState = new GameState;
     *eState = *obj.eState;
@@ -31,7 +37,7 @@ GameEngine::~GameEngine()
     delete eState;
     eState = NULL;
 #ifdef DEBUG_ENABLE
-    cout<<"destructor\n";
+    cout << "destructor\n";
 #endif
 }
 
@@ -41,13 +47,13 @@ GameEngine::~GameEngine()
  */
 void GameEngine::setCurrentState(GameState lState)
 {
-   *eState = lState;
+    *eState = lState;
 }
 /**
  * getter
  * @return lState local state of GameState
  */
-GameState GameEngine:: getCurrentState()
+GameState GameEngine::getCurrentState()
 {
     return *eState;
 }
@@ -56,9 +62,12 @@ GameState GameEngine:: getCurrentState()
  * Assignment operator of GameEngine class
  */
 
-GameEngine &GameEngine::operator=(const GameEngine &obj)
+GameEngine& GameEngine::operator=(const GameEngine& obj)
 {
-    this->eState = new GameState(*obj.eState);
+    if (&obj != this) {
+        delete eState;
+        this->eState = new GameState(*obj.eState);
+    }
     return *this;
 }
 
@@ -74,10 +83,8 @@ ostream& operator<<(ostream& out, const GameState value) {
         PROCESS_VAL(GAME_STATE_MAP_LOAD);
         PROCESS_VAL(GAME_STATE_MAP_VALIDATED);
         PROCESS_VAL(GAME_STATE_PLAYERS_ADDED);
-        PROCESS_VAL(GAME_STATE_ASSIGN_REINFORCEMENT);
-        PROCESS_VAL(GAME_STATE_ISSUE_ORDERS);
-        PROCESS_VAL(GAME_STATE_EXECUTE_ORDERS);
-        PROCESS_VAL(GAME_STATE_WIN);
+        PROCESS_VAL(GAME_STATE_PLAY);
+       
     }
 #undef PROCESS_VAL
 
@@ -96,145 +103,266 @@ string get_user_input(GameState lState) {
     return Name;
 }
 
+
+static string filename;
+static string playername;
+static int playercount = 0;
+MapLoader* newmap = new MapLoader();
+Map* mapToUse = new Map();
+vector<Player*> playerlist;
+Deck* newDeck = new Deck(30);
+Card* newCard = newDeck->drawCard_Deck();
+vector<int> ReinforcementPools;
+
 /**
- * function game_run() of GameEngine class
- * To update the current state by a valid command, reject the command if it is invalid
+ * private function extractName(string) of GameEngine class
+ * @param string str user input
+ * @return string name
  */
-void GameEngine::game_run() {
+string GameEngine::extractName(string str) {
+
+    unsigned first = str.find("<");
+    unsigned last = str.find(">");
+    string strNew = str.substr(first + 1, last - first - 1);
+    return strNew;
+}
+
+/**
+ * private function addPlayer(string) of GameEngine class
+ * @param string str user input
+ * @return void
+ */
+
+void GameEngine::addPlayer(string user_input) {
+
+    playername = extractName(user_input);
+    Player* p = new Player(playername);
+    playerlist.push_back(p);
+    playercount++;
+    cout << "The player " << playername << " is added." << endl;
+    cout << "There should be 2-6 players in this game. Now we have " << playercount << " players." << endl;
+    cout << endl << "Player#    PlayerName" << endl;
+    for (int i = 0; i < (int)playerlist.size(); i++) {
+        cout << i + 1 << "             " << playerlist.at(i)->getPlayerName() << endl;
+    }
+    cout << endl;
+    
+}
+
+/**
+ * private function gamestart() of GameEngine class
+ * @param blank
+ * @return void
+ */
+
+void GameEngine::gamestart() {
+
+    //a) fairly distribute all the territories to the players
+
+    int numberOfTerritory = mapToUse->listTerritory.size();
+    cout << endl << "The numberOfTerritory in the map is: " << numberOfTerritory << endl;
+    Territory* t = new Territory();
+    int round = numberOfTerritory / playercount;
+    for (int ii = 0; ii < round; ii++) {
+        for (int i = 0; i < playercount; i++) {
+            t = mapToUse->listTerritory.at(i + ii * playercount);
+            playerlist[i]->getTerritoriesOwned().push_back(t);
+        }
+    }
+    int remainder = numberOfTerritory % playercount;
+    for (int i = 0; i < remainder; i++) {
+        t = mapToUse->listTerritory.at(round * playercount);
+        playerlist[i]->getTerritoriesOwned().push_back(t);
+
+    }
+
+    cout << "Fairly distribute all the territories to the players>>>>>>>" << endl;
+    for (int i = 0; i < playercount; i++) {
+        cout << *(playerlist.at(i)) << endl;
+    }
+   
+    //b) determine randomly the order of play of the players in the game
+    cout << endl << "Determine randomly the order of play of the players in the game>>>>>>" << endl;
+    cout << "Before shuffle, the order of play is: ";
+    for (vector<Player*>::iterator it = playerlist.begin(); it != playerlist.end(); ++it) {
+        cout << " " << (*it)->getPlayerName();
+    }
+
+    random_shuffle(playerlist.begin(), playerlist.end());
+
+    cout << endl << "After shuffle, the order of play is: ";
+    for (vector<Player*>::iterator it = playerlist.begin(); it != playerlist.end(); ++it) {
+        cout << " " << (*it)->getPlayerName();
+    }
+    cout << endl;
+
+    //c) give 50 initial armies to the players, which are placed in their respective reinforcement pool
+    cout << endl << "Give 50 initial armies to the players>>>>>>" << endl;
+    for (int i = 0; i < playercount; i++) {
+        ReinforcementPools.push_back(50);
+    }
+    cout << "player name        quantity of armies" << endl;
+    for (int i = 0; i < playercount; i++) {
+        cout << playerlist.at(i)->getPlayerName();
+        cout << "                       ";
+        cout << ReinforcementPools.at(i) << endl;
+    }
+    cout << endl;
+    //d) let each player draw 2 initial cards from the deck using the deck’s draw() method
+
+    for (int i = 0; i < playercount; i++) {
+
+        playerlist.at(i)->getCurrentHand()->insertCard_Hand(newCard);
+        newCard = newDeck->drawCard_Deck();
+        playerlist.at(i)->getCurrentHand()->insertCard_Hand(newCard);
+
+    }
+    cout << "Let each player draw 2 initial cards from the deck>>>>>>>" << endl;
+    cout << "players' initial cards are: " << endl;
+    cout << "player name        cards" << endl;
+    for (int i = 0; i < playercount; i++) {
+
+        cout << playerlist.at(i)->getPlayerName() << "              ";
+        playerlist.at(i)->getCurrentHand()->showHand();
+        cout << endl;
+    }
+
+}
+
+/**
+* function startupPhase() of GameEngine class, the phase to set up before playing
+* @param blank
+* @return void
+*/
+
+void GameEngine::startupPhase() {
     //set start state
     GameEngine::setCurrentState(GAME_STATE_START);
+
+    cout << "Please enter loadmap <filename> in the mentioned format: " << endl;
     string user_input;
     // map a key to the value
     map<game_user_input, string> user_input_list;
     user_input_list[LOADMAP] = "loadmap";
     user_input_list[VALIDATEMAP] = "validatemap";
     user_input_list[ADDPLAYER] = "addplayer";
-    user_input_list[ASSIGNCOUNTRIES] = "assigncountries";
-    user_input_list[ISSUEORDER] = "issueorder";
-    user_input_list[ENDEXECORDERS] = "endexecorders";
-    user_input_list[EXECORDER] = "execorder";
-    user_input_list[ENDISSUEORDERS] = "endissueorders";
-    user_input_list[WIN] = "win";
-    user_input_list[PLAY] = "play";
-    user_input_list[END] = "end";
+    user_input_list[GAMESTART] = "gamestart";
+    
     //using a loop to read the input until the end of the state
     while (true) {
 
         user_input = get_user_input(*eState);
+
         //compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
         switch (*eState) {
 
-            case  GAME_STATE_START:
-                if (!user_input.compare(user_input_list[LOADMAP])) {
-                    setCurrentState(GAME_STATE_MAP_LOAD);
-                }
-                else {
+        case  GAME_STATE_START:
+            if (!user_input.substr(0, 7).compare(user_input_list[LOADMAP])) {
+                //do mapload
+                filename = extractName(user_input);               
+                setCurrentState(GAME_STATE_MAP_LOAD);
+            }
+            else {
 
-                    cout << "Error input(please try: loadmap)\n";
-                }
-                break;
-            case  GAME_STATE_MAP_LOAD:
-                if (!user_input.compare(user_input_list[LOADMAP])) {
-                    setCurrentState(GAME_STATE_MAP_LOAD);
+                cout << "Error input(please try: loadmap <filename>)\n";
+            }
+            break;
+        case  GAME_STATE_MAP_LOAD:
+            if (!user_input.substr(0, 7).compare(user_input_list[LOADMAP])) {
+                //do mapload
+                filename = extractName(user_input);
+                setCurrentState(GAME_STATE_MAP_LOAD);                
+            }
+            else if (!user_input.compare(user_input_list[VALIDATEMAP])) {
+                
+                
+                cout << "filename: " << filename << endl;
+                bool mapload = newmap->MapLoader::loadMap(filename);
 
-                }
-                else if (!user_input.compare(user_input_list[VALIDATEMAP])) {
+                if (mapload == true) {
+                    mapToUse = newmap->getListMap()->at(0);
                     setCurrentState(GAME_STATE_MAP_VALIDATED);
                 }
                 else {
-
-                    cout << "Error input(please try: "<< user_input_list[VALIDATEMAP] << " or "
-                        << user_input_list[LOADMAP] <<"\n" ;
-                }
-                break;
-            case GAME_STATE_MAP_VALIDATED:
-                if (!user_input.compare(user_input_list[ADDPLAYER])) {
-                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
-
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[ADDPLAYER] << "\n";
-                }
-                break;
-
-            case GAME_STATE_PLAYERS_ADDED:
-                if (!user_input.compare(user_input_list[ADDPLAYER])) {
-                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
-
-                }
-                else if (!user_input.compare(user_input_list[ASSIGNCOUNTRIES])) {
-                    setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[ADDPLAYER] <<" or "
-                        << user_input_list[ASSIGNCOUNTRIES] << ")\n";
-                }
-                break;
-            case GAME_STATE_ASSIGN_REINFORCEMENT:
-
-                if (!user_input.compare(user_input_list[ISSUEORDER])) {
-                    setCurrentState(GAME_STATE_ISSUE_ORDERS);
-
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[ISSUEORDER] <<")\n";
-                }
-
-                break;
-            case GAME_STATE_ISSUE_ORDERS:
-                if (!user_input.compare(user_input_list[ISSUEORDER])) {
-                    setCurrentState(GAME_STATE_ISSUE_ORDERS);
-
-                }
-                else if (!user_input.compare(user_input_list[ENDISSUEORDERS])) {
-                    setCurrentState(GAME_STATE_EXECUTE_ORDERS);
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[ISSUEORDER] << " or "
-                        << user_input_list[ENDISSUEORDERS] << ")\n";
-                }
-                break;
-
-            case GAME_STATE_EXECUTE_ORDERS:
-                if (!user_input.compare(user_input_list[EXECORDER])) {
-                    setCurrentState(GAME_STATE_EXECUTE_ORDERS);
-
-                }
-                else if (!user_input.compare(user_input_list[ENDEXECORDERS])) {
-                    setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
-                }
-                else if (!user_input.compare(user_input_list[WIN])) {
-                    setCurrentState(GAME_STATE_WIN);
-                }
-                else {
-                    cout << "Error input(please try: " << user_input_list[EXECORDER] << " or "
-                        << user_input_list[ENDEXECORDERS] <<" or "
-                        << user_input_list[WIN] << ")\n";
-                }
-                break;
-            case GAME_STATE_WIN:
-                if (!user_input.compare(user_input_list[PLAY])) {
                     setCurrentState(GAME_STATE_START);
-
                 }
-                else if (!user_input.compare(user_input_list[END])) {
-                    setCurrentState(GAME_STATE_END);
+   
+            }
+            else {
+
+                cout << "Error input(please try: " << user_input_list[VALIDATEMAP] << " or "
+                    << user_input_list[LOADMAP] << "\n";
+            }
+            break;
+        case GAME_STATE_MAP_VALIDATED:
+
+            if (!user_input.substr(0,9).compare(user_input_list[ADDPLAYER])) {
+                
+                addPlayer(user_input);
+                setCurrentState(GAME_STATE_PLAYERS_ADDED);
+            }
+            else {
+                cout << "Error input(please try: " << user_input_list[ADDPLAYER] << "\n";
+            }
+            break;
+
+        case GAME_STATE_PLAYERS_ADDED:
+            if (playercount < 2) {
+                if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
+                        
+                    addPlayer(user_input);
+                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
                 }
                 else {
-                    cout << "Error input(please try: " << user_input_list[PLAY] << " or "
-                        << user_input_list[END] << ")\n";
+                    cout << "The players are less than 2, there should be 2-6 players in this game." << endl;
+                    cout << "Please enter addplayer <playername>." << endl;
                 }
-                break;
-            case GAME_STATE_END:
+            }
+           
+            else if (playercount >= 6) {
+                if (!user_input.compare(user_input_list[GAMESTART])) {
+                    
+                    GameEngine::gamestart();
+                    setCurrentState(GAME_STATE_PLAY);
+                }
+                else {
+                    cout << "Error input! The players have reached to upper limit of 6. Please enter gamestart." << endl;
+                }
+                               
+            }
+            else if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
+                
+                addPlayer(user_input);
+                setCurrentState(GAME_STATE_PLAYERS_ADDED);
 
-                break;
-            default:
+            }
+            else if (!user_input.compare(user_input_list[GAMESTART])) {
+                                
+                GameEngine::gamestart();
+                setCurrentState(GAME_STATE_PLAY);
+            }
+            else {
+                cout << "Error input(please try: " << user_input_list[ADDPLAYER] << " or "
+                    << user_input_list[GAMESTART] << ")\n";
+            }
+            break;
+        case GAME_STATE_PLAY:
 
-                break;
+            break;
+        default:
+
+            break;
         }
-        if (*eState == GAME_STATE_END) {
+        if (*eState == GAME_STATE_PLAY) {
 
             break;
         }
     }//end of while loop
-}//end of game_run()
+
+    delete newmap;
+    delete newDeck;
+    delete newCard;
+    playerlist.clear();
+    playerlist.shrink_to_fit();
+}//end of startupPhase()
+

@@ -4,29 +4,29 @@
 #include <chrono>
 #include <ctime>
 #include <random>
-using namespace std; 
+using namespace std;
 
 /*
-* 
+*
  Cards class implementation
 
 */
 
 Card::cardType Card::getNewCardType() {
 
-	return *newCardType; 
+	return *newCardType;
 
 }
 
 void Card::setNewCardType(Card::cardType cType) {
 
-	*newCardType = cType; 
+	*newCardType = cType;
 
 }
 
 Card::Card(Card::cardType cType) {
 
-	newCardType = new cardType(cType); 
+	newCardType = new cardType(cType);
 
 }
 
@@ -44,7 +44,7 @@ Card::~Card() {
 Card::Card(Card& cType) {
 
 	newCardType = new cardType();
-	*newCardType = *(cType.newCardType); 
+	*newCardType = *(cType.newCardType);
 
 }
 
@@ -52,9 +52,9 @@ Card::Card(Card& cType) {
 
 Card Card::operator=(Card& cType) {
 
-	Card temp; 
-	temp.newCardType = cType.newCardType; 
-	return temp; 
+	Card temp;
+	temp.newCardType = cType.newCardType;
+	return temp;
 
 }
 
@@ -63,17 +63,17 @@ Card Card::operator=(Card& cType) {
 
 ostream& operator<<(ostream& os, Card& cType) {
 
-		Card::cardType card_type = cType.getNewCardType();
+	Card::cardType card_type = cType.getNewCardType();
 
-	if (card_type == Card::Bomb) { os << "Bomb" << endl; }
+	if (card_type == Card::Bomb) { os << "Bomb"; }
 
-	else if (card_type == Card::Reinforcement) { os << "Reinforcement" << endl; }
+	else if (card_type == Card::Reinforcement) { os << "Reinforcement"; }
 
-	else if (card_type == Card::Blockade) { os << "Blockade" << endl; }
+	else if (card_type == Card::Blockade) { os << "Blockade"; }
 
-	else if (card_type == Card::Airlift) { os << "Airlift" << endl; }
+	else if (card_type == Card::Airlift) { os << "Airlift"; }
 
-	else if (card_type == Card::Diplomacy) { os << "Diplomacy" << endl; }
+	else if (card_type == Card::Diplomacy) { os << "Diplomacy"; }
 
 	return os;
 
@@ -88,7 +88,7 @@ ostream& operator<<(ostream& os, Card& cType) {
 */
 
 /*
-Getters and setters 
+Getters and setters
 
 */
 int Deck::getCurrentCard()
@@ -98,7 +98,7 @@ int Deck::getCurrentCard()
 
 void Deck::setDeckSize(int someCards)
 {
-	*deckSize = someCards; 
+	*deckSize = someCards;
 }
 int Deck::getDeckSize()
 {
@@ -121,10 +121,10 @@ Deck::Deck()
 
 Deck::Deck(const Deck& aDeck)
 {
-	newDeck = new vector<Card*>(); 
+	newDeck = new vector<Card*>();
 	for (auto i : *(aDeck.newDeck))
 	{
-		newDeck->push_back(new Card(*i)); 
+		newDeck->push_back(new Card(*i));
 	}
 
 	deckSize = new int();
@@ -133,12 +133,12 @@ Deck::Deck(const Deck& aDeck)
 
 Deck::Deck(int someCards)
 {
-	
+
 	/* Deck must be multiple of 5 or not empty due to the nature of the card types */
-	while (someCards == 0 || someCards % 5 != 0 ) {
+	while (someCards == 0 || someCards % 5 != 0) {
 
 		cout << "Please enter a multiple of 5 to create a deck. " << endl;
-		cin >> someCards; 
+		cin >> someCards;
 
 	}
 
@@ -146,18 +146,18 @@ Deck::Deck(int someCards)
 	deckSize = new int(someCards);
 
 
-	cout << "Debug: Size of deck is: " << getDeckSize() << endl; 
+	//cout << "Debug: Size of deck is: " << getDeckSize() << endl;
 
 	/* Populating the deck with Card objects */
 
-	cout << "Debug: Check if deck can receive card objects " << endl; 
+	//cout << "Debug: Check if deck can receive card objects " << endl;
 
 	for (int i = 0; i < getDeckSize(); i++) {
 
 		if (i % 5 == 0) {
 
 			newDeck->push_back(new Card(Card::Bomb));
-			
+
 		}
 		else if (i % 5 == 1) {
 
@@ -166,28 +166,28 @@ Deck::Deck(int someCards)
 		}
 		else if (i % 5 == 2) {
 
-			newDeck->push_back(new Card(Card::Blockade)); 
+			newDeck->push_back(new Card(Card::Blockade));
 
 		}
 		else if (i % 5 == 3) {
 
 			newDeck->push_back(new Card(Card::Airlift));
-			
+
 		}
 		else {
-			
+
 			newDeck->push_back(new Card(Card::Diplomacy));
-			
+
 		}
-		 
-		cout << *newDeck->at(i) << endl; 
+
+		//cout << *newDeck->at(i) << endl;
 	}
-		
-	this->ShuffleDeck(); 
 
-	cout << "Debug: Check if deck can be shuffled " << endl;
+	//this->ShuffleDeck();
 
-	this->showDeck(); 
+	//cout << "Debug: Check if deck can be shuffled " << endl;
+
+	//this->showDeck();
 }
 
 /* Shuffle method */
@@ -203,10 +203,10 @@ void Deck::ShuffleDeck() {
 Card* Deck::drawCard_Deck() {
 
 	Card* topOfDeck = newDeck->back();
-	newDeck->pop_back(); 
-	this->ShuffleDeck(); 
-	(*deckSize)--; 
-	return topOfDeck; 
+	newDeck->pop_back();
+	this->ShuffleDeck();
+	(*deckSize)--;
+	return topOfDeck;
 
 }
 
@@ -214,8 +214,8 @@ Card* Deck::drawCard_Deck() {
 
 void Deck::insertCard_Deck(Card* someCards)
 {
-	newDeck->push_back(someCards); 
-	(*deckSize)++; 
+	newDeck->push_back(someCards);
+	(*deckSize)++;
 }
 
 /* Show all contents in the deck */
@@ -239,8 +239,8 @@ Deck::~Deck()
 	delete newDeck;
 	newDeck = nullptr;
 
-	delete deckSize; 
-	deckSize = nullptr; 
+	delete deckSize;
+	deckSize = nullptr;
 
 }
 
@@ -265,13 +265,13 @@ Deck Deck::operator=(Deck& aDeck)
 
 int Hand::getHandSize()
 {
-	return *handSize; 
+	return *handSize;
 
 }
 
 void Hand::setHandSize(int someCards)
 {
-	*handSize = someCards; 
+	*handSize = someCards;
 }
 
 Hand::Hand()
@@ -285,7 +285,7 @@ Hand::Hand(int someCards)
 
 	newHand = new vector<Card*>();
 	handSize = new int();
- 
+
 }
 
 Hand::~Hand()
@@ -329,7 +329,7 @@ void Hand::showHand() {
 
 	for (int i = 0; i < getHandSize(); i++) {
 
-		cout << *newHand->at(i) << endl;
+		cout << *newHand->at(i) << "  ";
 	}
 }
 
@@ -353,8 +353,8 @@ void Hand::play(Card* someCards) {
 	orderSize = new int();
 
 	newOrder->push_back(someCards);
-	(*orderSize)++; 
- 
+	(*orderSize)++;
+
 
 	for (int i = 0; i < *orderSize; i++) {
 
@@ -362,7 +362,7 @@ void Hand::play(Card* someCards) {
 	}
 
 
-	
+
 
 
 
@@ -375,7 +375,6 @@ void Hand::play(Card* someCards) {
 	delete orderSize;
 	orderSize = nullptr;
 }
-
 
 
 
