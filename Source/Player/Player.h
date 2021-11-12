@@ -7,10 +7,12 @@
 #include <iostream>
 #include <string>
 
+#include "Order/Orders.h"
+
 class Card;
 class Hand;
-class Order;
-class OrdersList;
+//class Order;
+//class OrdersList;
 class Territory;
 
 enum class EOrderTypes;
@@ -31,21 +33,22 @@ public:
 	/* public member functions */
 	void setPlayerName(std::string inPlayerName);
 	const std::string getPlayerName() const;
-	const std::vector<Territory*> toDefend() const;
-	const std::vector<Territory*>  toAttack() const;
+	const std::vector<Territory*> toDefend(std::vector<Territory*> inTerritories) const;
+	const std::vector<Territory*>  toAttack(std::vector<Territory*> inTerritories) const;
 
 	// Unreal Engine style standard for long function declarations
 	void issueOrder
 	(
 		const EOrderTypes inOrderType,
 		const std::vector<Territory*> inTerritories,
-		const size_t inNumArmies,
-		const std::vector<Player*> inPlayers
+		const std::vector<int> inNumArmies
 	);
 
 	OrdersList* getOrders() const;
 	Hand* getCurrentHand() const;
 	std::vector<Territory*>& getTerritoriesOwned();
+	//void setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned);
+	//void distributeTerritories();
 	int getRPool_temp(); //TEMP reinforcement pool getter
 	void setRPool_temp(int newRPool_temp); //TEMP reinforcement pool setter
 
