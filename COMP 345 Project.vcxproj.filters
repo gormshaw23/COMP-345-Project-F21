@@ -48,7 +48,10 @@
     <ClCompile Include="Source\Engine\GameEngine.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\GameEngineDriver.cpp">
+    <ClCompile Include="Source\CommandProcessor\CommandProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CommandProcessor\CommandProcessorDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -70,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\GameEngine.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CommandProcessor\CommandProcessor.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
