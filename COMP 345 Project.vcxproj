@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Cards\Cards.h" />
     <ClInclude Include="Source\Common\CommonTypes.h" />
+    <ClInclude Include="Source\Common\localization.h" />
     <ClInclude Include="Source\Engine\GameEngine.h" />
     <ClInclude Include="Source\Map\map.h" />
     <ClInclude Include="Source\Order\Orders.h" />

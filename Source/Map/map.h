@@ -10,17 +10,19 @@ private:
 	int continent;
 	int posx;
 	int posy;
-	Player* player;
+	Player* player = nullptr;
 	int nbArmy;
 	std::string name;
 	
 	std::vector<Territory*> listBorder;
 public:
-	void setId(int);
-	void setContinent(int);
-	void setPosx(int);
-	void setPosy(int);
-	void setName(std::string);
+	void setId(int inID);
+	void setContinent(int inContinentID);
+	void setPosx(int inPosX);
+	void setPosy(int inPosY);
+	void setName(std::string inName);
+	void setArmies(int inArmies);
+	void setOwner(Player* inOwner);
 
 	int getID() ;
 	int getContinent();
@@ -29,14 +31,24 @@ public:
 	std::string getName();
 	Player* getPlayer();
 	int getNbArmy();
-	std::vector<Territory*>* getBorderList();
+	std::vector<Territory*>& getBorderList();
 
 	friend std::ostream& operator << (std::ostream& out, Territory& t);
 	friend std::istream& operator >> (std::istream& in, Territory& t);
 
 	Territory();
-	Territory( const Territory &);
-	Territory(int, int, Player* ,int ,int ,int, std::string, std::vector<Territory*>);
+	Territory(const Territory &);
+	Territory
+	(
+		int inTerritoryId, 
+		int inContinentID, 
+		Player* inOwner,
+		int inArmies, 
+		int inPosX,
+		int inPosY, 
+		std::string inProvName, 
+		std::vector<Territory*> inBorder
+	);
 	~Territory();
 
 

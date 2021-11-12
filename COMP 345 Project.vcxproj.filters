@@ -71,5 +71,8 @@
     <ClInclude Include="Source\Engine\GameEngine.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Common\localization.h">
+      <Filter>Source Files\Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

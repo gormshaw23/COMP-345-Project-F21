@@ -117,6 +117,11 @@ const std::string Player::getPlayerName() const
 	return this->_playerName;
 }
 
+const std::size_t Player::getPlayerID() const
+{
+	return this->_id;
+}
+
 const std::vector<Territory*> Player::toDefend() const
 {
 	std::vector<Territory*> _territoriesToDefend;
@@ -157,6 +162,26 @@ Hand* Player::getCurrentHand() const
 std::vector<Territory*>& Player::getTerritoriesOwned()
 {
 	return this->_territoriesOwned;
+}
+
+void Player::setReinforcementPool(const std::size_t inPoolSize)
+{
+	this->availableReinforcements = inPoolSize;
+}
+
+std::size_t Player::getReinforcementPoolSize() const
+{
+	return availableReinforcements;
+}
+
+void Player::setCapturedTerritoryFlag(bool bInFlag)
+{
+	bTookTerritory = bInFlag;
+}
+
+bool Player::getCapturedTerritoryFlag() const
+{
+	return bTookTerritory;
 }
 
 std::ostream& operator<<(std::ostream& out, const Player& inPlayer)

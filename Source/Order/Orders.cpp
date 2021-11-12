@@ -10,8 +10,12 @@
 #include <iterator>
 #include <list>
 #include <string>
+#include <random>
 
 #include "Orders.h"
+#include "Map/map.h"
+#include "Player/Player.h"
+#include "Common/localization.h"
 
 /********************************************************************
  * Order class function definitions
@@ -129,8 +133,20 @@ const std::string Order::getDescription()
  * Deploy class function definitions
  ********************************************************************/
 
-Deploy::Deploy() : Order(EOrderType::Deploy, "Place some armies on one of the current player’s territories.")
+Deploy::Deploy() : Order(EOrderType::Deploy, DEPLOY_DESC)
 {
+}
+
+Deploy::Deploy
+(
+    Player* inOwner, 
+    const int inNumUnits, 
+    Territory* inTarget
+) : Order(EOrderType::Deploy, DEPLOY_DESC)
+{
+    this->owner = inOwner;
+    this->armiesToDeploy = inNumUnits;
+    this->targetTerritory = inTarget;
 }
 
 Deploy::~Deploy() {}
@@ -153,12 +169,40 @@ std::ostream &operator<<(std::ostream &out, Deploy &dep)
 
 void Deploy::execute()
 {
-
+    if (validate())
+    {
+        /*
+            Since the requirements don't mention checking if the number of armies is correct
+            it is instead assumed that if a number of armies is requested higher than the 
+            number of available armies, then the available amount is used instead.
+        */
+        std::size_t armies = std::min(armiesToDeploy, owner->getReinforcementPoolSize());
+        owner->setReinforcementPool(owner->getReinforcementPoolSize() - armies);
+        targetTerritory->setArmies(armies);
+    }
 }
 
 bool Deploy::validate()
 {
-    return false;
+    // make sure there are instantiated objects to interact with
+    if (targetTerritory == nullptr || owner == nullptr)
+    {
+        return false;
+    }
+
+    // make sure the target territory has a owner
+    if (targetTerritory->getPlayer() == nullptr)
+    {
+        return false;
+    }
+
+    // make sure the owner of the target territory is owned by the current player
+    if (owner->getPlayerID() != targetTerritory->getPlayer()->getPlayerID())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -167,9 +211,22 @@ bool Deploy::validate()
  * Advance class function definitions
  ********************************************************************/
 
-Advance::Advance() : Order(EOrderType::Advance,
-                           "Move some armies from one of the current player’s territories (source) to an adjacent territory (target). If the target territory belongs to the current player, the armies are moved to the target territory. If the target territory belongs to another player, an attack happens between the two territories")
+Advance::Advance() : Order(EOrderType::Advance, ADVANCE_DESC)
 {
+}
+
+Advance::Advance
+(
+    Player* inOwner, 
+    Territory* inSrc, 
+    Territory* inDest, 
+    std::size_t inArmiesToAdvance
+) : Order(EOrderType::Advance, ADVANCE_DESC)
+{
+    this->owner = inOwner;
+    this->src = inSrc;
+    this->dest = inDest;
+    this->armiesToAdvance = inArmiesToAdvance;
 }
 
 Advance::~Advance() {}
@@ -192,12 +249,106 @@ std::ostream &operator<<(std::ostream &out, Advance &adv)
 
 void Advance::execute()
 {
+    if (validate())
+    {
+        // saving our initial allotment of units to be moved for math later on
+        const std::size_t initialAdvancingArmies = std::min(static_cast<std::size_t>(src->getNbArmy()), armiesToAdvance);
+        // what units we'll be interacting with
+        std::size_t remainingAdvancingArmies = initialAdvancingArmies;
+        if (src->getPlayer()->getPlayerID() == dest->getPlayer()->getPlayerID())
+        {
+            // move the troops, no combat
+            // we move either the specified number or if larger than what is available
+            // we move all available troops.
+            dest->setArmies(remainingAdvancingArmies + dest->getNbArmy());
+        }
+        else
+        {
+            // WAAAAAGH!!!! The enemy territory has defenders! o7
+            if (dest->getNbArmy() > 0)
+            {
+                // initial our random number generator, this is a better and more secure
+                // than the typical default rng method
+                std::random_device dev;
+                std::mt19937 rng(dev());
+                std::uniform_int_distribution<std::mt19937::result_type> dist100(1, 100);
+                while (remainingAdvancingArmies > 0 && dest->getNbArmy() > 0)
+                {
+                    // assumed that basically every attacking unit gets a chance to attack
+                    // and the unit that is defending gets a chance to fire back; with dmg
+                    // calculated at the sametime.
+                    for (int i = 0; i < remainingAdvancingArmies; ++i)
+                    {
+                        int attackResult = dist100(rng);
+                        // 60% chance to eliminate a defending unit
+                        if (attackResult <= ATTACKER_CHANCE)
+                        {
+                            dest->setArmies(dest->getNbArmy() - 1);
+                        }
 
+                        int defendResult = dist100(rng);
+
+                        // 70% chance a defending unit can eliminate an 
+                        // attacking unit
+                        if (defendResult <= DEFENDER_CHANCE)
+                        {
+                            // available troops diminished
+                            remainingAdvancingArmies--;
+                        }
+                    }
+                }
+
+                if (remainingAdvancingArmies > 0)
+                {
+                    // defender loses, move to occupy with
+                    // remaining forces.
+                    dest->setOwner(src->getPlayer());
+                    dest->setArmies(remainingAdvancingArmies);
+                    owner->setCapturedTerritoryFlag(true);
+                }
+
+                // happens either way
+                src->setArmies(src->getNbArmy() - initialAdvancingArmies);
+            }
+            else
+            {
+                // move to occupy
+                dest->setOwner(src->getPlayer());
+                dest->setArmies(remainingAdvancingArmies);
+                src->setArmies(src->getNbArmy() - initialAdvancingArmies);
+            }
+        }
+    }
 }
 
 bool Advance::validate()
 {
-    return false;
+    // make sure there are instantiated objects to interact with
+    if (owner == nullptr || src == nullptr || dest == nullptr)
+    {
+        return false;
+    }
+
+    // make sure the target territories have owners
+    if (src->getPlayer() == nullptr || dest->getPlayer() == nullptr)
+    {
+        return false;
+    }
+
+    // make sure the owner of the src territory is owned by the current player
+    if (owner->getPlayerID() != src->getPlayer()->getPlayerID())
+    {
+        return false;
+    }
+
+    // check to make sure that the destination is adjacent to the source
+    std::vector<Territory*> adjacents = src->getBorderList();
+    if (adjacents.empty() || std::find(adjacents.begin(), adjacents.end(), dest) == adjacents.end())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 /********************************************************************

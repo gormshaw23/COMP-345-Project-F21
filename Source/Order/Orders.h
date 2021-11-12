@@ -7,9 +7,17 @@
  */
 #pragma once
 
+// chance for attacker to kill 1 defending unit
+#define ATTACKER_CHANCE 60
+// chance for defender to kill 1 attacking unit
+#define DEFENDER_CHANCE 70
+
 #include <string>
 #include <ostream>
 #include <list>
+
+class Territory;
+class Player;
 
 enum class EOrderType
 {
@@ -52,6 +60,7 @@ class Deploy : public Order
 {
 public:
     Deploy();                                                        //Constructor
+    Deploy(Player* inOwner, const int inNumUnits, Territory* inTarget);
     ~Deploy();                                                       //Destructor
     Deploy(const Deploy &dep);                                       //Copy constructor
     Deploy &operator=(const Deploy &dep);                            //Assignment operator
@@ -60,6 +69,13 @@ public:
     virtual bool validate() override;
 
     friend std::ostream &operator<<(std::ostream &out, Deploy &dep); //Stream insertion operator
+private:
+    // num units to take from reinforcement pool
+    std::size_t armiesToDeploy = 0;
+    // territory to place the units, *should* be owned
+    Territory* targetTerritory = nullptr;
+    // the player who owns this order
+    Player* owner = nullptr;
 };
 
 /**
@@ -69,6 +85,7 @@ class Advance : public Order
 {
 public:
     Advance();                                                        //Constructor
+    Advance(Player* owner, Territory* src, Territory* dest, std::size_t armiesToAdvance);
     ~Advance();                                                       //Destructor
     Advance(const Advance &adv);                                      //Copy constructor
     Advance &operator=(const Advance &adv);                           //Assignment operator
@@ -77,6 +94,11 @@ public:
     virtual bool validate() override;
 
     friend std::ostream &operator<<(std::ostream &out, Advance &adv); //Stream insertion operator
+private:
+    Player* owner = nullptr;
+    Territory* src = nullptr; 
+    Territory* dest = nullptr; 
+    std::size_t armiesToAdvance = 0;
 };
 
 /**

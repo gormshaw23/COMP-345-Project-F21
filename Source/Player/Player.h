@@ -31,6 +31,7 @@ public:
 	/* public member functions */
 	void setPlayerName(std::string inPlayerName);
 	const std::string getPlayerName() const;
+	const std::size_t getPlayerID() const;
 	const std::vector<Territory*> toDefend() const;
 	const std::vector<Territory*>  toAttack() const;
 
@@ -47,6 +48,12 @@ public:
 	Hand* getCurrentHand() const;
 	std::vector<Territory*>& getTerritoriesOwned();
 
+	void setReinforcementPool(const std::size_t inPoolSize);
+	std::size_t getReinforcementPoolSize() const;
+
+	void setCapturedTerritoryFlag(bool bInFlag);
+	bool getCapturedTerritoryFlag() const;
+
 protected:
 	Hand* _hand = nullptr;
 	OrdersList* _orders = nullptr;
@@ -55,6 +62,9 @@ private:
 	std::size_t _id = 0;
 	std::vector<Territory*> _territoriesOwned;
 	std::string _playerName = "";
+
+	std::size_t availableReinforcements = 0;
+	bool bTookTerritory = false;
 
 	static std::size_t _globalID;
 };
