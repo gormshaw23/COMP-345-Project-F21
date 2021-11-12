@@ -7,14 +7,16 @@ Observer::Observer() {
 
 }
 Observer::~Observer() {
-	std::fstream outfile;
-	outfile.open("log.txt", std::ios::trunc);
-	outfile.close();
 
 }
 
 Subject::Subject() {
 	_observers = new std::list<Observer*>;
+
+}
+
+Subject::Subject(const Subject& s) {
+	_observers = s._observers;
 
 }
 
@@ -24,7 +26,6 @@ Subject::~Subject() {
 
 void Subject::Attach(Observer* o) {
 	_observers->push_back(o);
-	
 }
 
 void Subject::Detach(Observer* o) {
@@ -39,38 +40,47 @@ void Subject::Notify(ILoggable& iLoggable) {
 }
 
 LogObserver::LogObserver() {
+	_subject = NULL;
+	_subjectList = NULL;
+};
+
+LogObserver::LogObserver(const LogObserver& l) {
+	_subject = l._subject;
+	_subjectList = l._subjectList;
+
 };
 
 LogObserver::LogObserver(Subject * s) {
 	_subject = s;
 	_subject->Attach(this);
+	_subjectList = NULL;
+
 
 };
 
 LogObserver::LogObserver(std::list<Subject*>* s) {
 	std::list<Subject*>::iterator i =s->begin();
-	for (; i != s->end(); i++) {
+	_subjectList = s;
+	for (; i != s->end(); i++) {					//Loop trought the list of subject and attach them.
 		(*i)->Attach(this);
 	}
-	//_subject->Attach(this);
+	
 
 };
+
+LogObserver::~LogObserver() {
+	delete _subject;
+	delete _subjectList;
+}
+
 void LogObserver::Update(ILoggable& iLoggable) {
 	std::fstream outfile;
-	outfile.open("log.txt", std::ios::app);
+	outfile.open("Log.txt", std::ios::app);
 	outfile << iLoggable.stringToLog()<<std::endl;
 	outfile.close();
 }
-dummy::dummy() {
 
-	this->name = "paule";
-}
-
-void dummy::changeName(std::string text) {
-	this->name = text;
-	this->Notify(*this);
-}
-
-std::string dummy::stringToLog() {
-	return this->name;
+void LogObserver::lateAddition(Subject* s) {
+	_subjectList->push_back(s);
+	s->Attach(this);
 }

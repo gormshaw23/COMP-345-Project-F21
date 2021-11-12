@@ -22,6 +22,7 @@ public:
 	virtual void Detach(Observer* o);
 	virtual void Notify(ILoggable &);
 	Subject();
+	Subject(const Subject&);
 	~Subject();
 private:
 	std::list<Observer*>* _observers;
@@ -33,9 +34,13 @@ class LogObserver: public Observer {
 public: 
 	void Update(ILoggable &);
 	LogObserver();
+	~LogObserver();
 	LogObserver(Subject*);
 	LogObserver(std::list<Subject*>*);
+	LogObserver(const LogObserver&);
+	void lateAddition(Subject*);
 	Subject* _subject;
+	std::list<Subject*>* _subjectList;
 };
 
 class dummy : public Subject, public ILoggable {

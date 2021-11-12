@@ -50,6 +50,7 @@ void GameEngine::setCurrentState(GameState lState)
  */
 GameState GameEngine:: getCurrentState()
 {
+    
     return *eState;
 }
 

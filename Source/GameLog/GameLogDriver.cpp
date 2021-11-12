@@ -15,21 +15,6 @@ int main()
 {
     std::list<Subject*>* _listSubject = new std::list<Subject*>;
 
-    dummy* dumdum = new dummy();
-    _listSubject->push_back(dumdum);
-
-    dummy* damdum = new dummy();
-    _listSubject->push_back(damdum);
-
-    dummy* domdum = new dummy();
-    _listSubject->push_back(domdum);
-
-    dumdum->changeName("paule");
-    domdum->changeName("Mario");
-   
-
-
-
     cout << "Welcome to Warzone!\n";
     cout << "Please refer the table below for the command.\n\n"
         "    state                              command option(s)\n"
@@ -41,26 +26,37 @@ int main()
         "GAME_STATE_ISSUE_ORDERS            issueorder / endissueorders\n"
         "GAME_STATE_EXECUTE_ORDERS          endexecorders / execorder / win\n"
         "GAME_STATE_WIN                     play / end\n" << endl;
+
+    //Creat the game engine
     GameEngine gameobj;
+    //little fix
     GameEngine* obj = &gameobj;
     _listSubject->push_back(obj);
 
+
+    //creation of the order
     Deploy* dOrder = new Deploy;
     Advance* aOrder = new Advance;
     _listSubject->push_back(aOrder);
     _listSubject->push_back(dOrder);
 
 
+    //creation on an orderd list
     OrdersList ol;
     OrdersList* pol = &ol;
     _listSubject->push_back(pol);
 
 
+    //creation of the log Observer
     LogObserver* loglog = new  LogObserver(_listSubject);
 
+
+   
     ol.add(dOrder);
     ol.add(aOrder);
+   
 
+    //execution of the order 
     cout << "\nExecuting orders" << endl;
     for (Order* o : ol.getOList())
     {
@@ -69,25 +65,15 @@ int main()
         ol.remove(0); //Removes executed Order
     }
 
-
+    //destrucion of the order list to show that detroying a subject do not crach the observer
+    ol.~OrdersList();
 
 
     gameobj.game_run();
     cout << "Good Game!\nGood Bye!" << endl;
-    
-    
-   
 
     return 0;
 
-    // test to reset file at for new game 
-    /*
-    std::ofstream outfile;
-    outfile.open("log.txt");
-    outfile << "done";
-    outfile.close();
-
-    */
 }
 
 // Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
