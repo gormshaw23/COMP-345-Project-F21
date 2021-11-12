@@ -103,6 +103,8 @@ public:
 	bool traverseTerritory(Territory*,std::vector<bool>*);
 
 	bool getValidity();
+
+	std::vector<int> getTerritoryIds(); //Retrieve territory ids
 	
 	friend std::ostream& operator << (std::ostream& out, Map& m);
 	friend std::istream& operator >> (std::istream& in, Map& m);
