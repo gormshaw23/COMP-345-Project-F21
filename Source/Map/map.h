@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-class Player;
+#include "Player/Player.h"
 
 class Territory {
 private:

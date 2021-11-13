@@ -593,6 +593,14 @@ void Territory::setPosy(int posy) {
     this->posy = posy;
 }
 
+void Territory::setPlayer(Player* newPlayer) {
+    this->player = newPlayer;
+}
+
+void Territory::setNbArmy(int newNbArmy) {
+    this->nbArmy = newNbArmy;
+}
+
 int Territory::getID() { return id; };
 int Territory::getContinent() { return continent; };
 int Territory::getPosx() { return posx; };

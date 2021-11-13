@@ -47,8 +47,7 @@ public:
 	OrdersList* getOrders() const;
 	Hand* getCurrentHand() const;
 	std::vector<Territory*>& getTerritoriesOwned();
-	//void setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned);
-	//void distributeTerritories();
+	void setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned);
 	int getRPool_temp(); //TEMP reinforcement pool getter
 	void setRPool_temp(int newRPool_temp); //TEMP reinforcement pool setter
 

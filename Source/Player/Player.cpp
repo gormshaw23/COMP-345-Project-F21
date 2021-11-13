@@ -215,6 +215,10 @@ std::vector<Territory*>& Player::getTerritoriesOwned()
 	return this->_territoriesOwned;
 }
 
+void Player::setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned) {
+	this->_territoriesOwned = newTerritoriesOwned;
+}
+
 std::ostream& operator<<(std::ostream& out, const Player& inPlayer)
 {
 

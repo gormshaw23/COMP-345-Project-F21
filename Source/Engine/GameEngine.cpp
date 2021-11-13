@@ -335,6 +335,14 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 	std::vector<Territory*> inTerritories;
 	std::vector<int> inArmies;
 
+	/*
+	Initialization of variables for the option
+	to play a card
+	*/
+	Hand* h = p->getCurrentHand();
+	Deck* d_temp = new Deck(); //Temporary deck variable
+	int handSize = h->getHandSize();
+
 	std::cout << "Issuing orders for " << p->getPlayerName() << "\n";
 	while (!turnEnded) {
 		//Input player order
@@ -445,13 +453,10 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 			break;
 
 		case 3: //Play card
-			//Retrieve player's hand
-			Hand * h = p->getCurrentHand();
-			Card* c;
-			Deck* d_temp = new Deck(); //Temporary deck variable
+			//Retrieve player's hand		
+			Card* c;	
 			std::cout << p->getPlayerName() << "\'s hand\n";
 			h->showHand();
-			int handSize = h->getHandSize();
 
 			//Input card
 			if (handSize > 0) {
@@ -561,7 +566,7 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 						}
 					}
 				}
-			}
+			} //end if
 			else {
 				std::cout << "You have no cards available";
 			}
@@ -572,6 +577,7 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 			break;
 		default:
 			cout << "The given input is invalid\n";
+			break;
 		}//end switch
 	}//end while
 }
