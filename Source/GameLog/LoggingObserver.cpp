@@ -20,6 +20,10 @@ Subject::Subject(const Subject& s) {
 
 }
 
+std::list<Observer*>* Subject::getObserver() {
+	return _observers;
+};
+
 Subject::~Subject() {
 	delete _observers;
 }

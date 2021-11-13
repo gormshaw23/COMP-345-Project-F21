@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Cards\Cards.cpp" />
     <ClCompile Include="Source\CommandProcessor\CommandProcessor.cpp" />
+    <ClCompile Include="Source\CommandProcessor\CommandProcessorDriver.cpp" />
     <ClCompile Include="Source\Engine\GameEngine.cpp" />
     <ClCompile Include="Source\GameLog\GameLogDriver.cpp" />
     <ClCompile Include="Source\GameLog\LoggingObserver.cpp" />

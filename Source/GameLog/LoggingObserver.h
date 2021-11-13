@@ -22,6 +22,7 @@ public:
 	virtual void Detach(Observer* o);
 	virtual void Notify(ILoggable &);
 	Subject();
+	std::list<Observer*>* getObserver();
 	Subject(const Subject&);
 	~Subject();
 private:

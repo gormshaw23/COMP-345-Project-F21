@@ -7,6 +7,11 @@ Command::Command() : command(""), effect("")
 {
 
 }
+Command::Command(std::list<Subject*>* list)
+{
+	std::cout << "In the command constructor\n";
+	//list->push_back(this);
+}
 
 Command::Command(std::string newCommand, std::string newState) : command(newCommand), effect(newState)
 {
@@ -43,7 +48,7 @@ std::string Command::getCommand() const
 void Command::saveCommand(std::string command)
 {
 	this->command = command;
-	Notify(*this);
+	Command::Notify(*this);
 }
 
 std::string Command::getEffect() const
@@ -69,9 +74,13 @@ std::ostream& operator<<(std::ostream& os, const Command& newCommandObject)
 }
 
 CommandProcessor::CommandProcessor() {
-
+	
 }
 
+CommandProcessor::CommandProcessor(std::list<Subject*>* list) {
+	std::cout << "In the command processor";
+	//list->push_back(this);
+}
 
 CommandProcessor::~CommandProcessor()
 {
@@ -99,10 +108,15 @@ Command* CommandProcessor::getCommand()
 Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 {
 	Command* aCommand = new Command(fromReadCommand, "");
+	
+	std::list<Observer* >::iterator i = this->getObserver()->begin();
+	for (; i != this->getObserver()->end(); ++i) {
+		
+	}
 	listOfCommands.push_back(aCommand);
 	commandINMemmory = fromReadCommand;
 	cout << "The command : " << aCommand << " will now be saved into the list of commands " << endl;
-	Notify(*this);
+	//::Notify(*this);
 	return aCommand;
 	
 
@@ -110,6 +124,7 @@ Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 
 
 std::string CommandProcessor::stringToLog() {
+	std::cout << "in commandProcessor striing to log\n";
 	return "Command saved : " + this->commandINMemmory;
 }
 

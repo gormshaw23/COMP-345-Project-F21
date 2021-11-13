@@ -16,6 +16,7 @@ public:
 	//Command constructors 
 
 	Command();
+	Command(std::list<Subject*>*);
 	Command(std::string newCommand, std::string newState);
 	Command(const Command& newCommandObject);
 	Command& operator =(const Command& newCommandObject);
@@ -40,6 +41,7 @@ private:
 class CommandProcessor :  virtual public Subject,  virtual public ILoggable{
 public:
 	CommandProcessor();
+	CommandProcessor(std::list<Subject*>*);
 	~CommandProcessor();
 	virtual std::string stringToLog() override; 
 	//GameEngine* getGameEngine();

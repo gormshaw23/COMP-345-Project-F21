@@ -38,6 +38,7 @@ enum game_user_input {
 class GameEngine :  virtual public Subject,  virtual  public ILoggable ,  public CommandProcessor {
     public:
         GameEngine(); //constructor
+        GameEngine(std::list<Subject*>*); //constructor
         ~GameEngine(); //destructor
         using Subject::Notify;
         GameEngine(const GameEngine &gm); //copy constructor

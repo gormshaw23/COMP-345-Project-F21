@@ -11,6 +11,7 @@ using namespace std;
 GameEngine::GameEngine()
 {
     eState = new GameState(GAME_STATE_UNKNOWN);
+    
 #ifdef DEBUG_ENABLE
     cout<<"constructor\n";
 #endif
@@ -24,6 +25,14 @@ GameEngine::GameEngine(const GameEngine &obj)
     *eState = *obj.eState;
 }
 
+GameEngine::GameEngine(std::list<Subject*>* list) : CommandProcessor(list)
+{
+    eState = new GameState(GAME_STATE_UNKNOWN);
+
+#ifdef DEBUG_ENABLE
+    cout << "constructor\n";
+#endif
+}
 /**
  * destructor of GameEngine class
  */
@@ -283,20 +292,7 @@ void GameEngine::game_run() {
 std::string GameEngine::stringToLog() {
     std::string toLog  = "New game state : ";
 
-    const char* s = 0;
-#define PROCESS_VAL(p) case(p): s = #p; break;
-    switch (this->getCurrentState()) {
-        PROCESS_VAL(GAME_STATE_UNKNOWN);
-        PROCESS_VAL(GAME_STATE_START);
-        PROCESS_VAL(GAME_STATE_MAP_LOAD);
-        PROCESS_VAL(GAME_STATE_MAP_VALIDATED);
-        PROCESS_VAL(GAME_STATE_PLAYERS_ADDED);
-        PROCESS_VAL(GAME_STATE_ASSIGN_REINFORCEMENT);
-        PROCESS_VAL(GAME_STATE_ISSUE_ORDERS);
-        PROCESS_VAL(GAME_STATE_EXECUTE_ORDERS);
-        PROCESS_VAL(GAME_STATE_WIN);
-    }
-#undef PROCESS_VAL
+
 
     switch (this->getCurrentState())
     {
@@ -326,15 +322,12 @@ std::string GameEngine::stringToLog() {
         break;
     case GAME_STATE_WIN:
         toLog = toLog + "win\n";
-        
         break;
     default:
         break;
     }
   
     
-    //toLog = toLog + *s;
     return  toLog;
-    //toLog  << this->getCurrentState();
-    //return toLog;
+   
 }
