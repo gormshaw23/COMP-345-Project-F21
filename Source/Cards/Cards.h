@@ -1,7 +1,6 @@
 
 #pragma once 
-//#include "Orders.h"
-//#include "Player.h"
+#include "Common/CommonTypes.h"
 #include <iostream>
 #include <vector>
 #ifdef _DEBUG
@@ -166,14 +165,7 @@ public:
 
 	/* Special play() method */
 
-	void play(Card*); 
-
-
-
-
-
-
-
+	EOrderTypes play(Card*);
 
 private: 
 	vector<Card*>* newHand; 

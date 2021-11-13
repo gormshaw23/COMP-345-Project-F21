@@ -347,33 +347,27 @@ Card* Hand::drawCard_Hand()
 	return topOfHand;
 }
 
-void Hand::play(Card* someCards) {
-
-	newOrder = new vector<Card*>();
-	orderSize = new int();
-
-	newOrder->push_back(someCards);
-	(*orderSize)++; 
- 
-
-	for (int i = 0; i < *orderSize; i++) {
-
-		cout << *newOrder->at(i) << endl;
+/*
+* Modified play function that returns an order type,
+* for an order to be issued
+*/
+EOrderTypes Hand::play(Card* someCards) {
+	switch (someCards->getNewCardType()) {
+	case Card::Bomb:
+		return EOrderTypes::Bomb;
+		break;
+	case Card::Blockade:
+		return EOrderTypes::Blockade;
+		break;
+	case Card::Airlift:
+		return EOrderTypes::Airlift;
+		break;
+	case Card::Diplomacy:
+		return EOrderTypes::Negotiate;
+		break;
+	default:
+		break;
 	}
-
-
-	
-
-
-
-
-	/* Destroying the Order list pointers*/
-
-	delete newOrder;
-	newOrder = nullptr;
-
-	delete orderSize;
-	orderSize = nullptr;
 }
 
 
