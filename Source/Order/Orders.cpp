@@ -147,14 +147,22 @@ Deploy::Deploy
 ) : Order(EOrderType::Deploy, DEPLOY_DESC)
 {
     this->owner = inOwner;
-    this->armiesToDeploy = inNumUnits;
     this->targetTerritory = inTarget;
+    this->armiesToDeploy = inNumUnits;
 }
 
-Deploy::~Deploy() {}
+Deploy::~Deploy() 
+{
+    this->owner = nullptr;
+    this->targetTerritory = nullptr;
+    this->armiesToDeploy = 0;
+}
 
 Deploy::Deploy(const Deploy &dep) : Order(dep)
 {
+    this->owner = dep.owner;
+    this->targetTerritory = dep.targetTerritory;
+    this->armiesToDeploy = dep.armiesToDeploy;
 }
 
 Deploy &Deploy::operator=(const Deploy &dep)
@@ -241,6 +249,10 @@ Advance::~Advance()
 
 Advance::Advance(const Advance &adv) : Order(adv)
 {
+    this->owner = adv.owner;
+    this->src = adv.src;
+    this->dest = adv.dest;
+    this->armiesToAdvance = adv.armiesToAdvance;
 }
 
 Advance &Advance::operator=(const Advance &adv)
@@ -389,6 +401,8 @@ Bomb::~Bomb()
 
 Bomb::Bomb(const Bomb &bom) : Order(bom)
 {
+    this->owner = bom.owner;
+    this->target = bom.target;
 }
 
 Bomb &Bomb::operator=(const Bomb &bom)
@@ -482,6 +496,8 @@ Blockade::~Blockade()
 
 Blockade::Blockade(const Blockade &blo) : Order(blo)
 {
+    this->owner = blo.owner;
+    this->target = blo.target;
 }
 
 Blockade &Blockade::operator=(const Blockade &blo)
@@ -564,6 +580,10 @@ Airlift::~Airlift()
 
 Airlift::Airlift(const Airlift &air) : Order(air)
 {
+    this->owner = air.owner;
+    this->src = air.src;
+    this->dest = air.dest;
+    this->armiesToAirlift = air.armiesToAirlift;
 }
 
 Airlift &Airlift::operator=(const Airlift &air)
@@ -620,10 +640,16 @@ Negotiate::Negotiate(Player* inOwner, Player* inTarget)
     this->target = inTarget;
 }
 
-Negotiate::~Negotiate() {}
+Negotiate::~Negotiate() 
+{
+    this->owner = nullptr;
+    this->target = nullptr;
+}
 
 Negotiate::Negotiate(const Negotiate &ngo) : Order(ngo)
 {
+    this->owner = ngo.owner;
+    this->target = ngo.target;
 }
 
 Negotiate &Negotiate::operator=(const Negotiate &ngo)

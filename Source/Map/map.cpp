@@ -601,7 +601,7 @@ void Territory::setPosy(int posy) {
     this->posy = posy;
 }
 
-int Territory::getID() { return id; };
+int Territory::getID() const { return id; };
 int Territory::getContinent() { return continent; };
 int Territory::getPosx() { return posx; };
 int Territory::getPosy() { return posy; };
