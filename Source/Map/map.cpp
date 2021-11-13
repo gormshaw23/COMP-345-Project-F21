@@ -437,6 +437,19 @@ bool Map::traverseTerritory(Territory* territory, vector<bool>* visitedTerritory
 }
 
 /*
+* Retreives territory ids
+* This function will help facilitating the retrieval of
+* territory objects by searching a territory by its id.
+*/
+std::vector<int> Map::getTerritoryIds() {
+    vector<int> territoryIds;
+    for (Territory* t : this->listTerritory) {
+        territoryIds.push_back(t->getID());
+    }
+    return territoryIds;
+}
+
+/*
 //Recusive function to only check the subgraph of a continent
 */
 bool Continent::traverseTerritory(Territory* territory, vector<string>* visitedTerritory,int continent) {

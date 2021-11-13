@@ -34,7 +34,7 @@ public:
 	std::vector<Territory*>& getBorderList();
 
 	friend std::ostream& operator << (std::ostream& out, Territory& t);
-	friend std::istream& operator >> (std::istream& in, Territory& t);
+	//friend std::istream& operator >> (std::istream& in, Territory& t);
 
 	Territory();
 	Territory(const Territory &);
@@ -64,16 +64,12 @@ private:
 	std::vector<Territory*> listMemberTerritory;
 
 public:
-	
-	
 	bool checkTerritory(int, bool*);
 
 	void setArmyValue(int);
 	void setName(std::string);
 	void setColour(std::string);
 	bool traverseTerritory(Territory*, std::vector<std::string>*, int);	//int is for the continent ID
-
-	
 
 	friend std::ostream& operator << (std::ostream& out, Continent& c);
 	friend std::istream& operator >> (std::istream& in, Continent& c);
@@ -94,11 +90,7 @@ public:
 
 
 class Map {
-
 public:
-	
-
-
 	std::vector<Continent*> listContinents;
 	std::vector<Territory*> listTerritory;
 
@@ -113,6 +105,8 @@ public:
 	bool traverseTerritory(Territory*,std::vector<bool>*);
 
 	bool getValidity();
+
+	std::vector<int> getTerritoryIds(); //Retrieve territory ids
 	
 	friend std::ostream& operator << (std::ostream& out, Map& m);
 	friend std::istream& operator >> (std::istream& in, Map& m);
