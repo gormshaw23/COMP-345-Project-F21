@@ -6,8 +6,7 @@
 #include "Map/map.h"
 using namespace std;
 
-
-
+#ifdef MAPDRIVER
 int main()
 {
    
@@ -64,10 +63,5 @@ int main()
      delete paramM;
      delete copyM;
      */
-
-
-  
-    
-
- 
 }
+#endif

@@ -145,7 +145,7 @@ const std::vector<Territory*> Player::toDefend() const
 
 void Player::issueOrder
 (
-	const EOrderTypes inOrderType,
+	const EOrderType inOrderType,
 	const std::vector<Territory*> inTerritories,
 	const size_t inNumArmies,
 	const std::vector<Player*> inPlayers

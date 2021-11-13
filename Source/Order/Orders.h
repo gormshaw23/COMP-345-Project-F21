@@ -16,6 +16,8 @@
 #include <ostream>
 #include <list>
 
+#include"GameLog/LoggingObserver.h"
+
 class Territory;
 class Player;
 
@@ -32,7 +34,7 @@ enum class EOrderType
 /**
  * The function and member declarations of the Order class 
  */
-class Order
+class Order : public Subject, ILoggable
 {
 public:
     Order();                                                       //Constructor
@@ -47,6 +49,9 @@ public:
     const EOrderType getType(); //Gets OrderType enum
     const std::string getTypeName(); //Gets name of the order type
     const std::string getDescription();
+
+    virtual std::string stringToLog();  //use to send the effect of the order as a string 
+
     
 private:
     EOrderType oType;        //The order type
@@ -190,7 +195,7 @@ private:
 /**
  * The function and member declarations of the OrdersList class 
  */
-class OrdersList
+class OrdersList : public Subject , ILoggable
 {
 public:
     OrdersList();                                                       //Constructor
@@ -204,6 +209,7 @@ public:
     void move(const int oldIndex, const int newIndex);
     void remove(const int index);
     const std::list<Order *> getOList();
+    virtual std::string stringToLog();
 
 private:
     std::list<Order *> oList; //The list of Orders

@@ -79,6 +79,48 @@ Order::Order(EOrderType typeValue, std::string descValue)
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * Validates an order.
+ * An order is considered valid if it is a subclass of Order
+ * and if it is an existing order type.
+ * 
+ * @return true if the order is valid, otherwise false
+ */
+bool Order::validate()
+{
+    bool isValid = false;
+    std::string orderType[6] = {"deploy", "advance", "bomb", "blockade", "airlift", "negotiate"};
+
+    //Check if the Order is a subclass of the Order class
+    if (!(dynamic_cast<Order *>(this)))
+        return false;
+
+    //Check if the type corresponds to a valid order type
+    for (int i = 0; i < 6; i++)
+    {
+        std::string type = orderType[i];
+        if (this->getTypeName().compare(type) == 0)
+            isValid = true;
+    }
+
+    std::string validStr = (isValid) ? "valid" : "not valid";
+
+    std::cout << "\nThe order of type " << this->getTypeName() << " is " << validStr << std::endl;
+    return isValid;
+}
+
+/**
+ * Executes an order if it is a valid order
+ */
+void Order::execute()
+{
+    std::cout << "Executing " << this->getTypeName() << " order" << std::endl;
+    this->Notify(*this);
+}
+
+/**
+>>>>>>> origin/log
  * Getter for the Order's type
  * 
  * @return the Order's type
@@ -131,6 +173,12 @@ const std::string Order::getDescription()
     return description;
 }
 
+
+
+std::string Order::stringToLog() {
+    std::string  toLog = "Temporary info : order executed name : " + this->getTypeName() + " , order description : " + this->getDescription();
+    return toLog;
+}
 /********************************************************************
  * Deploy class function definitions
  ********************************************************************/
@@ -735,6 +783,7 @@ std::ostream &operator<<(std::ostream &out, OrdersList &ol)
 void OrdersList::add(Order *o)
 {
     oList.push_back(o); //Add Order to the back of the list
+    this->Notify(*this);
 }
 
 /*
@@ -798,3 +847,10 @@ const std::list<Order *> OrdersList::getOList()
 {
     return oList;
 }
+
+std::string OrdersList::stringToLog() {
+
+    std::string toLog = "New order added to the OrdersList : " + this->getOList().back()->getTypeName();
+    return toLog;
+
+ }

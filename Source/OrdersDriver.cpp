@@ -7,13 +7,13 @@
  */
 
 #include <iostream>
-//#include <list>
 
 using std::cout;
 using std::endl;
 
 #include "Order/Orders.h"
 
+#ifdef ORDERSDRIVER
 int main()
 {
      //Create every kind of order and adding them to the OrderList
@@ -61,3 +61,4 @@ int main()
 
      return 0;
 }
+#endif

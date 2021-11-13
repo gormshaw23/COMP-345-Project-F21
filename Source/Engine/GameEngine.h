@@ -1,6 +1,8 @@
-#ifndef GameEngine_h
-#define GameEngine_h
+#pragma once
 #include <iostream>
+
+#include "../GameLog/LoggingObserver.h"
+#include "../CommandProcessor/CommandProcessor.h"
 
 class Player;
 
@@ -35,28 +37,30 @@ enum game_user_input {
 };
 
 //GameEngine class
-class GameEngine{
-    public:
-        GameEngine(); //constructor
-        ~GameEngine(); //destructor
-        
-        GameState getCurrentState(); //getter
-        void game_run();
+class GameEngine :  virtual public Subject,  virtual  public ILoggable ,  public CommandProcessor {
+public:
+    GameEngine(); //constructor
+    GameEngine(std::list<Subject*>*); //constructor
+    ~GameEngine(); //destructor
 
-        // copy and assignment *should* be deleted since I'm implementing GameEngine as a singleton
-        GameEngine(const GameEngine& gm); //copy constructor
-        GameEngine &operator=(const GameEngine &obj);//Assignment operator
+    using Subject::Notify;
+    GameEngine(const GameEngine& gm); //copy constructor
+    GameState getCurrentState(); //getter
+    void game_run();
+    virtual std::string stringToLog() override;
+    GameEngine &operator=(const GameEngine &obj);//Assignment operator
 
-        Player* getNeutralPlayer() const;
+    Player* getNeutralPlayer() const;
 
-        friend std::ostream &operator<<(std::ostream &out, const GameState value);//stream insertion operator
+    friend std::ostream &operator<<(std::ostream &out, const GameState value);//stream insertion operator
 
-        static GameEngine& getInstance();
-    private:
-        GameState* eState;
-        void setCurrentState(GameState eState);//setter
-        Player* neutralPlayer = nullptr;
-
+    static GameEngine& getInstance();
+private:
+    GameState* eState;
+    void setCurrentState(GameState eState);//setter
+    Player* neutralPlayer = nullptr;
 };
-#endif
+
+
+
 

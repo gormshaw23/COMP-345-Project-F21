@@ -13,7 +13,7 @@ class Order;
 class OrdersList;
 class Territory;
 
-enum class EOrderTypes;
+enum class EOrderType;
 
 /*
 	Summary: The Player class represents the player in a game of warzone.
@@ -39,7 +39,7 @@ public:
 	// Unreal Engine style standard for long function declarations
 	void issueOrder
 	(
-		const EOrderTypes inOrderType,
+		const EOrderType inOrderType,
 		const std::vector<Territory*> inTerritories,
 		const size_t inNumArmies,
 		const std::vector<Player*> inPlayers
