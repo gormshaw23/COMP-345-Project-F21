@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Log">
       <UniqueIdentifier>{e67db046-56eb-4161-acc7-bf7618445f4c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CommandProcessor">
+      <UniqueIdentifier>{32bd64e5-cb66-40c9-be0f-73c42ff5d5c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Player\Player.cpp">
@@ -57,6 +60,9 @@
     <ClCompile Include="Source\GameLog\GameLogDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\CommandProcessor\CommandProcessor.cpp">
+      <Filter>Source Files\CommandProcessor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Player\Player.h">
@@ -79,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="Source\GameLog\LoggingObserver.h">
       <Filter>Source Files\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CommandProcessor\CommandProcessor.h">
+      <Filter>Source Files\CommandProcessor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
