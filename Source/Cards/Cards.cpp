@@ -4,6 +4,9 @@
 #include <chrono>
 #include <ctime>
 #include <random>
+
+#include "Order/Orders.h"
+
 using namespace std; 
 
 /*
@@ -347,33 +350,27 @@ Card* Hand::drawCard_Hand()
 	return topOfHand;
 }
 
-void Hand::play(Card* someCards) {
-
-	newOrder = new vector<Card*>();
-	orderSize = new int();
-
-	newOrder->push_back(someCards);
-	(*orderSize)++; 
- 
-
-	for (int i = 0; i < *orderSize; i++) {
-
-		cout << *newOrder->at(i) << endl;
+/*
+* Modified play function that returns an order type,
+* for an order to be issued
+*/
+EOrderType Hand::play(Card* someCards) {
+	switch (someCards->getNewCardType()) {
+	case Card::Bomb:
+		return EOrderType::Bomb;
+		break;
+	case Card::Blockade:
+		return EOrderType::Blockade;
+		break;
+	case Card::Airlift:
+		return EOrderType::Airlift;
+		break;
+	case Card::Diplomacy:
+		return EOrderType::Negotiate;
+		break;
+	default:
+		break;
 	}
-
-
-	
-
-
-
-
-	/* Destroying the Order list pointers*/
-
-	delete newOrder;
-	newOrder = nullptr;
-
-	delete orderSize;
-	orderSize = nullptr;
 }
 
 

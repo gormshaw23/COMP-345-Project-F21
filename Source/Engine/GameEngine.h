@@ -63,7 +63,6 @@ public:
 private:
     GameState* eState;
     void setCurrentState(GameState eState);
-
     void reinforcementPhase(Player* p, Map* m);
     void issueOrdersPhase(Player* p, Map* map);
     void executeOrdersPhase(Player* p);

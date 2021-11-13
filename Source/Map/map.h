@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-class Player;
+#include "Player/Player.h"
 
 class Territory {
 private:
@@ -21,8 +21,8 @@ public:
 	void setPosx(int inPosX);
 	void setPosy(int inPosY);
 	void setName(std::string inName);
-	void setArmies(int inArmies);
-	void setOwner(Player* inOwner);
+	void setNbArmy(int newNbArmy);
+	void setPlayer(Player* inOwner);
 
 	int getID() const;
 	int getContinent();

@@ -236,7 +236,7 @@ void Deploy::execute()
         */
         std::size_t armies = std::min(armiesToDeploy, owner->getReinforcementPoolSize());
         owner->setReinforcementPool(owner->getReinforcementPoolSize() - armies);
-        targetTerritory->setArmies(armies);
+        targetTerritory->setNbArmy(armies);
     }
 }
 
@@ -328,7 +328,7 @@ void Advance::execute()
             // move the troops, no combat
             // we move either the specified number or if larger than what is available
             // we move all available troops.
-            dest->setArmies(remainingAdvancingArmies + dest->getNbArmy());
+            dest->setNbArmy(remainingAdvancingArmies + dest->getNbArmy());
         }
         else
         {
@@ -351,7 +351,7 @@ void Advance::execute()
                         // 60% chance to eliminate a defending unit
                         if (attackResult <= ATTACKER_CHANCE)
                         {
-                            dest->setArmies(dest->getNbArmy() - 1);
+                            dest->setNbArmy(dest->getNbArmy() - 1);
                         }
 
                         int defendResult = dist100(rng);
@@ -370,20 +370,20 @@ void Advance::execute()
                 {
                     // defender loses, move to occupy with
                     // remaining forces.
-                    dest->setOwner(src->getPlayer());
-                    dest->setArmies(remainingAdvancingArmies);
+                    dest->setPlayer(src->getPlayer());
+                    dest->setNbArmy(remainingAdvancingArmies);
                     owner->setCapturedTerritoryFlag(true);
                 }
 
                 // happens either way
-                src->setArmies(src->getNbArmy() - initialAdvancingArmies);
+                src->setNbArmy(src->getNbArmy() - initialAdvancingArmies);
             }
             else
             {
                 // move to occupy
-                dest->setOwner(src->getPlayer());
-                dest->setArmies(remainingAdvancingArmies);
-                src->setArmies(src->getNbArmy() - initialAdvancingArmies);
+                dest->setPlayer(src->getPlayer());
+                dest->setNbArmy(remainingAdvancingArmies);
+                src->setNbArmy(src->getNbArmy() - initialAdvancingArmies);
             }
         }
     }
@@ -469,7 +469,7 @@ void Bomb::execute()
 {
     if (validate())
     {
-        target->setArmies(target->getNbArmy() / 2);
+        target->setNbArmy(target->getNbArmy() / 2);
     }
 }
 
@@ -580,7 +580,7 @@ void Blockade::execute()
                 owner->getTerritoriesOwned().end()
             );
 
-            target->setArmies(target->getNbArmy() * 2);
+            target->setNbArmy(target->getNbArmy() * 2);
         }
     }
 }
@@ -651,8 +651,8 @@ void Airlift::execute()
     if (validate())
     {
         const std::size_t initialArmiesToAirlift = std::min(static_cast<std::size_t>(src->getNbArmy()), armiesToAirlift);
-        src->setArmies(src->getNbArmy() - initialArmiesToAirlift);
-        dest->setArmies(dest->getNbArmy() + initialArmiesToAirlift);
+        src->setNbArmy(src->getNbArmy() - initialArmiesToAirlift);
+        dest->setNbArmy(dest->getNbArmy() + initialArmiesToAirlift);
     }
 }
 

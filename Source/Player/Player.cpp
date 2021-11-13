@@ -255,6 +255,11 @@ bool Player::getCapturedTerritoryFlag() const
 	return bTookTerritory;
 }
 
+void Player::setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned)
+{
+	this->_territoriesOwned = newTerritoriesOwned;
+}
+
 std::ostream& operator<<(std::ostream& out, const Player& inPlayer)
 {
 

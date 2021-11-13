@@ -596,16 +596,6 @@ void Territory::setName(string name) {
     this->name = name;
 }
 
-void Territory::setArmies(int inArmies)
-{
-    this->nbArmy = inArmies;
-}
-
-void Territory::setOwner(Player* inOwner)
-{
-    player = inOwner;
-}
-
 void Territory::setPosx(int posx) {
     this->posx = posx;
 }
@@ -614,7 +604,19 @@ void Territory::setPosy(int posy) {
     this->posy = posy;
 }
 
-int Territory::getID() const { return id; };
+int Territory::getID() const 
+{ 
+    return id; 
+}
+
+void Territory::setPlayer(Player* newPlayer) {
+    this->player = newPlayer;
+}
+
+void Territory::setNbArmy(int newNbArmy) {
+    this->nbArmy = newNbArmy;
+}
+
 int Territory::getContinent() { return continent; };
 int Territory::getPosx() { return posx; };
 int Territory::getPosy() { return posy; };

@@ -56,6 +56,7 @@ public:
 	OrdersList* getOrders() const;
 	Hand* getCurrentHand() const;
 	std::vector<Territory*>& getTerritoriesOwned();
+	void setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned);
 	std::vector<Player*>& getNotAttackablePlayers();
 
 	void setReinforcementPool(const std::size_t inPoolSize);
