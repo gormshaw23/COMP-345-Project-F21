@@ -24,7 +24,7 @@ public:
 	void setArmies(int inArmies);
 	void setOwner(Player* inOwner);
 
-	int getID() ;
+	int getID() const;
 	int getContinent();
 	int getPosx();
 	int getPosy();
@@ -51,7 +51,7 @@ public:
 	);
 	~Territory();
 
-
+	bool operator==(const Territory& inRHS) const;
 };
 
 

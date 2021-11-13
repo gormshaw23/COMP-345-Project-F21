@@ -4,6 +4,7 @@
  * The compilation unit also has the OrdersList class.
  * 
  * @author Mark Nasol
+ * @author Blayne Bradley (Assignment 2, Part 4)
  */
 
 #include <iostream>
@@ -15,6 +16,7 @@
 #include "Orders.h"
 #include "Map/map.h"
 #include "Player/Player.h"
+#include "Engine/GameEngine.h"
 #include "Common/localization.h"
 
 /********************************************************************
@@ -229,7 +231,13 @@ Advance::Advance
     this->armiesToAdvance = inArmiesToAdvance;
 }
 
-Advance::~Advance() {}
+Advance::~Advance() 
+{
+    this->owner = nullptr;
+    this->src = nullptr;
+    this->dest = nullptr;
+    armiesToAdvance = 0;
+}
 
 Advance::Advance(const Advance &adv) : Order(adv)
 {
@@ -341,6 +349,13 @@ bool Advance::validate()
         return false;
     }
 
+    // check if there is a truce via negotiate
+    std::vector<Player*> negotiatees = owner->getNotAttackablePlayers();
+    if (std::find(negotiatees.begin(), negotiatees.end(), dest->getPlayer()) != negotiatees.end())
+    {
+        return false;
+    }
+
     // check to make sure that the destination is adjacent to the source
     std::vector<Territory*> adjacents = src->getBorderList();
     if (adjacents.empty() || std::find(adjacents.begin(), adjacents.end(), dest) == adjacents.end())
@@ -355,11 +370,22 @@ bool Advance::validate()
  * Bomb class function definitions
  ********************************************************************/
 
-Bomb::Bomb() : Order(EOrderType::Bomb, "Destroy half of the armies located on an opponent’s territory that is adjacent to one of the current player’s territories.")
+Bomb::Bomb() : Order(EOrderType::Bomb, BOMB_DESC)
 {
+
 }
 
-Bomb::~Bomb() {}
+Bomb::Bomb(Player* inOwner, Territory* inTarget)
+{
+    this->owner = inOwner;
+    this->target = inTarget;
+}
+
+Bomb::~Bomb() 
+{
+    this->owner = nullptr;
+    this->target = nullptr;
+}
 
 Bomb::Bomb(const Bomb &bom) : Order(bom)
 {
@@ -379,23 +405,80 @@ std::ostream &operator<<(std::ostream &out, Bomb &bom)
 
 void Bomb::execute()
 {
-
+    if (validate())
+    {
+        target->setArmies(target->getNbArmy() / 2);
+    }
 }
 
 bool Bomb::validate()
 {
-    return false;
+    // check to make sure interactable objects exist
+    if (owner == nullptr || target == nullptr)
+    {
+        return false;
+    }
+
+    if (target->getPlayer() == nullptr)
+    {
+        return false;
+    }
+
+    // check if target is owned by player
+    if (target->getPlayer()->getPlayerID() == owner->getPlayerID())
+    {
+        return false;
+    }
+
+    bool isAdjacent = false;
+    std::vector<Territory*> playerTerritories = owner->getTerritoriesOwned();
+    for (auto& territory : playerTerritories)
+    {
+        // check to make sure that the target is adjacent to one of players territories
+        // this is a very terribly inefficient algorithm
+        // gaze on my works and despair
+        std::vector<Territory*> adjacents = territory->getBorderList();
+        if (std::find(adjacents.begin(), adjacents.end(), target) != adjacents.end())
+        {
+            isAdjacent = true;
+            break;
+        }
+    }
+
+    if (!isAdjacent)
+    {
+        return false;
+    }
+
+    // check if there is a truce via negotiate
+    std::vector<Player*> negotiatees = owner->getNotAttackablePlayers();
+    if (std::find(negotiatees.begin(), negotiatees.end(), target->getPlayer()) != negotiatees.end())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 /********************************************************************
  * Blockade class function definitions
  ********************************************************************/
 
-Blockade::Blockade() : Order(EOrderType::Blockade, "triple the number of armies on one of the current player’s territories and make it a neutral territory")
+Blockade::Blockade() : Order(EOrderType::Blockade, BLOCKADE_DESC)
 {
 }
 
-Blockade::~Blockade() {}
+Blockade::Blockade(Player* inOwner, Territory* inTarget)
+{
+    this->owner = inOwner;
+    this->target = inTarget;
+}
+
+Blockade::~Blockade() 
+{
+    this->owner = nullptr;
+    this->target = nullptr;
+}
 
 Blockade::Blockade(const Blockade &blo) : Order(blo)
 {
@@ -415,23 +498,69 @@ std::ostream &operator<<(std::ostream &out, Blockade &blo)
 
 void Blockade::execute()
 {
+    if (validate())
+    {
+        // add the target territory to the neutral player and double the number of troops
+        Player* neutralPlayer = GameEngine::getInstance().getNeutralPlayer();
+        if (neutralPlayer != nullptr)
+        {
+            neutralPlayer->getTerritoriesOwned().push_back(target);
+            owner->getTerritoriesOwned().erase
+            (
+                std::remove
+                (
+                    owner->getTerritoriesOwned().begin(),
+                    owner->getTerritoriesOwned().end(),
+                    target
+                ),
+                owner->getTerritoriesOwned().end()
+            );
 
+            target->setArmies(target->getNbArmy() * 2);
+        }
+    }
 }
 
 bool Blockade::validate()
 {
-    return false;
+    // check to make sure interactable objects exist
+    if (owner == nullptr || target == nullptr)
+    {
+        return false;
+    }
+
+    // check if target is owned by player
+    if (target->getPlayer()->getPlayerID() != owner->getPlayerID())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 /********************************************************************
  * Airlift class function definitions
  ********************************************************************/
 
-Airlift::Airlift() : Order(EOrderType::Airlift, "Advance some armies from one of the current player’s territories to any another territory")
+Airlift::Airlift() : Order(EOrderType::Airlift, AIRLIFT_DESC)
 {
 }
 
-Airlift::~Airlift() {}
+Airlift::Airlift(Player* inOwner, Territory* inSrc, Territory* inDest, std::size_t inArmiesToAirlift)
+{
+    this->owner = inOwner;
+    this->src = inSrc;
+    this->dest = inDest;
+    this->armiesToAirlift = inArmiesToAirlift;
+}
+
+Airlift::~Airlift() 
+{
+    this->owner = nullptr;
+    this->src = nullptr;
+    this->dest = nullptr;
+    this->armiesToAirlift = 0;
+}
 
 Airlift::Airlift(const Airlift &air) : Order(air)
 {
@@ -451,11 +580,29 @@ std::ostream &operator<<(std::ostream &out, Airlift &air)
 
 void Airlift::execute()
 {
-
+    if (validate())
+    {
+        const std::size_t initialArmiesToAirlift = std::min(static_cast<std::size_t>(src->getNbArmy()), armiesToAirlift);
+        src->setArmies(src->getNbArmy() - initialArmiesToAirlift);
+        dest->setArmies(dest->getNbArmy() + initialArmiesToAirlift);
+    }
 }
 
 bool Airlift::validate()
 {
+    // check to make sure interactable objects exist
+    if (owner == nullptr || src == nullptr || dest == nullptr)
+    {
+        return false;
+    }
+
+    // check if target is owned by player
+    if (src->getPlayer()->getPlayerID() != owner->getPlayerID() || 
+        dest->getPlayer()->getPlayerID() != owner->getPlayerID())
+    {
+        return false;
+    }
+
     return false;
 }
 
@@ -463,8 +610,14 @@ bool Airlift::validate()
  * Negotiate class function definitions
  ********************************************************************/
 
-Negotiate::Negotiate() : Order(EOrderType::Negotiate, "Prevent attacks between the current player and another player until the end of the turn")
+Negotiate::Negotiate() : Order(EOrderType::Negotiate, NEGOTIATE_DESC)
 {
+}
+
+Negotiate::Negotiate(Player* inOwner, Player* inTarget)
+{
+    this->owner = inOwner;
+    this->target = inTarget;
 }
 
 Negotiate::~Negotiate() {}
@@ -487,12 +640,29 @@ std::ostream &operator<<(std::ostream &out, Negotiate &ngo)
 
 void Negotiate::execute()
 {
-
+    if (validate())
+    {
+        std::vector<Player*> targetPlayerNegotiatees = target->getNotAttackablePlayers();
+        if (std::find(targetPlayerNegotiatees.begin(), targetPlayerNegotiatees.end(), owner) == targetPlayerNegotiatees.end())
+        {
+            target->getNotAttackablePlayers().push_back(owner);
+        }
+    }
 }
 
 bool Negotiate::validate()
 {
-    return false;
+    if (owner == nullptr || target == nullptr)
+    {
+        return false;
+    }
+
+    if (owner->getPlayerID() == target->getPlayerID())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 /********************************************************************

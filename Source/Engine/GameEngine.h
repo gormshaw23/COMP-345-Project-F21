@@ -1,7 +1,8 @@
 #ifndef GameEngine_h
 #define GameEngine_h
 #include <iostream>
-using namespace std;
+
+class Player;
 
 //game state
 enum GameState
@@ -38,14 +39,23 @@ class GameEngine{
     public:
         GameEngine(); //constructor
         ~GameEngine(); //destructor
-        GameEngine(const GameEngine &gm); //copy constructor
+        
         GameState getCurrentState(); //getter
         void game_run();
+
+        // copy and assignment *should* be deleted since I'm implementing GameEngine as a singleton
+        GameEngine(const GameEngine& gm); //copy constructor
         GameEngine &operator=(const GameEngine &obj);//Assignment operator
-        friend ostream &operator<<(ostream &out, const GameState value);//stream insertion operator
+
+        Player* getNeutralPlayer() const;
+
+        friend std::ostream &operator<<(std::ostream &out, const GameState value);//stream insertion operator
+
+        static GameEngine& getInstance();
     private:
         GameState* eState;
         void setCurrentState(GameState eState);//setter
+        Player* neutralPlayer = nullptr;
 
 };
 #endif

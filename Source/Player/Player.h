@@ -26,6 +26,7 @@ public:
 	Player(const Player& inPlayer);
 	~Player();
 	/* op overrides */
+	bool operator==(const Player& inRHS) const;
 	Player& operator= (const Player& inPlayer);
 	friend std::ostream& operator<<(std::ostream& out, const Player& inPlayer);
 	/* public member functions */
@@ -47,6 +48,7 @@ public:
 	OrdersList* getOrders() const;
 	Hand* getCurrentHand() const;
 	std::vector<Territory*>& getTerritoriesOwned();
+	std::vector<Player*>& getNotAttackablePlayers();
 
 	void setReinforcementPool(const std::size_t inPoolSize);
 	std::size_t getReinforcementPoolSize() const;
@@ -65,6 +67,8 @@ private:
 
 	std::size_t availableReinforcements = 0;
 	bool bTookTerritory = false;
+
+	std::vector<Player*> _playersNotToAttack;
 
 	static std::size_t _globalID;
 };

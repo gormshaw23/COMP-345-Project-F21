@@ -58,6 +58,11 @@ Player::~Player()
 	_territoriesOwned.shrink_to_fit();
 }
 
+bool Player::operator==(const Player& inRHS) const
+{
+	return this->getPlayerID() == inRHS.getPlayerID();
+}
+
 Player& Player::operator=(const Player& inPlayer)
 {
 	if (this == &inPlayer)
@@ -162,6 +167,11 @@ Hand* Player::getCurrentHand() const
 std::vector<Territory*>& Player::getTerritoriesOwned()
 {
 	return this->_territoriesOwned;
+}
+
+std::vector<Player*>& Player::getNotAttackablePlayers()
+{
+	return this->_playersNotToAttack;
 }
 
 void Player::setReinforcementPool(const std::size_t inPoolSize)

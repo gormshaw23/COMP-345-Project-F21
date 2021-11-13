@@ -108,6 +108,7 @@ class Bomb : public Order
 {
 public:
     Bomb();                                                        //Constructor
+    Bomb(Player* inOwner, Territory* inTarget);
     ~Bomb();                                                       //Destructor
     Bomb(const Bomb &bom);                                         //Copy constructor
     Bomb &operator=(const Bomb &bom);                              //Assignment operator
@@ -116,6 +117,9 @@ public:
     virtual bool validate() override;
 
     friend std::ostream &operator<<(std::ostream &out, Bomb &bom); //Stream insertion operator
+private:
+    Territory* target = nullptr;
+    Player* owner = nullptr;
 };
 
 /**
@@ -125,6 +129,7 @@ class Blockade : public Order
 {
 public:
     Blockade();                                                        //Constructor
+    Blockade(Player* inOwner, Territory* inTarget);
     ~Blockade();                                                       //Destructor
     Blockade(const Blockade &blo);                                     //Copy constructor
     Blockade &operator=(const Blockade &blo);                          //Assignment operator
@@ -133,6 +138,9 @@ public:
     virtual bool validate() override;
 
     friend std::ostream &operator<<(std::ostream &out, Blockade &blo); //Stream insertion operator
+private:
+    Player* owner = nullptr;
+    Territory* target = nullptr;
 };
 
 /**
@@ -142,6 +150,7 @@ class Airlift : public Order
 {
 public:
     Airlift();                                                        //Constructor
+    Airlift(Player* inOwner, Territory* src, Territory* dest, std::size_t inArmiesToAirlift);
     ~Airlift();                                                       //Destructor
     Airlift(const Airlift &air);                                      //Copy constructor
     Airlift &operator=(const Airlift &air);                           //Assignment 
@@ -150,6 +159,11 @@ public:
     virtual bool validate() override;
 
     friend std::ostream &operator<<(std::ostream &out, Airlift &air); //Stream insertion operator
+private:
+    Player* owner = nullptr;
+    Territory* src = nullptr;
+    Territory* dest = nullptr;
+    std::size_t armiesToAirlift = 0;
 };
 
 /**
@@ -159,6 +173,7 @@ class Negotiate : public Order
 {
 public:
     Negotiate();                                                        //Constructor
+    Negotiate(Player* inOwner, Player* inTarget);
     ~Negotiate();                                                       //Destructor
     Negotiate(const Negotiate &ngo);                                    //Copy constructor
     Negotiate &operator=(const Negotiate &ngo);                         //Assignment 
@@ -167,6 +182,9 @@ public:
     virtual bool validate() override;
 
     friend std::ostream &operator<<(std::ostream &out, Negotiate &ngo); //Stream insertion operator
+private:
+    Player* owner = nullptr;
+    Player* target = nullptr;
 };
 
 /**

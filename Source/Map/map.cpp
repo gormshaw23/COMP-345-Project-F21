@@ -624,6 +624,11 @@ Territory::~Territory() {
     
 }
 
+bool Territory::operator==(const Territory& inRHS) const
+{
+    return this->getID() == inRHS.getID();
+}
+
 
 Map::~Map() {
     for (auto y : listContinents) {

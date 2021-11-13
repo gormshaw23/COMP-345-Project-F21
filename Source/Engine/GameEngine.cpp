@@ -1,8 +1,14 @@
 #include "GameEngine.h"
+
 #include <map>
 #include <string>
-using namespace std;
 #include <iostream>
+
+using std::cout;
+using std::ostream;
+using std::map;
+using std::string;
+using std::cin;
 
 /**
  * constructor of GameEngine class
@@ -60,6 +66,17 @@ GameEngine &GameEngine::operator=(const GameEngine &obj)
 {
     this->eState = new GameState(*obj.eState);
     return *this;
+}
+
+Player* GameEngine::getNeutralPlayer() const
+{
+    return neutralPlayer;
+}
+
+GameEngine& GameEngine::getInstance()
+{
+    static GameEngine instance;
+    return instance;
 }
 
 /**
