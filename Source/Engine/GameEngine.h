@@ -1,7 +1,12 @@
-#ifndef GameEngine_h
-#define GameEngine_h
+#pragma once
 #include <iostream>
-using namespace std;
+#include <list>
+
+#include "../GameLog/LoggingObserver.h"
+#include "../CommandProcessor/CommandProcessor.h"
+
+class Player;
+class Map;
 
 //game state
 enum GameState
@@ -33,20 +38,39 @@ enum game_user_input {
     END,
 };
 
-//GameEngine class
-class GameEngine{
-    public:
-        GameEngine(); //constructor
-        ~GameEngine(); //destructor
-        GameEngine(const GameEngine &gm); //copy constructor
-        GameState getCurrentState(); //getter
-        void game_run();
-        GameEngine &operator=(const GameEngine &obj);//Assignment operator
-        friend ostream &operator<<(ostream &out, const GameState value);//stream insertion operator
-    private:
-        GameState* eState;
-        void setCurrentState(GameState eState);//setter
+class GameEngine :  virtual public Subject,  virtual  public ILoggable ,  public CommandProcessor {
+public:
+    GameEngine(); //constructor
+    GameEngine(std::list<Subject*>*); //constructor
+    ~GameEngine(); //destructor
 
+    using Subject::Notify;
+    GameEngine(const GameEngine& gm); //copy constructor
+    GameState getCurrentState(); //getter
+
+    void game_run();
+    virtual std::string stringToLog() override;
+    GameEngine &operator=(const GameEngine &obj);//Assignment operator
+
+    Player* getNeutralPlayer() const;
+
+    void mainGameLoop(std::list<Player*> players, Map* map); //Game loop function
+    std::list<Player*> getPlayers_temp(); //Temporary getter for list of players
+
+    friend std::ostream &operator<<(std::ostream &out, const GameState value);//stream insertion operator
+
+    static GameEngine& getInstance();
+private:
+    GameState* eState;
+    void setCurrentState(GameState eState);
+    void reinforcementPhase(Player* p, Map* m);
+    void issueOrdersPhase(Player* p, Map* map);
+    void executeOrdersPhase(Player* p);
+
+    std::list<Player*> players_temp; //Temporary variable for list of players
+    Player* neutralPlayer = nullptr;
 };
-#endif
+
+
+
 

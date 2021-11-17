@@ -1,7 +1,6 @@
 
 #pragma once 
-//#include "Orders.h"
-//#include "Player.h"
+#include "Common/CommonTypes.h"
 #include <iostream>
 #include <vector>
 #ifdef _DEBUG
@@ -9,12 +8,11 @@
 #endif
 using namespace std; 
 
+enum class EOrderType;
+
 class Card {
 
 public: 
-
-	
-
 	enum cardType {
 		Bomb,
 		Reinforcement,
@@ -166,14 +164,7 @@ public:
 
 	/* Special play() method */
 
-	void play(Card*); 
-
-
-
-
-
-
-
+	EOrderType play(Card*);
 
 private: 
 	vector<Card*>* newHand; 

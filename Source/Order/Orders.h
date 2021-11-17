@@ -7,41 +7,54 @@
  */
 #pragma once
 
+// chance for attacker to kill 1 defending unit
+#define ATTACKER_CHANCE 60
+// chance for defender to kill 1 attacking unit
+#define DEFENDER_CHANCE 70
+
 #include <string>
 #include <ostream>
 #include <list>
 
+#include"GameLog/LoggingObserver.h"
+
+class Territory;
+class Player;
+
+enum class EOrderType
+{
+    Deploy,
+    Advance,
+    Bomb,
+    Blockade,
+    Airlift,
+    Negotiate
+};
+
 /**
  * The function and member declarations of the Order class 
  */
-class Order
+class Order : public Subject, ILoggable
 {
 public:
-    enum OrderType
-    {
-        deploy,
-        advance,
-        bomb,
-        blockade,
-        airlift,
-        negotiate
-    };
-
     Order();                                                       //Constructor
     ~Order();                                                      //Destructor
     Order(const Order &od);                                        //Copy constructor
     Order &operator=(const Order &od);                             //Assignment operator
     friend std::ostream &operator<<(std::ostream &out, Order &od); //Stream insertion operator
 
-    Order(OrderType typeValue, std::string descValue);
-    bool validate();
-    void execute();
-    const OrderType getType(); //Gets OrderType enum
+    Order(EOrderType typeValue, std::string descValue);
+    virtual bool validate() =0;
+    virtual void execute() =0;
+    const EOrderType getType(); //Gets OrderType enum
     const std::string getTypeName(); //Gets name of the order type
     const std::string getDescription();
+
+    virtual std::string stringToLog();  //use to send the effect of the order as a string 
+
     
 private:
-    OrderType oType;        //The order type
+    EOrderType oType;        //The order type
     std::string description; //The order description
 };
 
@@ -52,10 +65,22 @@ class Deploy : public Order
 {
 public:
     Deploy();                                                        //Constructor
+    Deploy(Player* inOwner, const int inNumUnits, Territory* inTarget);
     ~Deploy();                                                       //Destructor
     Deploy(const Deploy &dep);                                       //Copy constructor
     Deploy &operator=(const Deploy &dep);                            //Assignment operator
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Deploy &dep); //Stream insertion operator
+private:
+    // num units to take from reinforcement pool
+    std::size_t armiesToDeploy = 0;
+    // territory to place the units, *should* be owned
+    Territory* targetTerritory = nullptr;
+    // the player who owns this order
+    Player* owner = nullptr;
 };
 
 /**
@@ -65,10 +90,20 @@ class Advance : public Order
 {
 public:
     Advance();                                                        //Constructor
+    Advance(Player* owner, Territory* src, Territory* dest, std::size_t armiesToAdvance);
     ~Advance();                                                       //Destructor
     Advance(const Advance &adv);                                      //Copy constructor
     Advance &operator=(const Advance &adv);                           //Assignment operator
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Advance &adv); //Stream insertion operator
+private:
+    Player* owner = nullptr;
+    Territory* src = nullptr; 
+    Territory* dest = nullptr; 
+    std::size_t armiesToAdvance = 0;
 };
 
 /**
@@ -78,10 +113,18 @@ class Bomb : public Order
 {
 public:
     Bomb();                                                        //Constructor
+    Bomb(Player* inOwner, Territory* inTarget);
     ~Bomb();                                                       //Destructor
     Bomb(const Bomb &bom);                                         //Copy constructor
     Bomb &operator=(const Bomb &bom);                              //Assignment operator
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Bomb &bom); //Stream insertion operator
+private:
+    Territory* target = nullptr;
+    Player* owner = nullptr;
 };
 
 /**
@@ -91,10 +134,18 @@ class Blockade : public Order
 {
 public:
     Blockade();                                                        //Constructor
+    Blockade(Player* inOwner, Territory* inTarget);
     ~Blockade();                                                       //Destructor
     Blockade(const Blockade &blo);                                     //Copy constructor
     Blockade &operator=(const Blockade &blo);                          //Assignment operator
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Blockade &blo); //Stream insertion operator
+private:
+    Player* owner = nullptr;
+    Territory* target = nullptr;
 };
 
 /**
@@ -104,10 +155,20 @@ class Airlift : public Order
 {
 public:
     Airlift();                                                        //Constructor
+    Airlift(Player* inOwner, Territory* src, Territory* dest, std::size_t inArmiesToAirlift);
     ~Airlift();                                                       //Destructor
     Airlift(const Airlift &air);                                      //Copy constructor
-    Airlift &operator=(const Airlift &air);                           //Assignment operator
+    Airlift &operator=(const Airlift &air);                           //Assignment 
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Airlift &air); //Stream insertion operator
+private:
+    Player* owner = nullptr;
+    Territory* src = nullptr;
+    Territory* dest = nullptr;
+    std::size_t armiesToAirlift = 0;
 };
 
 /**
@@ -117,16 +178,24 @@ class Negotiate : public Order
 {
 public:
     Negotiate();                                                        //Constructor
+    Negotiate(Player* inOwner, Player* inTarget);
     ~Negotiate();                                                       //Destructor
     Negotiate(const Negotiate &ngo);                                    //Copy constructor
-    Negotiate &operator=(const Negotiate &ngo);                         //Assignment operator
+    Negotiate &operator=(const Negotiate &ngo);                         //Assignment 
+
+    virtual void execute() override;
+    virtual bool validate() override;
+
     friend std::ostream &operator<<(std::ostream &out, Negotiate &ngo); //Stream insertion operator
+private:
+    Player* owner = nullptr;
+    Player* target = nullptr;
 };
 
 /**
  * The function and member declarations of the OrdersList class 
  */
-class OrdersList
+class OrdersList : public Subject , ILoggable
 {
 public:
     OrdersList();                                                       //Constructor
@@ -140,6 +209,7 @@ public:
     void move(const int oldIndex, const int newIndex);
     void remove(const int index);
     const std::list<Order *> getOList();
+    virtual std::string stringToLog();
 
 private:
     std::list<Order *> oList; //The list of Orders

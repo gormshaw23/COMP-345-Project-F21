@@ -281,7 +281,7 @@ void Map::addBorderToTerritory(string line) {
             else {
 
                 toAddCountry = listTerritory.at(stoi(i) - 1);               //get a poiter to the coutry to add
-                targetCountry->getBorderList()->push_back(toAddCountry);    //add the coutry to the vector list of border
+                targetCountry->getBorderList().push_back(toAddCountry);    //add the coutry to the vector list of border
             }
             a++;
         }
@@ -427,13 +427,26 @@ bool Map::validate() {
 //  Function to travese all the adjacent node of a territory. 
 */
 bool Map::traverseTerritory(Territory* territory, vector<bool>* visitedTerritory) {
-    for (auto T : *territory->getBorderList()) {                //Loop trought all the adjacent territory of the current territory
+    for (auto T : territory->getBorderList()) {                //Loop trought all the adjacent territory of the current territory
         if (visitedTerritory->at(T->getID() - 1) == false) {    //check if the territory was already visited
             visitedTerritory->at(T->getID() - 1) = true;        //if not , mark it ass visited and call the recursive function on it 
             traverseTerritory(T, visitedTerritory);
         }        
     }
     return true;
+}
+
+/*
+* Retreives territory ids
+* This function will help facilitating the retrieval of
+* territory objects by searching a territory by its id.
+*/
+std::vector<int> Map::getTerritoryIds() {
+    vector<int> territoryIds;
+    for (Territory* t : this->listTerritory) {
+        territoryIds.push_back(t->getID());
+    }
+    return territoryIds;
 }
 
 /*
@@ -452,7 +465,7 @@ bool Continent::traverseTerritory(Territory* territory, vector<string>* visitedT
         }   
     }
         
-    for (auto T: *territory->getBorderList()) {                    //Will loop trough all the territory of the adgecency list.
+    for (auto T: territory->getBorderList()) {                    //Will loop trough all the territory of the adgecency list.
         if (T->getContinent() == continent) {                      // Check if the territory is member of the good continent. 
             bool innerFinishCheck = false;
             for (int i = 0; i < size && innerFinishCheck == false; i++) { //loop trough all the adgecent territory and call the function resursively if needed
@@ -548,7 +561,18 @@ Territory::Territory(const Territory &t) {
 }
 
 //Territory parameter contructor.
-Territory::Territory(int pId, int pContinent, Player* pPlayer, int pNbArmy, int pPosx, int pPosy, std::string pName, std::vector<Territory*> pListTerritory) {
+Territory::Territory
+(
+    int pId, 
+    int pContinent, 
+    Player* pPlayer, 
+    int pNbArmy, 
+    int pPosx, 
+    int pPosy, 
+    std::string pName, 
+    std::vector<Territory*> pListTerritory
+) 
+{
     id = pId;
     name = pName;
     continent = pContinent;
@@ -580,14 +604,26 @@ void Territory::setPosy(int posy) {
     this->posy = posy;
 }
 
-int Territory::getID() { return id; };
+int Territory::getID() const 
+{ 
+    return id; 
+}
+
+void Territory::setPlayer(Player* newPlayer) {
+    this->player = newPlayer;
+}
+
+void Territory::setNbArmy(int newNbArmy) {
+    this->nbArmy = newNbArmy;
+}
+
 int Territory::getContinent() { return continent; };
 int Territory::getPosx() { return posx; };
 int Territory::getPosy() { return posy; };
 std::string Territory::getName() { return name; };
 Player* Territory::getPlayer() { return player; };
 int Territory::getNbArmy() { return nbArmy; };
-std::vector<Territory*>* Territory::getBorderList() { return &listBorder; };
+std::vector<Territory*>& Territory::getBorderList() { return this->listBorder; };
 
 
 
@@ -601,6 +637,11 @@ Continent::~Continent() {
 Territory::~Territory() {
     listBorder.~vector();
     
+}
+
+bool Territory::operator==(const Territory& inRHS) const
+{
+    return this->getID() == inRHS.getID();
 }
 
 
@@ -645,7 +686,7 @@ std::ostream& operator << (std::ostream& out, Territory& t) {
     std::cout << "\nThis territory have the following value:\n Name:" << t.getName()<< "\n Id: " << t.getID() << "\n Player:  " << t.getPlayer() << endl;
     std::cout<<" Nb Army :"<<t.getNbArmy() << "\n Pos X : " << t.getPosx() << "\n Pos Y : " << t.getPosy() << endl;
     std::cout << "The folowing territory are connected to it :\n";
-    for (auto x : *t.getBorderList()) {
+    for (auto x : t.getBorderList()) {
         cout <<" "<< x->getName()<<endl;
     }
     return out;

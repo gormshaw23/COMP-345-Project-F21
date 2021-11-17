@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#ifdef PLAYERDRIVER
 int main()
 {
     std::cout << "This is the player driver class!\n";
@@ -89,7 +90,7 @@ int main()
     std::cout << "Player 1 now issues orders:\n";
     std::cout << "issuing order..." << std::endl;
     player1->issueOrder(
-        EOrderTypes::Advance, 
+        EOrderType::Advance, 
         std::vector<Territory*>(), 
         0, 
         std::vector<Player*>()
@@ -97,7 +98,7 @@ int main()
 
     std::cout << "issuing order..." << std::endl;
     player1->issueOrder(
-        EOrderTypes::Advance,
+        EOrderType::Advance,
         std::vector<Territory*>(),
         0,
         std::vector<Player*>()
@@ -132,3 +133,4 @@ int main()
     delete player3;
     delete player4;
 }
+#endif
