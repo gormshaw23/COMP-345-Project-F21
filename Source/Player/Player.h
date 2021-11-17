@@ -14,6 +14,7 @@ class Hand;
 class Order;
 class OrdersList;
 class Territory;
+class PlayerStrategies;
 
 enum class EOrderType;
 
@@ -34,6 +35,9 @@ public:
 	/* public member functions */
 	void setPlayerName(std::string inPlayerName);
 	const std::string getPlayerName() const;
+
+	void setPlayerStrategy(PlayerStrategies* inPlayerStrategy);
+	PlayerStrategies* getPlayerStrategy() const;
 
 	const std::size_t getPlayerID() const;
 	const std::vector<Territory*> toDefend() const;
@@ -83,4 +87,6 @@ private:
 	std::vector<Player*> _playersNotToAttack;
 
 	static std::size_t _globalID;
+
+	PlayerStrategies* _playerStrategy = nullptr;
 };
