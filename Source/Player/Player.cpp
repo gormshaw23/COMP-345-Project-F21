@@ -58,6 +58,11 @@ Player::~Player()
 	_territoriesOwned.shrink_to_fit();
 }
 
+bool Player::operator==(const Player& inRHS) const
+{
+	return this->getPlayerID() == inRHS.getPlayerID();
+}
+
 Player& Player::operator=(const Player& inPlayer)
 {
 	if (this == &inPlayer)
@@ -90,14 +95,8 @@ Player& Player::operator=(const Player& inPlayer)
 }
 
 
-const std::vector<Territory*> Player::toAttack(std::vector<Territory*> inTerritories) const
+const std::vector<Territory*> Player::toAttack() const
 {
-	std::vector<Territory*> _territoriesToAttack;
-	for (Territory* t : inTerritories) {
-		//If the territory belongs to another player, add to territories to attack
-		if (t->getPlayer()->getPlayerName().compare(this->getPlayerName()) != 0)
-			_territoriesToAttack.push_back(t);
-	}
 	return _territoriesToAttack;
 }
 
@@ -111,15 +110,13 @@ const std::string Player::getPlayerName() const
 	return this->_playerName;
 }
 
-const std::vector<Territory*> Player::toDefend(std::vector<Territory*> inTerritories) const
+const std::size_t Player::getPlayerID() const
 {
-	std::vector<Territory*> _territoriesToDefend;
-	for (Territory* t : inTerritories) {
-		//If the territory belongs to the player, add to territories to defend
-		if (t->getPlayer()->getPlayerName().compare(this->getPlayerName()) == 0)
-			_territoriesToDefend.push_back(t);
-	}
+	return this->_id;
+}
 
+const std::vector<Territory*> Player::toDefend() const
+{
 	return _territoriesToDefend;
 }
 
@@ -132,39 +129,57 @@ const std::vector<Territory*> Player::toDefend(std::vector<Territory*> inTerrito
 */
 void Player::issueOrder
 (
-	const EOrderTypes inOrderType,
+	const EOrderType inOrderType,
+	const std::vector<Player*> inPlayers,
 	const std::vector<Territory*> inTerritories,
 	const std::vector<int> inNumArmies
 )
 {
-	//Sort input territories between toAttack and toDefend
-	std::vector<Territory*> territoriesToAttack = toAttack(inTerritories);
-	std::vector<Territory*> territoriesToDefend = toDefend(inTerritories);
+	
+	////Sort input territories between toAttack and toDefend
+	std::vector<Territory*> territoriesToAttack;
+	for (Territory* t : inTerritories)
+	{
+		//If the territory belongs to another player, add to territories to attack
+		if (t->getPlayer()->getPlayerName().compare(this->getPlayerName()) != 0)
+			territoriesToAttack.push_back(t);
+	}
+	this->SetTerritoriesToAttack(territoriesToAttack);
 
-	//Create order(s) based on territories to defend
-	for (Territory* t : territoriesToDefend) {
+	std::vector<Territory*> territoriesToDefend;
+	for (Territory* t : inTerritories)
+	{
+		//If the territory belongs to the player, add to territories to defend
+		if (t->getPlayer()->getPlayerName().compare(this->getPlayerName()) == 0)
+			territoriesToDefend.push_back(t);
+	}
+
+	this->SetTerritoriesToDefend(territoriesToDefend);
+
+	for (Territory* t : territoriesToDefend)
+	{
 		switch (inOrderType) {
-		case EOrderTypes::Deploy:
+		case EOrderType::Deploy:
 			this->_orders->add(new Deploy());
 			break;
 
-		case EOrderTypes::Advance:
+		case EOrderType::Advance:
 			this->_orders->add(new Advance());
 			break;
 
-		case EOrderTypes::Bomb:
+		case EOrderType::Bomb:
 			this->_orders->add(new Bomb());
 			break;
 
-		case EOrderTypes::Blockade:
+		case EOrderType::Blockade:
 			this->_orders->add(new Blockade());
 			break;
 
-		case EOrderTypes::Airlift:
+		case EOrderType::Airlift:
 			this->_orders->add(new Airlift());
 			break;
 
-		case EOrderTypes::Negotiate:
+		case EOrderType::Negotiate:
 			this->_orders->add(new Negotiate());
 			break;
 		}
@@ -173,27 +188,27 @@ void Player::issueOrder
 	//Create order(s) based on territories to attack
 	for (Territory* t : territoriesToAttack) {
 		switch (inOrderType) {
-		case EOrderTypes::Deploy:
+		case EOrderType::Deploy:
 			this->_orders->add(new Deploy());
 			break;
 
-		case EOrderTypes::Advance:
+		case EOrderType::Advance:
 			this->_orders->add(new Advance());
 			break;
 
-		case EOrderTypes::Bomb:
+		case EOrderType::Bomb:
 			this->_orders->add(new Bomb());
 			break;
 
-		case EOrderTypes::Blockade:
+		case EOrderType::Blockade:
 			this->_orders->add(new Blockade());
 			break;
 
-		case EOrderTypes::Airlift:
+		case EOrderType::Airlift:
 			this->_orders->add(new Airlift());
 			break;
 
-		case EOrderTypes::Negotiate:
+		case EOrderType::Negotiate:
 			this->_orders->add(new Negotiate());
 			break;
 		}
@@ -215,7 +230,33 @@ std::vector<Territory*>& Player::getTerritoriesOwned()
 	return this->_territoriesOwned;
 }
 
-void Player::setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned) {
+std::vector<Player*>& Player::getNotAttackablePlayers()
+{
+	return this->_playersNotToAttack;
+}
+
+void Player::setReinforcementPool(const std::size_t inPoolSize)
+{
+	this->availableReinforcements = inPoolSize;
+}
+
+std::size_t Player::getReinforcementPoolSize() const
+{
+	return availableReinforcements;
+}
+
+void Player::setCapturedTerritoryFlag(bool bInFlag)
+{
+	bTookTerritory = bInFlag;
+}
+
+bool Player::getCapturedTerritoryFlag() const
+{
+	return bTookTerritory;
+}
+
+void Player::setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned)
+{
 	this->_territoriesOwned = newTerritoriesOwned;
 }
 
@@ -231,10 +272,22 @@ std::ostream& operator<<(std::ostream& out, const Player& inPlayer)
 	return out;
 }
 
-int Player::getRPool_temp() {
-	return rPool_temp;
+void Player::AddTerritoryToAttack(Territory* inTerritoryToAttack)
+{
+	this->_territoriesToAttack.push_back(inTerritoryToAttack);
 }
 
-void Player::setRPool_temp(int newRPool_temp) {
-	rPool_temp = newRPool_temp;
+void Player::AddTerritoryToDefend(Territory* inTerritoryToDefend)
+{
+	this->_territoriesToDefend.push_back(inTerritoryToDefend);
+}
+
+void Player::SetTerritoriesToAttack(std::vector<Territory*> inTerritories)
+{
+	this->_territoriesToAttack = inTerritories;
+}
+
+void Player::SetTerritoriesToDefend(std::vector<Territory*> inTerritories)
+{
+	this->_territoriesToDefend = inTerritories;
 }

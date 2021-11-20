@@ -8,12 +8,11 @@
 #endif
 using namespace std; 
 
+enum class EOrderType;
+
 class Card {
 
 public: 
-
-	
-
 	enum cardType {
 		Bomb,
 		Reinforcement,
@@ -165,7 +164,7 @@ public:
 
 	/* Special play() method */
 
-	EOrderTypes play(Card*);
+	EOrderType play(Card*);
 
 private: 
 	vector<Card*>* newHand; 

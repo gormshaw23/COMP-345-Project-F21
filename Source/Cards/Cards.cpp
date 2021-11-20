@@ -4,6 +4,9 @@
 #include <chrono>
 #include <ctime>
 #include <random>
+
+#include "Order/Orders.h"
+
 using namespace std; 
 
 /*
@@ -351,19 +354,19 @@ Card* Hand::drawCard_Hand()
 * Modified play function that returns an order type,
 * for an order to be issued
 */
-EOrderTypes Hand::play(Card* someCards) {
+EOrderType Hand::play(Card* someCards) {
 	switch (someCards->getNewCardType()) {
 	case Card::Bomb:
-		return EOrderTypes::Bomb;
+		return EOrderType::Bomb;
 		break;
 	case Card::Blockade:
-		return EOrderTypes::Blockade;
+		return EOrderType::Blockade;
 		break;
 	case Card::Airlift:
-		return EOrderTypes::Airlift;
+		return EOrderType::Airlift;
 		break;
 	case Card::Diplomacy:
-		return EOrderTypes::Negotiate;
+		return EOrderType::Negotiate;
 		break;
 	default:
 		break;

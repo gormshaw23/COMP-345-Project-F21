@@ -31,13 +31,16 @@
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{8b6d18e5-8ad0-4c76-8f9d-e77c08901e9c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Log">
+      <UniqueIdentifier>{e67db046-56eb-4161-acc7-bf7618445f4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CommandProcessor">
+      <UniqueIdentifier>{32bd64e5-cb66-40c9-be0f-73c42ff5d5c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Player\Player.cpp">
       <Filter>Source Files\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PlayerDriver.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Cards\Cards.cpp">
       <Filter>Source Files\Cards</Filter>
@@ -50,6 +53,30 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\GameEngine.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\OrdersDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameLog\LoggingObserver.cpp">
+      <Filter>Source Files\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameLog\GameLogDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CommandProcessor\CommandProcessor.cpp">
+      <Filter>Source Files\CommandProcessor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CommandProcessorDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CardsDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MapDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PlayerDriver.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +97,15 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\GameEngine.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Common\localization.h">
+      <Filter>Source Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameLog\LoggingObserver.h">
+      <Filter>Source Files\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CommandProcessor\CommandProcessor.h">
+      <Filter>Source Files\CommandProcessor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,10 +1,12 @@
-#include "GameEngine.h"
+#include <iostream>
 #include <map>
 #include <string>
 #include <algorithm>
-using namespace std;
-#include <iostream>
 #include <Common/CommonTypes.h>
+
+#include "Engine/GameEngine.h"
+#include "Player/Player.h"
+#include "Map/map.h"
 #include "Cards/Cards.h"
 
 /**
@@ -26,6 +28,14 @@ GameEngine::GameEngine(const GameEngine& obj)
 	*eState = *obj.eState;
 }
 
+GameEngine::GameEngine(std::list<Subject*>* list) : CommandProcessor(list)
+{
+    eState = new GameState(GAME_STATE_UNKNOWN);
+
+#ifdef DEBUG_ENABLE
+    cout << "constructor\n";
+#endif
+}
 /**
  * destructor of GameEngine class
  */
@@ -45,6 +55,7 @@ GameEngine::~GameEngine()
 void GameEngine::setCurrentState(GameState lState)
 {
 	*eState = lState;
+	GameEngine::Subject::Notify(*this);
 }
 /**
  * getter
@@ -65,10 +76,21 @@ GameEngine& GameEngine::operator=(const GameEngine& obj)
 	return *this;
 }
 
+Player* GameEngine::getNeutralPlayer() const
+{
+    return neutralPlayer;
+}
+
+GameEngine& GameEngine::getInstance()
+{
+    static GameEngine instance;
+    return instance;
+}
+
 /**
  * Stream insertion operator of GameEngine class
  */
-ostream& operator<<(ostream& out, const GameState value) {
+std::ostream& operator<<(std::ostream& out, const GameState value) {
 	const char* s = 0;
 #define PROCESS_VAL(p) case(p): s = #p; break;
 	switch (value) {
@@ -91,11 +113,11 @@ ostream& operator<<(ostream& out, const GameState value) {
  * @param lState local state
  * @return Name string of the user input
  */
-string get_user_input(GameState lState) {
-	string Name;
-	cout << "The current game state is (" << lState << ")\n";
-	cout << "Please type your command with lower-case letters:" << "\n";
-	getline(cin, Name);
+std::string get_user_input(GameState lState) {
+	std::string Name = "";
+	std::cout << "The current game state is (" << lState << ")\n";
+	std::cout << "Please type your command with lower-case letters:" << "\n";
+	getline(std::cin, Name);
 	return Name;
 }
 
@@ -104,143 +126,218 @@ string get_user_input(GameState lState) {
  * To update the current state by a valid command, reject the command if it is invalid
  */
 void GameEngine::game_run() {
-	//set start state
-	GameEngine::setCurrentState(GAME_STATE_START);
-	string user_input;
-	// map a key to the value
-	map<game_user_input, string> user_input_list;
-	user_input_list[LOADMAP] = "loadmap";
-	user_input_list[VALIDATEMAP] = "validatemap";
-	user_input_list[ADDPLAYER] = "addplayer";
-	user_input_list[ASSIGNCOUNTRIES] = "assigncountries";
-	user_input_list[ISSUEORDER] = "issueorder";
-	user_input_list[ENDEXECORDERS] = "endexecorders";
-	user_input_list[EXECORDER] = "execorder";
-	user_input_list[ENDISSUEORDERS] = "endissueorders";
-	user_input_list[WIN] = "win";
-	user_input_list[PLAY] = "play";
-	user_input_list[END] = "end";
-	//using a loop to read the input until the end of the state
-	while (true) {
+    //set start state
+    GameEngine::setCurrentState(GAME_STATE_START);
+    std::string user_input;
+    // map a key to the value
+    std::map<game_user_input, std::string> user_input_list;
+    user_input_list[LOADMAP] = "loadmap";
+    user_input_list[VALIDATEMAP] = "validatemap";
+    user_input_list[ADDPLAYER] = "addplayer";
+    user_input_list[ASSIGNCOUNTRIES] = "assigncountries";
+    user_input_list[ISSUEORDER] = "issueorder";
+    user_input_list[ENDEXECORDERS] = "endexecorders";
+    user_input_list[EXECORDER] = "execorder";
+    user_input_list[ENDISSUEORDERS] = "endissueorders";
+    user_input_list[WIN] = "win";
+    user_input_list[PLAY] = "play";
+    user_input_list[END] = "end";
+    //using a loop to read the input until the end of the state
 
-		user_input = get_user_input(*eState);
-		//compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
-		switch (*eState) {
+    Command* useCommand;
+    while (true) {
 
-		case  GAME_STATE_START:
-			if (!user_input.compare(user_input_list[LOADMAP])) {
-				setCurrentState(GAME_STATE_MAP_LOAD);
-			}
-			else {
+        user_input = "get_user_input(*eState)";
+         useCommand = this->getCommand();
 
-				cout << "Error input(please try: loadmap)\n";
-			}
-			break;
-		case  GAME_STATE_MAP_LOAD:
-			if (!user_input.compare(user_input_list[LOADMAP])) {
-				setCurrentState(GAME_STATE_MAP_LOAD);
+        //compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
+        switch (*eState) {
 
-			}
-			else if (!user_input.compare(user_input_list[VALIDATEMAP])) {
-				setCurrentState(GAME_STATE_MAP_VALIDATED);
-			}
-			else {
+            case  GAME_STATE_START:
+                if (this->validate(useCommand,"loadmap")) {
+                    useCommand->saveEffect(" from Game state start to load map");
+                    setCurrentState(GAME_STATE_MAP_LOAD);
+                    std::cout << "Will it finaly work ?"<<std::endl;
+                }
+                else {
+                    useCommand->saveEffect(" Invalid command in game state start");
+					std::cout << "Error input(please try: loadmap)\n";
+                }
+                break;
+            case  GAME_STATE_MAP_LOAD:
+                if (this->validate(useCommand, "loadmap")) {
+                    useCommand->saveEffect(" from load map  to load map");
+                    setCurrentState(GAME_STATE_MAP_LOAD);
 
-				cout << "Error input(please try: " << user_input_list[VALIDATEMAP] << " or "
-					<< user_input_list[LOADMAP] << "\n";
-			}
-			break;
-		case GAME_STATE_MAP_VALIDATED:
-			if (!user_input.compare(user_input_list[ADDPLAYER])) {
-				setCurrentState(GAME_STATE_PLAYERS_ADDED);
+                }
+                else if (this->validate(useCommand, "validatemap")){
+                    useCommand->saveEffect(" from load map to validate  map");
+                    setCurrentState(GAME_STATE_MAP_VALIDATED);
+                    std::cout << " Map validated " << std::endl;
+                }
+                else {
+                    useCommand->saveEffect(" Invalide commandd in map load");
+					std::cout << "Error input(please try: "<< user_input_list[VALIDATEMAP] << " or "
+                        << user_input_list[LOADMAP] <<"\n" ;
+                }
+                break;
+            case GAME_STATE_MAP_VALIDATED:
+                if (this->validate(useCommand, "addplayer")) {
+                    useCommand->saveEffect(" from Game state map validate to add player");
+                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
+                    std::cout << "|| entering player added||" << std::endl;
+                }
+                else {
+                    useCommand->saveEffect(" Invlid in map validated");
+					std::cout << "Error input(please try: " << user_input_list[ADDPLAYER] << "\n";
+                }
+                break;
+            case GAME_STATE_PLAYERS_ADDED:
+                if (this->validate(useCommand, "assigncountries")) {
+                    useCommand->saveEffect(" from Game state player added to assigne countries");
+                    setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
+                    std::cout << "|| entering assigne countries||" << std::endl;
+                    
+                }
+                else if (this->validate(useCommand, "addplayer")) {
+                    useCommand->saveEffect(" from Game state add player to addplayer");
+                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
+                    std::cout << "|| entering player added||" << std::endl;
+                }
+                else {
+                    useCommand->saveEffect("Invalid in player added ");
+					std::cout << "Error input(please try: " << user_input_list[ADDPLAYER] <<" or "
+                        << user_input_list[ASSIGNCOUNTRIES] << ")\n";
+                }
+                break;
+            case GAME_STATE_ASSIGN_REINFORCEMENT:
 
-			}
-			else {
-				cout << "Error input(please try: " << user_input_list[ADDPLAYER] << "\n";
-			}
-			break;
+                if (this->validate(useCommand, "issueorder")) {
+                    useCommand->saveEffect(" from Game state assigne reinforcement to issue order");
+                    setCurrentState(GAME_STATE_ISSUE_ORDERS);
+                    std::cout << "|| entering issue Order||" << std::endl;
+                }
+                else {
+                    useCommand->saveEffect(" invalid in assigne reinforcement");
+					std::cout << "Error input(please try: " << user_input_list[ISSUEORDER] <<")\n";
+                }
 
-		case GAME_STATE_PLAYERS_ADDED:
-			if (!user_input.compare(user_input_list[ADDPLAYER])) {
-				setCurrentState(GAME_STATE_PLAYERS_ADDED);
+                break;
+            case GAME_STATE_ISSUE_ORDERS:
+                if (this->validate(useCommand, "endissueorders")) {
+                    useCommand->saveEffect(" from Game state issue order to execute order order");
+                    setCurrentState(GAME_STATE_EXECUTE_ORDERS);
+                    std::cout << "|| entering end issue order||" << std::endl;
+                }
+                
+                else if(this->validate(useCommand, "issueorder")) {
+                    useCommand->saveEffect(" from Game state issue order to issue order");
+                    setCurrentState(GAME_STATE_ISSUE_ORDERS);
+                    std::cout << "|| entering issue Order||" << std::endl;
+                }
+                else {
+                    useCommand->saveEffect(" invalid in issue order");
+					std::cout << "Error input(please try: " << user_input_list[ISSUEORDER] << " or "
+                        << user_input_list[ENDISSUEORDERS] << ")\n";
+                }
+                break;
 
-			}
-			else if (!user_input.compare(user_input_list[ASSIGNCOUNTRIES])) {
-				setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
-			}
-			else {
-				cout << "Error input(please try: " << user_input_list[ADDPLAYER] << " or "
-					<< user_input_list[ASSIGNCOUNTRIES] << ")\n";
-			}
-			break;
-		case GAME_STATE_ASSIGN_REINFORCEMENT:
+            case GAME_STATE_EXECUTE_ORDERS:
+                if (this->validate(useCommand, "execorder")) {
+                    useCommand->saveEffect(" from Game stat ececutte order to execute order");
+                    setCurrentState(GAME_STATE_EXECUTE_ORDERS);
+                    std::cout << "|| entering execute Order||" << std::endl;
+                    
+                }
+                else if (this->validate(useCommand, "endexecorders")) {
+                    useCommand->saveEffect(" from Game state execute order  to end execute order");
+                    setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
+                    std::cout << "|| entering end execute Order||" << std::endl;
+                }
+                else if (this->validate(useCommand, "win")) {
+                    useCommand->saveEffect(" from Game state execute order to win");
+                    setCurrentState(GAME_STATE_WIN);
+                    std::cout << "|| entering win||" << std::endl;
+                }
+                else {
+                    useCommand->saveEffect(" invalid in exec order");
+					std::cout << "Error input(please try: " << user_input_list[EXECORDER] << " or "
+                        << user_input_list[ENDEXECORDERS] <<" or "
+                        << user_input_list[WIN] << ")\n";
+                }
+                break;
+            case GAME_STATE_WIN:
+                if (this->validate(useCommand, "play")) {
+                    useCommand->saveEffect(" from Game state win to start");
+                    setCurrentState(GAME_STATE_START);
+                    std::cout << "|| entering play||" << std::endl;
 
-			if (!user_input.compare(user_input_list[ISSUEORDER])) {
-				setCurrentState(GAME_STATE_ISSUE_ORDERS);
+                }
+                else if (this->validate(useCommand, "end")) {
+                    useCommand->saveEffect(" from Game state win to end");
+                    setCurrentState(GAME_STATE_END);
+                    std::cout << "|| entering end||" << std::endl;
+                }
+                else {
+                    useCommand->saveEffect(" Invalid in win");
+					std::cout << "Error input(please try: " << user_input_list[PLAY] << " or "
+                        << user_input_list[END] << ")\n";
+                }
+                break;
+            case GAME_STATE_END:
+                std::cout << "|| we reached the end||" << std::endl;
+                break;
+            default:
 
-			}
-			else {
-				cout << "Error input(please try: " << user_input_list[ISSUEORDER] << ")\n";
-			}
+                break;
+        }
+        useCommand = NULL;
 
-			break;
-		case GAME_STATE_ISSUE_ORDERS:
-			if (!user_input.compare(user_input_list[ISSUEORDER])) {
-				setCurrentState(GAME_STATE_ISSUE_ORDERS);
+        if (*eState == GAME_STATE_END) {
 
-			}
-			else if (!user_input.compare(user_input_list[ENDISSUEORDERS])) {
-				setCurrentState(GAME_STATE_EXECUTE_ORDERS);
-			}
-			else {
-				cout << "Error input(please try: " << user_input_list[ISSUEORDER] << " or "
-					<< user_input_list[ENDISSUEORDERS] << ")\n";
-			}
-			break;
-
-		case GAME_STATE_EXECUTE_ORDERS:
-			if (!user_input.compare(user_input_list[EXECORDER])) {
-				setCurrentState(GAME_STATE_EXECUTE_ORDERS);
-
-			}
-			else if (!user_input.compare(user_input_list[ENDEXECORDERS])) {
-				setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
-			}
-			else if (!user_input.compare(user_input_list[WIN])) {
-				setCurrentState(GAME_STATE_WIN);
-			}
-			else {
-				cout << "Error input(please try: " << user_input_list[EXECORDER] << " or "
-					<< user_input_list[ENDEXECORDERS] << " or "
-					<< user_input_list[WIN] << ")\n";
-			}
-			break;
-		case GAME_STATE_WIN:
-			if (!user_input.compare(user_input_list[PLAY])) {
-				setCurrentState(GAME_STATE_START);
-
-			}
-			else if (!user_input.compare(user_input_list[END])) {
-				setCurrentState(GAME_STATE_END);
-			}
-			else {
-				cout << "Error input(please try: " << user_input_list[PLAY] << " or "
-					<< user_input_list[END] << ")\n";
-			}
-			break;
-		case GAME_STATE_END:
-
-			break;
-		default:
-
-			break;
-		}
-		if (*eState == GAME_STATE_END) {
-
-			break;
-		}
-	}//end of while loop
+            break;
+        }
+    }//end of while loop
 }//end of game_run()
+
+
+std::string GameEngine::stringToLog() {
+    std::string toLog  = "New game state : ";
+
+    switch (this->getCurrentState())
+    {
+    case GAME_STATE_UNKNOWN:
+        toLog = toLog + " unknown\n";
+            break;
+    case GAME_STATE_START:
+        toLog = toLog + "gamestart\n";
+        break;
+    case GAME_STATE_MAP_LOAD:
+        toLog = toLog + "map load\n";
+        break;
+    case GAME_STATE_MAP_VALIDATED:
+        toLog = toLog + "map validated\n";
+        break;
+    case GAME_STATE_PLAYERS_ADDED:
+        toLog = toLog + "player added\n";
+        break;
+    case GAME_STATE_ASSIGN_REINFORCEMENT:
+        toLog = toLog + "assigne reinforcement\n";
+        break;
+    case GAME_STATE_ISSUE_ORDERS:
+        toLog = toLog + "issue order\n";
+        break;
+    case GAME_STATE_EXECUTE_ORDERS:
+        toLog = toLog + "execute order\n";
+        break;
+    case GAME_STATE_WIN:
+        toLog = toLog + "win\n";
+        break;
+    default:
+        break;
+    }
+    return  toLog;
+}
 
 /*
 * The main game loop of the Warzone game
@@ -262,7 +359,7 @@ void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
 	cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
 }
 
-list<Player*> GameEngine::getPlayers_temp() {
+std::list<Player*> GameEngine::getPlayers_temp() {
 	return players_temp;
 }
 
@@ -275,9 +372,9 @@ list<Player*> GameEngine::getPlayers_temp() {
 */
 void GameEngine::reinforcementPhase(Player* p, Map* map) {
 	//Add armies to reinforcement pool based on territories owned
-	vector<Territory*> playerTerritories = p->getTerritoriesOwned();
+	std::vector<Territory*> playerTerritories = p->getTerritoriesOwned();
 	int numTerritoriesOwned = playerTerritories.size();
-	int currentRPool = p->getRPool_temp();
+	int currentRPool = p->getReinforcementPoolSize();
 
 	int newArmies = (numTerritoriesOwned >= 1 && numTerritoriesOwned < 12) ? 3 : numTerritoriesOwned / 3;
 	std::cout << "Adding " << newArmies << " armies to reinforcement pool\n";
@@ -288,8 +385,8 @@ void GameEngine::reinforcementPhase(Player* p, Map* map) {
 	* if so, add continent's bonus to reinforcement pool
 	*/
 	//Sort player territories
-	vector<Territory*> sortedPlayerTerritories = playerTerritories;
-	sort(sortedPlayerTerritories.begin(), sortedPlayerTerritories.end());
+	std::vector<Territory*> sortedPlayerTerritories = playerTerritories;
+	std::sort(sortedPlayerTerritories.begin(), sortedPlayerTerritories.end());
 
 	//Iterate through each territory
 	int currentContinentID = 1;
@@ -311,7 +408,7 @@ void GameEngine::reinforcementPhase(Player* p, Map* map) {
 		Verify if the territoryToContinentCount is equal to the size of the
 		continent's country list size. If so, add bonus armies to reinforcement pool
 		*/
-		vector<Continent*> mapContinents = map->listContinents;
+		std::vector<Continent*> mapContinents = map->listContinents;
 		Continent* c = mapContinents.at(currentContinentID - 1);
 		int numCountries = c->getCountryList()->size();
 		if (territoryToContinentCount == numCountries) {
@@ -321,7 +418,7 @@ void GameEngine::reinforcementPhase(Player* p, Map* map) {
 
 	}//end for loop
 
-	p->setRPool_temp(currentRPool); //Update new reinforcement pool
+	p->setReinforcementPool(currentRPool); //Update new reinforcement pool
 	std::cout << p->getPlayerName() << "\'s reinforcement pool: " << currentRPool << "\n";
 }
 
@@ -347,7 +444,7 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 	std::cout << "Issuing orders for " << p->getPlayerName() << "\n";
 	while (!turnEnded) {
 		//Input player order
-		int currentRPool = p->getRPool_temp();
+		int currentRPool = p->getReinforcementPoolSize();
 		int input;
 		bool isValidInput = false;
 		std::cout << "Enter a number for the given options:\n"
@@ -360,14 +457,16 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 		//Check if the input is valid
 		switch (input) {
 		case 1: //Deploy armies
-			while (!isValidInput) {
+			while (!isValidInput)
+			{
 				//Input territory id
 				int territory;
 				std::cout << "Enter the territory id you would like to deploy to: \n";
 				std::cin >> territory;
 
 				//Check if territory exists
-				if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end()) {
+				if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
+				{
 					//Add to list of territories for deploy order
 					inTerritories.push_back(map->listTerritory.at(territory - 1));
 
@@ -377,10 +476,11 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 					std::cin >> armies;
 
 					//Check if number of armies is greater than 0 and less or equal than the reinforcement pool
-					if (armies > 0 && armies <= currentRPool) {
+					if (armies > 0 && armies <= currentRPool)
+					{
 						inArmies.push_back(armies);
 						currentRPool -= armies;
-						p->setRPool_temp(currentRPool);
+						p->setReinforcementPool(currentRPool);
 
 						//Input user if they would like to add another territory
 						string yesOrNo;
@@ -390,16 +490,18 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 							isValidInput = true;
 						}
 					}
-					else {
+					else
+					{
 						cout << "The given number of armies is invalid\n";
 					}
 				}
-				else {
+				else
+				{
 					cout << "The given territory does not exist\n";
 				}
 			}//end while loop
 			//Create deploy order
-			p->issueOrder(EOrderTypes::Deploy, inTerritories, inArmies);
+			p->issueOrder(EOrderType::Deploy, std::vector<Player*>(), inTerritories, inArmies);
 
 			//Clear vectors
 			inTerritories.clear();
@@ -407,7 +509,8 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 			break;
 
 		case 2: //Advance armies
-			while (!isValidInput) {
+			while (!isValidInput)
+			{
 				//Input territory id
 				int territory;
 				std::cout << "Enter the territory id you would like to advance to: \n";
@@ -436,16 +539,18 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 							isValidInput = true;
 						}
 					}
-					else {
+					else
+					{
 						cout << "The given number of armies is invalid\n";
 					}
 				}
-				else {
+				else
+				{
 					cout << "The given territory does not exist\n";
 				}
 			}//end loop
 			//Create advance order
-			p->issueOrder(EOrderTypes::Advance, inTerritories, inArmies);
+			p->issueOrder(EOrderType::Advance, std::vector<Player*>(), inTerritories, inArmies);
 
 			//Clear vectors
 			inTerritories.clear();
@@ -454,86 +559,101 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 
 		case 3: //Play card
 			//Retrieve player's hand		
-			Card* c;	
+			Card * c;
 			std::cout << p->getPlayerName() << "\'s hand\n";
 			h->showHand();
 
 			//Input card
-			if (handSize > 0) {
+			if (handSize > 0)
+			{
 				int cardInput;
 				std::string prompt = (handSize == 1) ? "Enter 1 " : "Enter a number between 1 and " + handSize;
 				std::cout << prompt << " to play a card or 0 to return to the menu";
 				std::cin >> cardInput;
-				if (cardInput > 0) {
+				if (cardInput > 0)
+				{
 					//Iterate through hand
-					for (int i = 0; i < handSize; i++) {
+					for (int i = 0; i < handSize; i++)
+					{
 						c = h->drawCard_Hand();
-						if (i == cardInput - 1) {
+						if (i == cardInput - 1)
+						{
 							//Play card from the given input
-							EOrderTypes e = h->play(c);
+							EOrderType e = h->play(c);
 							d_temp->insertCard_Deck(c);
-							if (c->getNewCardType() == Card::Reinforcement) {
-								p->setRPool_temp(p->getRPool_temp() + 5);
+							if (c->getNewCardType() == Card::Reinforcement)
+							{
+								p->setReinforcementPool(p->getReinforcementPoolSize() + 5);
 							}
-							else {
-								switch (e) {
-								case EOrderTypes::Bomb:
-									while (!isValidInput) {
+							else
+							{
+								switch (e)
+								{
+								case EOrderType::Bomb:
+									while (!isValidInput)
+									{
 										//Input territory id
 										int territory;
 										std::cout << "Enter the territory id you would like to advance to: \n";
 										std::cin >> territory;
 
-										if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end()) {
+										if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
+										{
 											//Add to list of territories for bomb order
 											inTerritories.push_back(map->listTerritory.at(territory - 1));
 											isValidInput = true;
 										}
-										else {
+										else
+										{
 											cout << "The given territory does not exist\n";
 										}
 									} // end while loop
 									//Issue bomb order
-									p->issueOrder(e, inTerritories, inArmies);
+									p->issueOrder(e, std::vector<Player*>(), inTerritories, inArmies);
 
 									//Clear vectors
 									inTerritories.clear();
 									inArmies.clear();
 									break;
 
-								case EOrderTypes::Blockade:
-									while (!isValidInput) {
+								case EOrderType::Blockade:
+									while (!isValidInput)
+									{
 										//Input territory id
 										int territory;
 										std::cout << "Enter the territory id you would like to initiate a blockade: \n";
 										std::cin >> territory;
 
-										if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end()) {
+										if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
+										{
 											//Add to list of territories for blockade order
 											inTerritories.push_back(map->listTerritory.at(territory - 1));
 											isValidInput = true;
 										}
-										else {
+										else
+										{
 											cout << "The given territory does not exist\n";
 										}
 									} // end while loop
 									//Issue blockade order
-									p->issueOrder(e, inTerritories, inArmies);
+									p->issueOrder(e, std::vector<Player*>(), inTerritories, inArmies);
 
 									//Clear vectors
 									inTerritories.clear();
 									inArmies.clear();
 									break;
 
-								case EOrderTypes::Airlift:
-									while (!isValidInput) {
+								case EOrderType::Airlift:
+									while (!isValidInput)
+									{
 										//Input territory id
 										int territory;
 										std::cout << "Enter the territory id you would like to advance to: \n";
 										std::cin >> territory;
 
 										//Check if territory exists
-										if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end()) {
+										if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
+										{
 											//Add to list of territories for Airlift order
 											inTerritories.push_back(map->listTerritory.at(territory - 1));
 
@@ -544,21 +664,22 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 											inArmies.push_back(armies);
 											isValidInput = true;
 										}
-										else {
+										else
+										{
 											cout << "The given territory does not exist\n";
 										}
 									}//end loop
 									//Issue airlift order
-									p->issueOrder(e, inTerritories, inArmies);
+									p->issueOrder(e, std::vector<Player*>(), inTerritories, inArmies);
 
 									//Clear vectors
 									inTerritories.clear();
 									inArmies.clear();
 									break;
 
-								case EOrderTypes::Negotiate:
+								case EOrderType::Negotiate:
 									//Issue negotiate order
-									p->issueOrder(e, inTerritories, inArmies);
+									p->issueOrder(e, std::vector<Player*>(), inTerritories, inArmies);
 									break;
 								}//end switch 
 							}
@@ -567,7 +688,8 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 					}
 				}
 			} //end if
-			else {
+			else
+			{
 				std::cout << "You have no cards available";
 			}
 			break;
@@ -611,4 +733,3 @@ void GameEngine::executeOrdersPhase(Player* p) {
 		ol->remove(0);
 	}
 }
-
