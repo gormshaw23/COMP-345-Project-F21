@@ -36,6 +36,7 @@ Order::Order()
  */
 Order::~Order()
 {
+   
 }
 
 /**
@@ -238,6 +239,7 @@ void Deploy::execute()
         owner->setReinforcementPool(owner->getReinforcementPoolSize() - armies);
         targetTerritory->setNbArmy(armies);
     }
+    Notify(*this);
 }
 
 bool Deploy::validate()

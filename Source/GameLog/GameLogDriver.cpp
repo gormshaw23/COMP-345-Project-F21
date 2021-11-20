@@ -9,6 +9,7 @@
 
 using std::cout;
 using std::endl;
+#define GAMELOGDRIVER
 
 #ifdef GAMELOGDRIVER
 int main()
@@ -28,10 +29,7 @@ int main()
         "GAME_STATE_WIN                     play / end\n" << endl;
 
     //Creat the game engine
-    GameEngine gameobj(_listSubject);
-    //little fix
-    GameEngine* obj = &gameobj;
-    _listSubject->push_back(obj);
+    
 
     
 
@@ -50,7 +48,10 @@ int main()
 
     //creation of the log Observer
     static LogObserver* loglog = new  LogObserver(_listSubject);
-
+    GameEngine gameobj(loglog);
+    //little fix
+    GameEngine* obj = &gameobj;
+    loglog->lateAddition(obj);
 
    
     ol.add(dOrder);
