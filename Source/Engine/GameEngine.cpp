@@ -245,7 +245,7 @@ void GameEngine::game_run() {
 /*
 * The main game loop of the Warzone game
 */
-void GameEngine::mainGameLoop(list<Player*> players, Map* map) {
+void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
 	while (players.size() != 1) { //Loop if there are 2 or more players left
 		//Give a number of armies to each player
 		for (Player* p : players)
@@ -259,6 +259,7 @@ void GameEngine::mainGameLoop(list<Player*> players, Map* map) {
 		for (Player* p : players)
 			executeOrdersPhase(p);
 	}
+	cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
 }
 
 list<Player*> GameEngine::getPlayers_temp() {
@@ -278,8 +279,8 @@ void GameEngine::reinforcementPhase(Player* p, Map* map) {
 	int numTerritoriesOwned = playerTerritories.size();
 	int currentRPool = p->getRPool_temp();
 
-	int newArmies = numTerritoriesOwned / 3;
-	std::cout << "Adding " << newArmies << " armies to reinforcement pool";
+	int newArmies = (numTerritoriesOwned >= 1 && numTerritoriesOwned < 12) ? 3 : numTerritoriesOwned / 3;
+	std::cout << "Adding " << newArmies << " armies to reinforcement pool\n";
 	currentRPool = (numTerritoriesOwned >= 1 && numTerritoriesOwned < 12) ? currentRPool + 3 : currentRPool + newArmies;
 
 	/*
@@ -314,7 +315,7 @@ void GameEngine::reinforcementPhase(Player* p, Map* map) {
 		Continent* c = mapContinents.at(currentContinentID - 1);
 		int numCountries = c->getCountryList()->size();
 		if (territoryToContinentCount == numCountries) {
-			std::cout << "BONUS: Adding " << c->getArmyValu() << " armies to reinforcement pool";
+			std::cout << "BONUS: Adding " << c->getArmyValu() << " armies to reinforcement pool\n";
 			currentRPool = currentRPool + c->getArmyValu();
 		}
 
@@ -385,7 +386,7 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 						string yesOrNo;
 						std::cout << "Would you like to add another territory? (y/n)\n";
 						std::cin >> yesOrNo;
-						if (yesOrNo.compare("y") == 0) {
+						if (yesOrNo.compare("n") == 0) {
 							isValidInput = true;
 						}
 					}
@@ -414,25 +415,24 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 
 				//Check if territory exists
 				if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end()) {
-					//Add to list of territories for deploy order
-					inTerritories.push_back(map->listTerritory.at(territory - 1));
+					//Add to list of territories for advance order
+					Territory* t = map->listTerritory.at(territory - 1);
+					inTerritories.push_back(t);
 
 					//Input number of armies to advance
 					int armies;
-					std::cout << "Current reinfrocement pool: " << currentRPool << "Enter the number of armies you would like to advance: \n";
+					std::cout << "Enter the number of armies you would like to advance: \n";
 					std::cin >> armies;
 
-					//Check if number of armies is greater than 0 and less or equal than the reinforcement pool
-					if (armies > 0 && armies <= currentRPool) {
+					//Check if number of armies is greater than 0
+					if (armies > 0) {
 						inArmies.push_back(armies);
-						currentRPool -= armies;
-						p->setRPool_temp(currentRPool);
 
 						//Input user if they would like to add another territory
 						string yesOrNo;
 						std::cout << "Would you like to add another territory? (y/n)\n";
 						std::cin >> yesOrNo;
-						if (yesOrNo.compare("y") == 0) {
+						if (yesOrNo.compare("n") == 0) {
 							isValidInput = true;
 						}
 					}

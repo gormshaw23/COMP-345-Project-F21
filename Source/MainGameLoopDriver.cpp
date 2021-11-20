@@ -22,14 +22,14 @@ int main() {
 	Player* p2 = new Player("player2");
 	p1->setRPool_temp(50);
 	p2->setRPool_temp(50);
-	list<Player*> players = { p1, p2 };
+	vector<Player*> players = { p1, p2 };
 
 	//Set territories
 	vector<Territory*> p1Territories;
 	vector<Territory*> p2Territories;
 
 	//Player 1 gets all territories but one
-	//Player 2 gets ont territory only
+	//Player 2 gets one territory only
 	for (int i = 0; i < map->listTerritory.size(); i++) {
 		Territory* t = map->listTerritory.at(i);
 		if (i != map->listTerritory.size() - 1) {
@@ -39,9 +39,11 @@ int main() {
 		else {
 			t->setPlayer(p2);
 			p2Territories.push_back(t);
-		}
-			
+		}	
 	}
+
+	p1->setTerritoriesOwned(p1Territories);
+	p2->setTerritoriesOwned(p2Territories);
 
 	//Go through main game loop
 	ge->mainGameLoop(players, map);

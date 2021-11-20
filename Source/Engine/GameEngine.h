@@ -51,7 +51,7 @@ class GameEngine{
         GameEngine &operator=(const GameEngine &obj);//Assignment operator
         friend ostream &operator<<(ostream &out, const GameState value);//stream insertion operator
 
-        void mainGameLoop(list<Player*> players, Map* map); //Game loop function
+        void mainGameLoop(vector<Player*> players, Map* map); //Game loop function
         list<Player*> getPlayers_temp(); //Temporary getter for list of players
         
 
