@@ -3,6 +3,8 @@
 #include <string>
 #include <algorithm>
 #include <Common/CommonTypes.h>
+#include <vector>
+using std::vector;
 
 #include "Engine/GameEngine.h"
 #include "Player/Player.h"
@@ -359,7 +361,7 @@ void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
 	cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
 }
 
-std::list<Player*> GameEngine::getPlayers_temp() {
+std::vector<Player*> GameEngine::getPlayers_temp() {
 	return players_temp;
 }
 
@@ -370,7 +372,9 @@ std::list<Player*> GameEngine::getPlayers_temp() {
 * @param *p pointer to a Player object
 * @param *map pointer to a Map object
 */
-void GameEngine::reinforcementPhase(Player* p, Map* map) {
+const void GameEngine::reinforcementPhase(Player* p, Map* map) {
+	std::cout << "DEBUG: Reinforcement phase - " << p->getPlayerName() << std::endl;
+
 	//Add armies to reinforcement pool based on territories owned
 	std::vector<Territory*> playerTerritories = p->getTerritoriesOwned();
 	int numTerritoriesOwned = playerTerritories.size();
@@ -386,13 +390,17 @@ void GameEngine::reinforcementPhase(Player* p, Map* map) {
 	*/
 	//Sort player territories
 	std::vector<Territory*> sortedPlayerTerritories = playerTerritories;
-	std::sort(sortedPlayerTerritories.begin(), sortedPlayerTerritories.end());
+	std::sort(sortedPlayerTerritories.begin(), sortedPlayerTerritories.end(), [](const Territory* lhs, const Territory* rhs) {
+		return lhs->getID() < rhs->getID();
+		});
 
 	//Iterate through each territory
 	int currentContinentID = 1;
 	int territoryToContinentCount = 0; //Variable to count territories belonging to one continent
+	std::vector<Continent*> mapContinents = map->listContinents;
 	for (Territory* t : sortedPlayerTerritories) {
 
+		std::cout << "DEBUG: Territory " << t->getID() << std::endl;
 		/*
 		Reset territoryToContinentCount if the current territory's continent id
 		is different from the previous territory
@@ -401,21 +409,22 @@ void GameEngine::reinforcementPhase(Player* p, Map* map) {
 			currentContinentID = t->getContinent();
 			territoryToContinentCount = 0;
 		}
+		else {
+			territoryToContinentCount++; //Increment territoryToContinentCount
 
-		territoryToContinentCount++; //Increment territoryToContinentCount
-
-		/*
-		Verify if the territoryToContinentCount is equal to the size of the
-		continent's country list size. If so, add bonus armies to reinforcement pool
-		*/
-		std::vector<Continent*> mapContinents = map->listContinents;
-		Continent* c = mapContinents.at(currentContinentID - 1);
-		int numCountries = c->getCountryList()->size();
-		if (territoryToContinentCount == numCountries) {
-			std::cout << "BONUS: Adding " << c->getArmyValu() << " armies to reinforcement pool\n";
-			currentRPool = currentRPool + c->getArmyValu();
+			/*
+			Verify if the territoryToContinentCount is equal to the size of the
+			continent's country list size. If so, add bonus armies to reinforcement pool
+			*/
+			Continent* c = mapContinents.at(currentContinentID - 1);
+			int numCountries = c->getCountryList()->size();
+			if (territoryToContinentCount == numCountries) {
+				std::cout << "BONUS: Adding " << c->getArmyValu() << " armies to reinforcement pool\n";
+				currentRPool = currentRPool + c->getArmyValu();
+				territoryToContinentCount = 0;
+				currentContinentID++;
+			}
 		}
-
 	}//end for loop
 
 	p->setReinforcementPool(currentRPool); //Update new reinforcement pool
@@ -427,7 +436,7 @@ void GameEngine::reinforcementPhase(Player* p, Map* map) {
 *
 * @param *p pointer to a Player object
 */
-void GameEngine::issueOrdersPhase(Player* p, Map* map) {
+const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 	bool turnEnded = false;
 	std::vector<int> territoryIds = map->getTerritoryIds();
 	std::vector<Territory*> inTerritories;
@@ -709,7 +718,7 @@ void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 *
 * @param *p pointer to a Player object
 */
-void GameEngine::executeOrdersPhase(Player* p) {
+const void GameEngine::executeOrdersPhase(Player* p) {
 	std::cout << "Executing " << p->getPlayerName() << "\'s orders\n";
 	OrdersList* ol = p->getOrders();
 
