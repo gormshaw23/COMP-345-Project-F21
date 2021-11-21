@@ -345,6 +345,7 @@ std::string GameEngine::stringToLog() {
 * The main game loop of the Warzone game
 */
 void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
+	int initPlayersSize = players.size();
 	while (players.size() != 1) { //Loop if there are 2 or more players left
 		//Give a number of armies to each player
 		for (Player* p : players)
@@ -357,6 +358,12 @@ void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
 		//Execute all orders from players
 		for (Player* p : players)
 			executeOrdersPhase(p);
+
+		//Check if all players control at least one territory
+		for (int i = 0; i < initPlayersSize; i++) {
+
+		}
+
 	}
 	cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
 }
@@ -395,7 +402,7 @@ const void GameEngine::reinforcementPhase(Player* p, Map* map) {
 		});
 
 	//Iterate through each territory
-	int currentContinentID = 1;
+	int currentContinentID = sortedPlayerTerritories.at(0)->getContinent(); // Get the minimum territory id
 	int territoryToContinentCount = 0; //Variable to count territories belonging to one continent
 	std::vector<Continent*> mapContinents = map->listContinents;
 	for (Territory* t : sortedPlayerTerritories) {
@@ -407,23 +414,23 @@ const void GameEngine::reinforcementPhase(Player* p, Map* map) {
 		*/
 		if (t->getContinent() != currentContinentID) {
 			currentContinentID = t->getContinent();
-			territoryToContinentCount = 0;
+			territoryToContinentCount = 1;
 		}
 		else {
 			territoryToContinentCount++; //Increment territoryToContinentCount
+		}
 
-			/*
-			Verify if the territoryToContinentCount is equal to the size of the
-			continent's country list size. If so, add bonus armies to reinforcement pool
-			*/
-			Continent* c = mapContinents.at(currentContinentID - 1);
-			int numCountries = c->getCountryList()->size();
-			if (territoryToContinentCount == numCountries) {
-				std::cout << "BONUS: Adding " << c->getArmyValu() << " armies to reinforcement pool\n";
-				currentRPool = currentRPool + c->getArmyValu();
-				territoryToContinentCount = 0;
-				currentContinentID++;
-			}
+		/*
+		Verify if the territoryToContinentCount is equal to the size of the
+		continent's country list size. If so, add bonus armies to reinforcement pool
+		*/
+		Continent* c = mapContinents.at(currentContinentID - 1);
+		int numCountries = c->getCountryList()->size();
+		if (territoryToContinentCount == numCountries) {
+			std::cout << "BONUS: Adding " << c->getArmyValu() << " armies to reinforcement pool\n";
+			currentRPool = currentRPool + c->getArmyValu();
+			territoryToContinentCount = 0;
+			currentContinentID++;
 		}
 	}//end for loop
 
@@ -437,6 +444,7 @@ const void GameEngine::reinforcementPhase(Player* p, Map* map) {
 * @param *p pointer to a Player object
 */
 const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
+	std::cout << "DEBUG: Issue Orders phase - " << p->getPlayerName() << std::endl;
 	bool turnEnded = false;
 	std::vector<int> territoryIds = map->getTerritoryIds();
 	std::vector<Territory*> inTerritories;
