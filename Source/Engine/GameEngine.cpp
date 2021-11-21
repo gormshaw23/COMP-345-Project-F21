@@ -345,8 +345,9 @@ std::string GameEngine::stringToLog() {
 * The main game loop of the Warzone game
 */
 void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
-	int initPlayersSize = players.size();
 	while (players.size() != 1) { //Loop if there are 2 or more players left
+		int initPlayersSize = players.size();
+
 		//Give a number of armies to each player
 		for (Player* p : players)
 			reinforcementPhase(p, map);
@@ -359,12 +360,16 @@ void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
 		for (Player* p : players)
 			executeOrdersPhase(p);
 
-		//Check if all players control at least one territory
+		//Remove player(s) if they have no more territories
+		int playerIndex = 0;
 		for (int i = 0; i < initPlayersSize; i++) {
-
+			Player* p = players.at(playerIndex);
+			if (p->getTerritoriesOwned().size() == 0) {
+				players.erase(players.begin() + playerIndex);
+				playerIndex--;
+			}
 		}
-
-	}
+	}//end while
 	cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
 }
 
