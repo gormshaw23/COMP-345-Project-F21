@@ -4,8 +4,11 @@
  * @author Mark Nasol
  */
 
+#include <vector>
+using std::vector;
 #include "Player/Player.h"
 #include "Engine/GameEngine.h"
+#include "Map/map.h"
 
 
 int main() {
@@ -20,8 +23,8 @@ int main() {
 	//Create players
 	Player *p1 = new Player("player1");
 	Player* p2 = new Player("player2");
-	p1->setRPool_temp(50);
-	p2->setRPool_temp(50);
+	p1->setReinforcementPool(50);
+	p2->setReinforcementPool(50);
 	vector<Player*> players = { p1, p2 };
 
 	//Set territories
