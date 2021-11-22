@@ -57,7 +57,6 @@ public:
     Player* getNeutralPlayer() const;
 
     void mainGameLoop(std::vector<Player*> players, Map* map); //Game loop function
-    std::vector<Player*> getPlayers_temp(); //Temporary getter for list of players
         
 
     static GameEngine& getInstance();
@@ -68,7 +67,6 @@ private:
     const void issueOrdersPhase(Player* p, Map* map);
     const void executeOrdersPhase(Player* p);
 
-    std::vector<Player*> players_temp; //Temporary variable for list of players
     Player* neutralPlayer = nullptr;
 };
 
