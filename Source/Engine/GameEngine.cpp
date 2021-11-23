@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <Common/CommonTypes.h>
 #include <vector>
-using std::vector;
 
 #include "Engine/GameEngine.h"
 #include "Player/Player.h"
@@ -373,7 +372,7 @@ void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
 			}
 		}
 	}//end while
-	cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
+	std::cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
 }
 
 /*
@@ -640,7 +639,7 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 											}
 											else
 											{
-												cout << "The given territory does not exist\n";
+												std::cout << "The given territory does not exist\n";
 											}
 										} // end while loop
 										//Issue bomb order
@@ -664,7 +663,7 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 											}
 											else
 											{
-												cout << "The given territory does not exist\n";
+												std::cout << "The given territory does not exist\n";
 											}
 										} // end while loop
 										//Issue blockade order
@@ -694,7 +693,7 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 											}
 											else
 											{
-												cout << "The given territory does not exist\n";
+												std::cout << "The given territory does not exist\n";
 											}
 										}//end loop
 										//Issue airlift order
@@ -726,7 +725,7 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 			turnEnded = true;
 			break;
 		default:
-			cout << "The given input is invalid\n";
+			std::cout << "The given input is invalid\n";
 			break;
 		}//end switch
 	}//end while - continue if turnEnded is false
