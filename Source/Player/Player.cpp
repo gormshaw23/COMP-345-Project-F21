@@ -242,6 +242,10 @@ Hand* Player::getCurrentHand() const
 	return this->_hand;
 }
 
+void Player::setCurrentHand(Hand* newHand) {
+	this->_hand = newHand;
+}
+
 std::vector<Territory*>& Player::getTerritoriesOwned()
 {
 	return this->_territoriesOwned;

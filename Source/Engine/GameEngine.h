@@ -1,7 +1,9 @@
 #pragma once
 #include <iostream>
 #include <list>
+#include <vector>
 
+#include "Player/Player.h"
 #include "../GameLog/LoggingObserver.h"
 #include "../CommandProcessor/CommandProcessor.h"
 
@@ -54,20 +56,17 @@ public:
 
     Player* getNeutralPlayer() const;
 
-    void mainGameLoop(std::list<Player*> players, Map* map); //Game loop function
-    std::list<Player*> getPlayers_temp(); //Temporary getter for list of players
-
-    friend std::ostream &operator<<(std::ostream &out, const GameState value);//stream insertion operator
+    void mainGameLoop(std::vector<Player*> players, Map* map); //Game loop function
+        
 
     static GameEngine& getInstance();
 private:
     GameState* eState;
     void setCurrentState(GameState eState);
-    void reinforcementPhase(Player* p, Map* m);
-    void issueOrdersPhase(Player* p, Map* map);
-    void executeOrdersPhase(Player* p);
+    const void reinforcementPhase(Player* p, Map* m);
+    const void issueOrdersPhase(Player* p, Map* map);
+    const void executeOrdersPhase(Player* p);
 
-    std::list<Player*> players_temp; //Temporary variable for list of players
     Player* neutralPlayer = nullptr;
 };
 
