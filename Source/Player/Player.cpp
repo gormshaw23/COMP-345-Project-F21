@@ -2,6 +2,7 @@
 #include "Order/Orders.h"
 #include "Cards/Cards.h"
 #include "Map/map.h"
+#include "Strategy/PlayerStrategies.h"
 #include "Common/CommonTypes.h"
 
 // SIZE_MAX should mean it will auto increment and overflow back to 0
@@ -56,6 +57,12 @@ Player::~Player()
 
 	_territoriesOwned.clear();
 	_territoriesOwned.shrink_to_fit();
+
+	if (this->_playerStrategy != nullptr)
+	{
+		delete this->_playerStrategy;
+		this->_playerStrategy = nullptr;
+	}
 }
 
 bool Player::operator==(const Player& inRHS) const
@@ -108,6 +115,16 @@ void Player::setPlayerName(std::string inPlayerName)
 const std::string Player::getPlayerName() const
 {
 	return this->_playerName;
+}
+
+void Player::setPlayerStrategy(PlayerStrategies* inPlayerStrategy)
+{
+	this->_playerStrategy = inPlayerStrategy;
+}
+
+PlayerStrategies* Player::getPlayerStrategy() const
+{
+	return this->_playerStrategy;
 }
 
 const std::size_t Player::getPlayerID() const
