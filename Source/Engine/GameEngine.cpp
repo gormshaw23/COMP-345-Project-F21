@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <algorithm>
+#include <vector>
 #include <Common/CommonTypes.h>
 #include <vector>
 
@@ -10,6 +11,26 @@
 #include "Map/map.h"
 #include "Cards/Cards.h"
 
+
+vector<string> splitString(std::string str)
+{
+	std::string word = "";
+	std::vector<string> splitstring;
+	for (auto x : str)
+	{
+		if (x == ' ')
+		{
+			//cout << word << endl;
+			splitstring.push_back(word);
+			word = "";
+		}
+		else {
+			word = word + x;
+		}
+	}
+	splitstring.push_back(word);
+	return splitstring;
+}
 /**
  * constructor of GameEngine class
  */
@@ -27,11 +48,45 @@ GameEngine::GameEngine(const GameEngine& obj)
 {
 	eState = new GameState;
 	*eState = *obj.eState;
+	commandProces = obj.commandProces;
+
 }
 
-GameEngine::GameEngine(std::list<Subject*>* list) : CommandProcessor(list)
+
+
+GameEngine::GameEngine(Observer* list) 
 {
     eState = new GameState(GAME_STATE_UNKNOWN);
+
+	std::string inputType;
+	std::vector<std::string> proccesInput;
+	bool goodInput = false;
+	while (goodInput == false) {
+		std::cout << " How will the command be entered ? ,\n Manuel : -console\n From a file : -file <filename> " << std::endl;
+		std::getline(std::cin, inputType);
+		proccesInput = splitString(inputType);
+		
+
+		if (proccesInput.at(0) == "-console") {
+			commandProces = new CommandProcessor(list);
+			goodInput = true;
+		}
+		else if (proccesInput.at(0)== "-file")
+		{
+			proccesInput.at(1).erase(remove(proccesInput.at(1).begin(), proccesInput.at(1).end(), '<'), proccesInput.at(1).end());
+			proccesInput.at(1).erase(remove(proccesInput.at(1).begin(), proccesInput.at(1).end(), '>'), proccesInput.at(1).end());
+			std::cout << proccesInput.at(1);
+			FileCommandProcessorAdapter * tempCommandProcessor =  new FileCommandProcessorAdapter(list);
+			tempCommandProcessor->setFilePath(proccesInput.at(1));
+			commandProces = tempCommandProcessor;
+			tempCommandProcessor = nullptr;
+			delete tempCommandProcessor;
+			goodInput = true;
+		}
+	}
+	
+	
+	
 
 #ifdef DEBUG_ENABLE
     cout << "constructor\n";
@@ -149,13 +204,13 @@ void GameEngine::game_run() {
     while (true) {
 
         user_input = "get_user_input(*eState)";
-         useCommand = this->getCommand();
+         useCommand =  commandProces->getCommand();
 
         //compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
         switch (*eState) {
 
             case  GAME_STATE_START:
-                if (this->validate(useCommand,"loadmap")) {
+                if (commandProces->validate(useCommand,"loadmap")) {
                     useCommand->saveEffect(" from Game state start to load map");
                     setCurrentState(GAME_STATE_MAP_LOAD);
                     std::cout << "Will it finaly work ?"<<std::endl;
@@ -166,12 +221,12 @@ void GameEngine::game_run() {
                 }
                 break;
             case  GAME_STATE_MAP_LOAD:
-                if (this->validate(useCommand, "loadmap")) {
+                if (commandProces->validate(useCommand, "loadmap")) {
                     useCommand->saveEffect(" from load map  to load map");
                     setCurrentState(GAME_STATE_MAP_LOAD);
 
                 }
-                else if (this->validate(useCommand, "validatemap")){
+                else if (commandProces->validate(useCommand, "validatemap")){
                     useCommand->saveEffect(" from load map to validate  map");
                     setCurrentState(GAME_STATE_MAP_VALIDATED);
                     std::cout << " Map validated " << std::endl;
@@ -183,7 +238,7 @@ void GameEngine::game_run() {
                 }
                 break;
             case GAME_STATE_MAP_VALIDATED:
-                if (this->validate(useCommand, "addplayer")) {
+                if (commandProces->validate(useCommand, "addplayer")) {
                     useCommand->saveEffect(" from Game state map validate to add player");
                     setCurrentState(GAME_STATE_PLAYERS_ADDED);
                     std::cout << "|| entering player added||" << std::endl;
@@ -194,13 +249,13 @@ void GameEngine::game_run() {
                 }
                 break;
             case GAME_STATE_PLAYERS_ADDED:
-                if (this->validate(useCommand, "assigncountries")) {
+                if (commandProces->validate(useCommand, "assigncountries")) {
                     useCommand->saveEffect(" from Game state player added to assigne countries");
                     setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
                     std::cout << "|| entering assigne countries||" << std::endl;
                     
                 }
-                else if (this->validate(useCommand, "addplayer")) {
+                else if (commandProces->validate(useCommand, "addplayer")) {
                     useCommand->saveEffect(" from Game state add player to addplayer");
                     setCurrentState(GAME_STATE_PLAYERS_ADDED);
                     std::cout << "|| entering player added||" << std::endl;
@@ -213,7 +268,7 @@ void GameEngine::game_run() {
                 break;
             case GAME_STATE_ASSIGN_REINFORCEMENT:
 
-                if (this->validate(useCommand, "issueorder")) {
+                if (commandProces->validate(useCommand, "issueorder")) {
                     useCommand->saveEffect(" from Game state assigne reinforcement to issue order");
                     setCurrentState(GAME_STATE_ISSUE_ORDERS);
                     std::cout << "|| entering issue Order||" << std::endl;
@@ -225,13 +280,13 @@ void GameEngine::game_run() {
 
                 break;
             case GAME_STATE_ISSUE_ORDERS:
-                if (this->validate(useCommand, "endissueorders")) {
+                if (commandProces->validate(useCommand, "endissueorders")) {
                     useCommand->saveEffect(" from Game state issue order to execute order order");
                     setCurrentState(GAME_STATE_EXECUTE_ORDERS);
                     std::cout << "|| entering end issue order||" << std::endl;
                 }
                 
-                else if(this->validate(useCommand, "issueorder")) {
+                else if(commandProces->validate(useCommand, "issueorder")) {
                     useCommand->saveEffect(" from Game state issue order to issue order");
                     setCurrentState(GAME_STATE_ISSUE_ORDERS);
                     std::cout << "|| entering issue Order||" << std::endl;
@@ -244,18 +299,18 @@ void GameEngine::game_run() {
                 break;
 
             case GAME_STATE_EXECUTE_ORDERS:
-                if (this->validate(useCommand, "execorder")) {
+                if (commandProces->validate(useCommand, "execorder")) {
                     useCommand->saveEffect(" from Game stat ececutte order to execute order");
                     setCurrentState(GAME_STATE_EXECUTE_ORDERS);
                     std::cout << "|| entering execute Order||" << std::endl;
                     
                 }
-                else if (this->validate(useCommand, "endexecorders")) {
+                else if (commandProces->validate(useCommand, "endexecorders")) {
                     useCommand->saveEffect(" from Game state execute order  to end execute order");
                     setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
                     std::cout << "|| entering end execute Order||" << std::endl;
                 }
-                else if (this->validate(useCommand, "win")) {
+                else if (commandProces->validate(useCommand, "win")) {
                     useCommand->saveEffect(" from Game state execute order to win");
                     setCurrentState(GAME_STATE_WIN);
                     std::cout << "|| entering win||" << std::endl;
@@ -268,13 +323,13 @@ void GameEngine::game_run() {
                 }
                 break;
             case GAME_STATE_WIN:
-                if (this->validate(useCommand, "play")) {
+                if (commandProces->validate(useCommand, "play")) {
                     useCommand->saveEffect(" from Game state win to start");
                     setCurrentState(GAME_STATE_START);
                     std::cout << "|| entering play||" << std::endl;
 
                 }
-                else if (this->validate(useCommand, "end")) {
+                else if (commandProces->validate(useCommand, "end")) {
                     useCommand->saveEffect(" from Game state win to end");
                     setCurrentState(GAME_STATE_END);
                     std::cout << "|| entering end||" << std::endl;
@@ -308,31 +363,31 @@ std::string GameEngine::stringToLog() {
     switch (this->getCurrentState())
     {
     case GAME_STATE_UNKNOWN:
-        toLog = toLog + " unknown\n";
+        toLog = toLog + " unknown";
             break;
     case GAME_STATE_START:
-        toLog = toLog + "gamestart\n";
+        toLog = toLog + "gamestart";
         break;
     case GAME_STATE_MAP_LOAD:
-        toLog = toLog + "map load\n";
+        toLog = toLog + "map load";
         break;
     case GAME_STATE_MAP_VALIDATED:
-        toLog = toLog + "map validated\n";
+        toLog = toLog + "map validated";
         break;
     case GAME_STATE_PLAYERS_ADDED:
-        toLog = toLog + "player added\n";
+        toLog = toLog + "player added";
         break;
     case GAME_STATE_ASSIGN_REINFORCEMENT:
-        toLog = toLog + "assigne reinforcement\n";
+        toLog = toLog + "assigne reinforcement";
         break;
     case GAME_STATE_ISSUE_ORDERS:
-        toLog = toLog + "issue order\n";
+        toLog = toLog + "issue order";
         break;
     case GAME_STATE_EXECUTE_ORDERS:
-        toLog = toLog + "execute order\n";
+        toLog = toLog + "execute order";
         break;
     case GAME_STATE_WIN:
-        toLog = toLog + "win\n";
+        toLog = toLog + "win";
         break;
     default:
         break;

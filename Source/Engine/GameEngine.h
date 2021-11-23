@@ -40,12 +40,12 @@ enum game_user_input {
     END,
 };
 
-class GameEngine :  virtual public Subject,  virtual  public ILoggable ,  public CommandProcessor {
+class GameEngine :  virtual public Subject,  virtual  public ILoggable /*,  public CommandProcessor*/ {
 public:
     GameEngine(); //constructor
-    GameEngine(std::list<Subject*>*); //constructor
+    GameEngine(Observer*); //constructor
     ~GameEngine(); //destructor
-
+    CommandProcessor* commandProces;
     using Subject::Notify;
     GameEngine(const GameEngine& gm); //copy constructor
     GameState getCurrentState(); //getter

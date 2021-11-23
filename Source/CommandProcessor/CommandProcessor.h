@@ -16,8 +16,8 @@ public:
 	//Command constructors 
 
 	Command();
-	Command(std::list<Subject*>*);
-	Command(std::string newCommand, std::string newState);
+	Command(Observer*);
+	Command(std::string newCommand, std::string newState, Observer*);
 	Command(const Command& newCommandObject);
 	Command& operator =(const Command& newCommandObject);
 	friend std::ostream& operator<<(std::ostream& os, const Command& newCommandObject);
@@ -41,61 +41,53 @@ private:
 class CommandProcessor :  virtual public Subject,  virtual public ILoggable{
 public:
 	CommandProcessor();
-	CommandProcessor(std::list<Subject*>*);
+	CommandProcessor(Observer* );
 	~CommandProcessor();
 	virtual std::string stringToLog() override; 
 	//GameEngine* getGameEngine();
 	virtual Command* getCommand();
 	virtual bool validate(Command* c, std::string);
-	
-
-
 
 private:
 	//GameEngine* gameEngine;
 
 	std::vector<Command*> listOfCommands;
 	std::string commandINMemmory;
-	std::string readCommand();
+	virtual std::string readCommand();
 
-	Command* saveCommand(std::string fromReadCommand);
+	virtual Command* saveCommand(std::string fromReadCommand);
 
 
 };
 
 
 
-class FileLineReader {
+
+class FileCommandProcessorAdapter :virtual public Subject, virtual public ILoggable, public CommandProcessor {
+private:
+	CommandProcessor* comProcessor;
+	std::string filepath;
+	std::vector<Command*> listOfCommands;
+	std::string commandINMemmory;
+	int posInFile;
+
+	virtual Command* saveCommand(std::string fromReadCommand);
+	
+
 
 public:
-	/*
-		FileLineReader();
+	FileCommandProcessorAdapter();
+	FileCommandProcessorAdapter(Observer*);
+	~FileCommandProcessorAdapter();
+	FileCommandProcessorAdapter(CommandProcessor*);
+	void setFilePath(std::string);
 
-		FileLineReader(string path);
+	virtual std::string readCommand();
 
-		FileLineReader(const FileLineReader& flr);
+	virtual Command* getCommand();
+	
 
-		~FileLineReader();
-
-		std::string readLineFromFile();
-
-		std::fstream input;
-
-	private:
-		std::string filePath;
-		*/
-};
-
-class FileCommandProcessorAdapter :public CommandProcessor {
-public:
-	/*
-	FileLineReader* FileProcessor;
-
-	FileCommandProcessorAdapter(FileLineReader*);
-
-	Command* readCommand();
-
-	*/
+	
 };
 
 
