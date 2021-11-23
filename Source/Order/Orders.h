@@ -34,7 +34,7 @@ enum class EOrderType
 /**
  * The function and member declarations of the Order class 
  */
-class Order : public Subject, ILoggable
+class Order : virtual public Subject, virtual public ILoggable
 {
 public:
     Order();                                                       //Constructor
@@ -61,7 +61,7 @@ private:
 /**
  * The function and member declarations of the Deploy class 
  */
-class Deploy : public Order
+class Deploy :  virtual public Subject , virtual public ILoggable, public Order
 {
 public:
     Deploy();                                                        //Constructor

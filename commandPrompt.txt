@@ -1,0 +1,9 @@
+loadmap
+validatemap
+addplayer
+assigncountries
+issueorder
+endissueorders
+win
+end
+
