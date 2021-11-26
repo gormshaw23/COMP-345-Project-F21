@@ -9,7 +9,7 @@
 
 using std::cout;
 using std::endl;
-#define GAMELOGDRIVER
+//#define GAMELOGDRIVER
 
 #ifdef GAMELOGDRIVER
 int main()

@@ -12,7 +12,7 @@ using std::vector;
 #include "Cards/Cards.h"
 
 int main() {
-	//Load map
+/*	//Load map
 	MapLoader* mapL = new MapLoader();
 	mapL->loadMap("canada");
 	Map* map = mapL->getListMap()->at(0);
@@ -64,17 +64,18 @@ int main() {
 
 	p1->setTerritoriesOwned(p1Territories);
 	p2->setTerritoriesOwned(p2Territories);
-
+	*/
 	//Go through main game loop
-	ge->mainGameLoop(players, map);
+	GameEngine* ge = new GameEngine();
+	ge->startupPhase();
 
-	delete p1;
-	delete p2;
+	//delete p1;
+	//delete p2;
 	delete ge;
 	//delete map;
-	delete h1;
-	delete h2;
-	delete mapL;
+	//delete h1;
+	//delete h2;
+	//delete mapL;
 
 	return 0;
 }
