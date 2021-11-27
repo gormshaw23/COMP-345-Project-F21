@@ -26,7 +26,6 @@
     <ClCompile Include="Source\Engine\GameEngine.cpp" />
     <ClCompile Include="Source\GameLog\GameLogDriver.cpp" />
     <ClCompile Include="Source\GameLog\LoggingObserver.cpp" />
-    <ClCompile Include="Source\MainGameLoopDriver.cpp" />
     <ClCompile Include="Source\MapDriver.cpp" />
     <ClCompile Include="Source\Map\map.cpp" />
     <ClCompile Include="Source\OrdersDriver.cpp" />
