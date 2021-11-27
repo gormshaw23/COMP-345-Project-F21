@@ -1,6 +1,4 @@
-#pragma once
 #include <iostream>
-using std::cin;
 #include <map>
 #include <string>
 #include <algorithm>
@@ -65,8 +63,7 @@ GameEngine::GameEngine(Observer* list)
 	bool goodInput = false;
 	while (goodInput == false) {
 		std::cout << " How will the command be entered ? ,\n Manuel : -console\n From a file : -file <filename> " << std::endl;
-		//getline(cin, inputType);
-		getline(std::cin, inputType);
+		std::getline(std::cin, inputType);
 		proccesInput = splitString(inputType);
 		
 
@@ -158,7 +155,10 @@ std::ostream& operator<<(std::ostream& out, const GameState value) {
 		PROCESS_VAL(GAME_STATE_MAP_LOAD);
 		PROCESS_VAL(GAME_STATE_MAP_VALIDATED);
 		PROCESS_VAL(GAME_STATE_PLAYERS_ADDED);
-		PROCESS_VAL(GAME_STATE_PLAY);
+		PROCESS_VAL(GAME_STATE_ASSIGN_REINFORCEMENT);
+		PROCESS_VAL(GAME_STATE_ISSUE_ORDERS);
+		PROCESS_VAL(GAME_STATE_EXECUTE_ORDERS);
+		PROCESS_VAL(GAME_STATE_WIN);
 	}
 #undef PROCESS_VAL
 
@@ -194,6 +194,7 @@ void showPossibleAction(GameState lstate) {
  */
 std::string get_user_input(GameState lState, GameEngine* reference) {
 	std::string Name = "";
+
 	
 	showPossibleAction(lState);
 	Command* userCommand = reference->commandProces->getCommand(); // use the command processor to enable the loging of information and the file reading
@@ -203,11 +204,12 @@ std::string get_user_input(GameState lState, GameEngine* reference) {
 
 
 
+
+
 /**
  * function game_run() of GameEngine class
  * To update the current state by a valid command, reject the command if it is invalid
  */
-/*
 void GameEngine::game_run() {
     //set start state
     GameEngine::setCurrentState(GAME_STATE_START);
@@ -225,7 +227,6 @@ void GameEngine::game_run() {
     user_input_list[WIN] = "win";
     user_input_list[PLAY] = "play";
     user_input_list[END] = "end";
-
     //using a loop to read the input until the end of the state
 
     Command* useCommand;
@@ -384,7 +385,6 @@ void GameEngine::game_run() {
     }//end of while loop
 }//end of game_run()
 
-*/
 
 std::string GameEngine::stringToLog() {
     std::string toLog  = "New game state : ";
@@ -406,7 +406,7 @@ std::string GameEngine::stringToLog() {
     case GAME_STATE_PLAYERS_ADDED:
         toLog = toLog + "player added";
         break;
-    /*case GAME_STATE_ASSIGN_REINFORCEMENT:
+    case GAME_STATE_ASSIGN_REINFORCEMENT:
         toLog = toLog + "assigne reinforcement";
         break;
     case GAME_STATE_ISSUE_ORDERS:
@@ -417,13 +417,12 @@ std::string GameEngine::stringToLog() {
         break;
     case GAME_STATE_WIN:
         toLog = toLog + "win";
-        break;*/
+        break;
     default:
         break;
     }
     return  toLog;
 }
-
 
 static string filename;
 static string playername;
@@ -705,6 +704,8 @@ void GameEngine::startupPhase() {
 		}
 	}//end of while loop
 }
+
+
 /*
 * The main game loop of the Warzone game
 */

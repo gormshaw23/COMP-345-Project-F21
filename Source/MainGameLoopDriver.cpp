@@ -13,7 +13,8 @@ using std::vector;
 #include "GameLog/LoggingObserver.h"
 #include "CommandProcessor/CommandProcessor.h"
 int main() {
-/*	//Load map
+  /*
+	//Load map
 	MapLoader* mapL = new MapLoader();
 	mapL->loadMap("canada");
 	Map* map = mapL->getListMap()->at(0);
@@ -65,8 +66,9 @@ int main() {
 
 	p1->setTerritoriesOwned(p1Territories);
 	p2->setTerritoriesOwned(p2Territories);
-	*/
+*/
 	//Go through main game loop
+
 	std::list<Subject*>* _listSubject = new std::list<Subject*>;
 	
 	static LogObserver* loglog = new  LogObserver(_listSubject);
@@ -74,13 +76,16 @@ int main() {
 	GameEngine* ge = new GameEngine(loglog);
 	ge->startupPhase();
 
-	//delete p1;
-	//delete p2;
+	ge->mainGameLoop(players, map);
+
+
+	delete p1;
+	delete p2;
 	delete ge;
 	//delete map;
-	//delete h1;
-	//delete h2;
-	//delete mapL;
+	delete h1;
+	delete h2;
+	delete mapL;
 
 	return 0;
 }
