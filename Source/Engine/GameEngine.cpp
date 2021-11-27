@@ -155,10 +155,7 @@ std::ostream& operator<<(std::ostream& out, const GameState value) {
 		PROCESS_VAL(GAME_STATE_MAP_LOAD);
 		PROCESS_VAL(GAME_STATE_MAP_VALIDATED);
 		PROCESS_VAL(GAME_STATE_PLAYERS_ADDED);
-		PROCESS_VAL(GAME_STATE_ASSIGN_REINFORCEMENT);
-		PROCESS_VAL(GAME_STATE_ISSUE_ORDERS);
-		PROCESS_VAL(GAME_STATE_EXECUTE_ORDERS);
-		PROCESS_VAL(GAME_STATE_WIN);
+		
 	}
 #undef PROCESS_VAL
 
@@ -206,10 +203,11 @@ std::string get_user_input(GameState lState, GameEngine* reference) {
 
 
 
-/**
+/*
  * function game_run() of GameEngine class
  * To update the current state by a valid command, reject the command if it is invalid
- */
+ /*
+/*
 void GameEngine::game_run() {
     //set start state
     GameEngine::setCurrentState(GAME_STATE_START);
@@ -384,7 +382,7 @@ void GameEngine::game_run() {
         }
     }//end of while loop
 }//end of game_run()
-
+*/
 
 std::string GameEngine::stringToLog() {
     std::string toLog  = "New game state : ";
@@ -406,18 +404,7 @@ std::string GameEngine::stringToLog() {
     case GAME_STATE_PLAYERS_ADDED:
         toLog = toLog + "player added";
         break;
-    case GAME_STATE_ASSIGN_REINFORCEMENT:
-        toLog = toLog + "assigne reinforcement";
-        break;
-    case GAME_STATE_ISSUE_ORDERS:
-        toLog = toLog + "issue order";
-        break;
-    case GAME_STATE_EXECUTE_ORDERS:
-        toLog = toLog + "execute order";
-        break;
-    case GAME_STATE_WIN:
-        toLog = toLog + "win";
-        break;
+  
     default:
         break;
     }
@@ -439,6 +426,9 @@ vector<int> ReinforcementPools;
  * @param string str user input
  * @return string name
  */
+
+
+
 string GameEngine::extractName(string str) {
 
 	unsigned first = str.find("<");

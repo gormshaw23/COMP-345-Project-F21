@@ -76,16 +76,16 @@ int main() {
 	GameEngine* ge = new GameEngine(loglog);
 	ge->startupPhase();
 
-	ge->mainGameLoop(players, map);
+	//ge->mainGameLoop(players, map);
 
 
-	delete p1;
-	delete p2;
+	//delete p1;
+	//delete p2;
 	delete ge;
 	//delete map;
-	delete h1;
-	delete h2;
-	delete mapL;
+	//delete h1;
+	//delete h2;
+	//delete mapL;
 
 	return 0;
 }

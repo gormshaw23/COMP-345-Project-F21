@@ -2,6 +2,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include<string>
 
 #include "Player/Player.h"
 #include "../GameLog/LoggingObserver.h"
@@ -13,34 +14,24 @@ class Map;
 //game state
 enum GameState
 {
-    GAME_STATE_UNKNOWN=0,
-    GAME_STATE_START=1,
-    GAME_STATE_MAP_LOAD=2,
-    GAME_STATE_MAP_VALIDATED=3,
-    GAME_STATE_PLAYERS_ADDED=4,
-    GAME_STATE_ASSIGN_REINFORCEMENT=5,
-    GAME_STATE_ISSUE_ORDERS=6,
-    GAME_STATE_EXECUTE_ORDERS=7,
-    GAME_STATE_WIN=8,
-    GAME_STATE_END=9,
-    GAME_STATE_MAX=0XFFFF,//set a max value to prevent overflow
+    GAME_STATE_UNKNOWN = 0,
+    GAME_STATE_START = 1,
+    GAME_STATE_MAP_LOAD = 2,
+    GAME_STATE_MAP_VALIDATED = 3,
+    GAME_STATE_PLAYERS_ADDED = 4,
+    GAME_STATE_PLAY = 5,
+    GAME_STATE_MAX = 0XFFFF,//set a max value to prevent overflow
+
 };
 //user input
 enum game_user_input {
     LOADMAP,
     VALIDATEMAP,
     ADDPLAYER,
-    ASSIGNCOUNTRIES,
-    ISSUEORDER,
-    ENDEXECORDERS,
-    EXECORDER,
-    ENDISSUEORDERS,
-    WIN,
-    PLAY,
-    END,
+    GAMESTART,
 };
 
-class GameEngine :  virtual public Subject,  virtual  public ILoggable /*,  public CommandProcessor*/ {
+class GameEngine : virtual public Subject, virtual  public ILoggable /*,  public CommandProcessor*/ {
 public:
     GameEngine(); //constructor
 
@@ -53,12 +44,14 @@ public:
 
     void game_run();
     virtual std::string stringToLog() override;
-    GameEngine &operator=(const GameEngine &obj);//Assignment operator
+    GameEngine& operator=(const GameEngine& obj);//Assignment operator
 
     Player* getNeutralPlayer() const;
 
     void mainGameLoop(std::vector<Player*> players, Map* map); //Game loop function
-        
+
+    void startupPhase();
+
 
     static GameEngine& getInstance();
 private:
@@ -67,6 +60,9 @@ private:
     const void reinforcementPhase(Player* p, Map* m);
     const void issueOrdersPhase(Player* p, Map* map);
     const void executeOrdersPhase(Player* p);
+    void gamestart();
+    std::string extractName(std::string);//extract name from loadmap and addplayer command
+    void addPlayer(std::string);//add player
 
     Player* neutralPlayer = nullptr;
 };

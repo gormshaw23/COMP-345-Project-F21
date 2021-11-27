@@ -1,4 +1,4 @@
-#pragma once
+
 #include <map>
 #include <iostream>
 #include <fstream>
@@ -258,6 +258,7 @@ bool CommandProcessor::validate(Command* c, std::string gameState) {
 		}
 
 	}
+	return false;
 }
 
 FileCommandProcessorAdapter::FileCommandProcessorAdapter(CommandProcessor* c) {
