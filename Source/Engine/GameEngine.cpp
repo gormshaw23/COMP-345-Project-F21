@@ -172,8 +172,9 @@ std::ostream& operator<<(std::ostream& out, const GameState value) {
 std::string get_user_input(GameState lState) {
 	std::string Name = "";
 	std::cout << "The current game state is (" << lState << ")\n";
-	std::cout << "Please type your command with lower-case letters:" << "\n";
+	std::cout << "Type your command with lower-case letters:" << "\n";
 	getline(std::cin, Name);
+	std::cout << std::endl; 
 	return Name;
 }
 
@@ -532,8 +533,13 @@ void GameEngine::gamestart() {
 void GameEngine::startupPhase() {
 	//set start state
 	GameEngine::setCurrentState(GAME_STATE_START);
+	
+	
+	cout << "********************************************************************" << endl; 
+	cout << "			Welcome to Warzone!" << endl; 
+	cout << "********************************************************************\n" << endl;
+	cout << "Please enter \"loadmap <filename>\" in the mentioned format to start playing. " << endl;
 
-	cout << "Please enter loadmap <filename> in the mentioned format: " << endl;
 	string user_input;
 	// map a key to the value
 	map<game_user_input, string> user_input_list;
@@ -555,10 +561,12 @@ void GameEngine::startupPhase() {
 				//do mapload
 				filename = extractName(user_input);
 				setCurrentState(GAME_STATE_MAP_LOAD);
+				cout << "Map loaded!\nPlease try: " << "\"" << user_input_list[VALIDATEMAP] << "\" to validate the current map, or " 
+					<< "\"" << user_input_list[LOADMAP] << " <filename>\" to load another map." << "\n";
 			}
 			else {
 
-				cout << "Error input(please try: loadmap <filename>)\n";
+				cout << "Error input(please try: \"loadmap <filename>)\"\n";
 			}
 			break;
 		case  GAME_STATE_MAP_LOAD:
@@ -566,6 +574,9 @@ void GameEngine::startupPhase() {
 				//do mapload
 				filename = extractName(user_input);
 				setCurrentState(GAME_STATE_MAP_LOAD);
+				cout << "Map loaded!\nPlease try: " << "\"" << user_input_list[VALIDATEMAP] << "\" to validate the current map, or "
+					<< "\"" << user_input_list[LOADMAP] << " <filename>\" to load another map." << "\n";
+				
 			}
 			else if (!user_input.compare(user_input_list[VALIDATEMAP])) {
 
@@ -576,9 +587,13 @@ void GameEngine::startupPhase() {
 				if (mapload == true) {
 					mapToUse = newmap->getListMap()->at(0);
 					setCurrentState(GAME_STATE_MAP_VALIDATED);
+					cout << "Map validated!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add a player." << "\n";
 				}
 				else {
 					setCurrentState(GAME_STATE_START);
+					cout << "The map is invalid, let's try that again!" << endl; 
+					cout << "Please enter \"loadmap <filename>\" in the mentioned format to start playing. " << endl;
+					
 				}
 
 			}
@@ -594,9 +609,10 @@ void GameEngine::startupPhase() {
 
 				addPlayer(user_input);
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
+				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player." << "\n";
 			}
 			else {
-				cout << "Error input(please try: " << user_input_list[ADDPLAYER] << "\n";
+				cout << "Error input(please try: \"addplayer <playername>\" to add a player."<< "\n";
 			}
 			break;
 
@@ -606,10 +622,13 @@ void GameEngine::startupPhase() {
 
 					addPlayer(user_input);
 					setCurrentState(GAME_STATE_PLAYERS_ADDED);
+					cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
+						<< "\"" << user_input_list[GAMESTART] << "\" to begin playing." << "\n";
+	
 				}
 				else {
 					cout << "The players are less than 2, there should be 2-6 players in this game." << endl;
-					cout << "Please enter addplayer <playername>." << endl;
+					cout << "Please enter \"addplayer <playername>.\"" << endl;
 				}
 			}
 
@@ -618,6 +637,9 @@ void GameEngine::startupPhase() {
 
 					GameEngine::gamestart();
 					setCurrentState(GAME_STATE_PLAY);
+					cout << "Player limit reached! There is a limit of 6." << endl;
+					cout << "All set! Ready to play!" << endl;
+					mainGameLoop(playerlist, mapToUse);
 				}
 				else {
 					cout << "Error input! The players have reached to upper limit of 6. Please enter gamestart." << endl;
@@ -628,12 +650,15 @@ void GameEngine::startupPhase() {
 
 				addPlayer(user_input);
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
+				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
+					<< "\"" << user_input_list[GAMESTART] << " <filename>\" to begin playing." << "\n";
 
 			}
 			else if (!user_input.compare(user_input_list[GAMESTART])) {
 
 				GameEngine::gamestart();
 				setCurrentState(GAME_STATE_PLAY);
+				cout << "All set! Ready to play!" << endl; 
 				mainGameLoop(playerlist, mapToUse);
 			}
 			else {
