@@ -59,6 +59,7 @@ public:
 
 	OrdersList* getOrders() const;
 	Hand* getCurrentHand() const;
+	void setCurrentHand(Hand* newHand);
 	std::vector<Territory*>& getTerritoriesOwned();
 	void setTerritoriesOwned(std::vector<Territory*> newTerritoriesOwned);
 	std::vector<Player*>& getNotAttackablePlayers();

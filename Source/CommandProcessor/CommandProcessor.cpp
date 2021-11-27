@@ -1,5 +1,7 @@
-#pragma once
+
 #include <map>
+#include <iostream>
+#include <fstream>
 
 #include "CommandProcessor.h"
 #include "Engine/GameEngine.h"
@@ -13,15 +15,15 @@ Command::Command() : command(""), effect("")
 {
 
 }
-Command::Command(std::list<Subject*>* list)
+Command::Command(Observer* obser) : command(""), effect("")
 {
 	std::cout << "In the command constructor\n";
-	//list->push_back(this);
+	this->Attach(obser);
 }
 
-Command::Command(std::string newCommand, std::string newState) : command(newCommand), effect(newState)
+Command::Command(std::string newCommand, std::string newState, Observer* obser) : command(newCommand), effect(newState)
 {
-
+	this->Attach(obser);
 }
 
 // the copy constructor will initialize an object using another object of the same class 
@@ -68,7 +70,7 @@ void Command::saveEffect(std::string effect)
 }
 
 std::string Command::stringToLog() {
-	return  "command :" + this->command + " with the effect : " + this->effect;
+	return  "<Command> Command :" + this->command + " with the effect : " + this->effect;
 }
 
 std::ostream& operator<<(std::ostream& os, const Command& newCommandObject)
@@ -83,9 +85,9 @@ CommandProcessor::CommandProcessor() {
 	
 }
 
-CommandProcessor::CommandProcessor(std::list<Subject*>* list) {
+CommandProcessor::CommandProcessor(Observer* observ) {
 	std::cout << "In the command processor";
-	//list->push_back(this);
+	this->Attach(observ);
 }
 
 CommandProcessor::~CommandProcessor()
@@ -113,7 +115,8 @@ Command* CommandProcessor::getCommand()
 
 Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 {
-	Command* aCommand = new Command(fromReadCommand, "");
+	Observer*  obser = getObserver()->front();
+	Command* aCommand = new Command(fromReadCommand, "", obser);
 	
 	std::list<Observer* >::iterator i = this->getObserver()->begin();
 	for (; i != this->getObserver()->end(); ++i) {
@@ -121,8 +124,8 @@ Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 	}
 	listOfCommands.push_back(aCommand);
 	commandINMemmory = fromReadCommand;
-	cout << "The command : " << aCommand << " will now be saved into the list of commands " << endl;
-	//::Notify(*this);
+	cout << "The command : " << aCommand->getCommand() << " will now be saved into the list of commands " << endl;
+	this->Notify(*this);
 	return aCommand;
 	
 
@@ -130,8 +133,8 @@ Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 
 
 std::string CommandProcessor::stringToLog() {
-	std::cout << "in commandProcessor striing to log\n";
-	return "Command saved : " + this->commandINMemmory;
+
+	return "<CommandProcessor> Command saved : " + this->commandINMemmory;
 }
 
 std::string CommandProcessor::readCommand()
@@ -139,7 +142,6 @@ std::string CommandProcessor::readCommand()
 	// not to clear as to why it is private 
 
 	std::string inputCommand;
-	cout << "Please type your command with lower-case letters:" << "\n";
 	std::getline(std::cin, inputCommand);
 
 
@@ -256,7 +258,112 @@ bool CommandProcessor::validate(Command* c, std::string gameState) {
 		}
 
 	}
+	return false;
+}
+
+FileCommandProcessorAdapter::FileCommandProcessorAdapter(CommandProcessor* c) {
+	comProcessor = c;
+	listOfCommands;
+	commandINMemmory = "";
+	filepath = "";
+	posInFile = 0;
+
+
+
+}
+
+FileCommandProcessorAdapter::FileCommandProcessorAdapter() {
+	comProcessor = new CommandProcessor();
+	listOfCommands;
+	commandINMemmory = "";
+	posInFile = 0;
+
+
+}
+FileCommandProcessorAdapter::~FileCommandProcessorAdapter() {
+	delete comProcessor;
+	listOfCommands;
+	commandINMemmory = "";
+	posInFile = 0;
+
+
+}
+
+FileCommandProcessorAdapter::FileCommandProcessorAdapter(Observer* observ) {
+	comProcessor = new CommandProcessor();
+	listOfCommands;
+	commandINMemmory = "";
+	posInFile = 0;
+
+	this->Attach(observ);
+
+
+}
+
+void FileCommandProcessorAdapter::setFilePath(std::string path) {
+	filepath = path;
+
+}
+
+std::string FileCommandProcessorAdapter::readCommand() {
+	std::string input = "";
+
+
+	std::ifstream inputFile(filepath);
+	if (inputFile) {
+		std::cout << "File existe\n";
+		inputFile.seekg(posInFile);
+		if (inputFile.peek() == EOF) {
+			std::cout << "End of file reached ";
+			inputFile.close();
+			exit(0);
+			return "end off file";
+
+		}
+		else {
+			std::getline(inputFile, input);
+			posInFile = inputFile.tellg();
+			std::cout << "Read from file : " << input << std::endl;
+			return input;
+
+		}
+
+	}
+	else {
+	std:cout << "File does not exist , exiting the program";
+		exit(0);
+	}
+	
+	
+
+}
+
+Command* FileCommandProcessorAdapter::getCommand() {
+	 std::string command =FileCommandProcessorAdapter::readCommand();
+	 return saveCommand(command);
+
+}
+
+Command* FileCommandProcessorAdapter::saveCommand(std::string fromReadCommand)
+{
+	Observer* obser = getObserver()->front();
+	Command* aCommand = new Command(fromReadCommand, "", obser);
+
+	std::list<Observer* >::iterator i = this->getObserver()->begin();
+	for (; i != this->getObserver()->end(); ++i) {
+
+	}
+	listOfCommands.push_back(aCommand);
+	commandINMemmory = fromReadCommand;
+	cout << "The command : " << aCommand << " will now be saved into the list of commands " << endl;
+	Notify(*this);
+	return aCommand;
+
+
 }
 
 
-
+/*
+Note to myself , link everything by constructor 
+and to use the file addapter you have to manualy link the gooc command processor to the gameengine class.
+*/

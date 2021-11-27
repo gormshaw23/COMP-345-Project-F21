@@ -37,9 +37,6 @@
     <Filter Include="Source Files\CommandProcessor">
       <UniqueIdentifier>{32bd64e5-cb66-40c9-be0f-73c42ff5d5c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Strategy">
-      <UniqueIdentifier>{66c55ab0-761b-49c5-adbe-104621b150d1}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Player\Player.cpp">
@@ -56,9 +53,6 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\GameEngine.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\OrdersDriver.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\GameLog\LoggingObserver.cpp">
       <Filter>Source Files\Log</Filter>
@@ -81,11 +75,11 @@
     <ClCompile Include="Source\PlayerDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\PlayerStrategiesDriver.cpp">
+    <ClCompile Include="Source\OrdersDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Strategy\PlayerStrategies.cpp">
-      <Filter>Source Files\Strategy</Filter>
+    <ClCompile Include="Source\MainGameLoopDriver.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,9 +109,6 @@
     </ClInclude>
     <ClInclude Include="Source\CommandProcessor\CommandProcessor.h">
       <Filter>Source Files\CommandProcessor</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Strategy\PlayerStrategies.h">
-      <Filter>Source Files\Strategy</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
