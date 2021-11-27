@@ -124,7 +124,7 @@ Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 	}
 	listOfCommands.push_back(aCommand);
 	commandINMemmory = fromReadCommand;
-	cout << "The command : " << aCommand << " will now be saved into the list of commands " << endl;
+	cout << "The command : " << aCommand->getCommand() << " will now be saved into the list of commands " << endl;
 	this->Notify(*this);
 	return aCommand;
 	
@@ -133,7 +133,7 @@ Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 
 
 std::string CommandProcessor::stringToLog() {
-	std::cout << "in commandProcessor striing to log\n";
+
 	return "<CommandProcessor> Command saved : " + this->commandINMemmory;
 }
 
@@ -142,7 +142,6 @@ std::string CommandProcessor::readCommand()
 	// not to clear as to why it is private 
 
 	std::string inputCommand;
-	cout << "Please type your command with lower-case letters:" << "\n";
 	std::getline(std::cin, inputCommand);
 
 

@@ -3,15 +3,17 @@
  *
  * @author Mark Nasol
  */
-
+#pragma once
 #include <vector>
 using std::vector;
 #include "Player/Player.h"
 #include "Engine/GameEngine.h"
 #include "Map/map.h"
 #include "Cards/Cards.h"
-
+#include "GameLog/LoggingObserver.h"
+#include "CommandProcessor/CommandProcessor.h"
 int main() {
+  /*
 	//Load map
 	MapLoader* mapL = new MapLoader();
 	mapL->loadMap("canada");
@@ -64,9 +66,18 @@ int main() {
 
 	p1->setTerritoriesOwned(p1Territories);
 	p2->setTerritoriesOwned(p2Territories);
-
+*/
 	//Go through main game loop
+
+	std::list<Subject*>* _listSubject = new std::list<Subject*>;
+	
+	static LogObserver* loglog = new  LogObserver(_listSubject);
+	
+	GameEngine* ge = new GameEngine(loglog);
+	ge->startupPhase();
+
 	ge->mainGameLoop(players, map);
+
 
 	delete p1;
 	delete p2;

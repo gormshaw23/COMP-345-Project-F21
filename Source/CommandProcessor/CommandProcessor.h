@@ -49,7 +49,7 @@ public:
 	virtual bool validate(Command* c, std::string);
 
 private:
-	//GameEngine* gameEngine;
+
 
 	std::vector<Command*> listOfCommands;
 	std::string commandINMemmory;
