@@ -59,7 +59,7 @@ GameEngine::GameEngine(const GameEngine& obj)
 GameEngine::GameEngine(Observer* list) 
 {
     eState = new GameState(GAME_STATE_UNKNOWN);
-
+	commandProces = nullptr;
 	std::string inputType;
 	std::vector<std::string> proccesInput;
 	bool goodInput = false;
@@ -164,19 +164,43 @@ std::ostream& operator<<(std::ostream& out, const GameState value) {
 
 	return out << s;
 }
+
+void showPossibleAction(GameState lstate) {
+	std::cout << "\n-The current game state is (" << lstate << ")\n";
+	switch (lstate)
+	{
+	case GAME_STATE_START:
+		std::cout << "-Possible command Option : loadmap <filename>" << std::endl;
+		break;
+	case  GAME_STATE_MAP_LOAD:
+		std::cout << "-Possible command Option : loadmap <filename> or validatemap" << std::endl;
+		break;
+	case GAME_STATE_MAP_VALIDATED:
+		std::cout << "-Possible command Option : addplayer" << std::endl;
+		break;
+	case GAME_STATE_PLAYERS_ADDED:
+		std::cout << "-Possible command Option : addplayer or gamestart (if two player are present)" << std::endl;
+		break;
+	default:
+		break;
+	}
+	std::cout << "-Please type your command with lower-case letters:" << "\n";
+}
+
 /**
  * free function: get user input
  * @param lState local state
  * @return Name string of the user input
  */
-std::string get_user_input(GameState lState) {
+std::string get_user_input(GameState lState, GameEngine* reference) {
 	std::string Name = "";
-	std::cout << "The current game state is (" << lState << ")\n";
-	std::cout << "Type your command with lower-case letters:" << "\n";
-	getline(std::cin, Name);
-	std::cout << std::endl; 
+	
+	showPossibleAction(lState);
+	Command* userCommand = reference->commandProces->getCommand(); // use the command processor to enable the loging of information and the file reading
+	Name = userCommand->getCommand();
 	return Name;
 }
+
 
 
 /**
@@ -431,8 +455,10 @@ string GameEngine::extractName(string str) {
  */
 
 void GameEngine::addPlayer(string user_input) {
+	std::cout << "-Please enter the player name. "<<std::endl;
+	Command * userCommand = commandProces->getCommand();
 
-	playername = extractName(user_input);
+	playername = extractName(userCommand->getCommand());
 	Player* p = new Player(playername);
 	playerlist.push_back(p);
 	playercount++;
@@ -506,7 +532,7 @@ void GameEngine::gamestart() {
 		cout << ReinforcementPools.at(i) << endl;
 	}
 	cout << endl;
-	//d) let each player draw 2 initial cards from the deck using the deck’s draw() method
+	//d) let each player draw 2 initial cards from the deck using the deckï¿½s draw() method
 
 	for (int i = 0; i < playercount; i++) {
 
@@ -551,7 +577,7 @@ void GameEngine::startupPhase() {
 	//using a loop to read the input until the end of the state
 	while (true) {
 
-		user_input = get_user_input(*eState);
+		user_input = get_user_input(*eState, this);
 
 		//compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
 		switch (*eState) {
@@ -820,6 +846,14 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 				//Input territory id
 				int territory;
 				std::cout << "Enter the territory id you would like to deploy to: \n";
+				std::cout << "Territory name and Id----------Number of units" << std::endl;
+				int  nbTerritory = p->getTerritoriesOwned().size();
+				for (size_t i = 0; i < nbTerritory; i++)
+				{
+					Territory* currentTerritory = p->getTerritoriesOwned().at(i);
+					std::cout << currentTerritory->getName() << " : " << currentTerritory->getID()<<"-------" << currentTerritory->getNbArmy()<<std::endl;
+
+				}
 				std::cin >> territory;
 
 				//Check if territory exists

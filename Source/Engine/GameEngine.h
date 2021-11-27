@@ -34,6 +34,7 @@ enum game_user_input {
 class GameEngine :  virtual public Subject,  virtual  public ILoggable /*,  public CommandProcessor*/ {
 public:
     GameEngine(); //constructor
+
     GameEngine(Observer*); //constructor
     ~GameEngine(); //destructor
     CommandProcessor* commandProces;
