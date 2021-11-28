@@ -131,7 +131,7 @@ GameEngine* Player::getCurrentGameInstance() const
 
 std::vector<Territory*> Player::toAttack()
 {
-	const std::vector<Territory*> allEnemyTerritories = getCurrentGameInstance()->GetEnemyTerritoryiesOfCurrentPlayer(this);
+	const std::vector<Territory*> allEnemyTerritories = getCurrentGameInstance()->GetEnemyTerritoriesOfCurrentPlayer(this);
 
 	std::vector<Territory*> enemyTerritoryByPriority;
 	enemyTerritoryByPriority.insert(enemyTerritoryByPriority.begin(), allEnemyTerritories.begin(), allEnemyTerritories.end());
