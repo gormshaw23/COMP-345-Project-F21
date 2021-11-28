@@ -792,7 +792,7 @@ const void GameEngine::reinforcementPhase(Player* p, Map* map) {
 	std::cout << p->getPlayerName() << "\'s reinforcement pool: " << currentRPool << "\n" << std::endl;
 }
 
-const std::vector<Territory*> GameEngine::GetEnemyTerritoryiesOfCurrentPlayer(Player* p)
+const std::vector<Territory*> GameEngine::GetEnemyTerritoriesOfCurrentPlayer(Player* p)
 {
 	std::vector<Territory*> allEnemyTerritories;
 	std::vector<Player*> allPlayers = getPlayerList();

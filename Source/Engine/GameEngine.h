@@ -54,7 +54,7 @@ public:
 
     void startupPhase();
 
-    const std::vector<Territory*> GetEnemyTerritoryiesOfCurrentPlayer(Player* p);
+    const std::vector<Territory*> GetEnemyTerritoriesOfCurrentPlayer(Player* p);
 private:
     GameState* eState;
     void setCurrentState(GameState eState);
