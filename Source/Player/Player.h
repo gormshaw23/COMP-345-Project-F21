@@ -15,6 +15,7 @@ class Order;
 class OrdersList;
 class Territory;
 class PlayerStrategies;
+class GameEngine;
 
 enum class EOrderType;
 
@@ -36,12 +37,15 @@ public:
 	void setPlayerName(std::string inPlayerName);
 	const std::string getPlayerName() const;
 
+	void setCurrentGameInstance(GameEngine* inInstance);
+	GameEngine* getCurrentGameInstance() const;
+
 	void setPlayerStrategy(PlayerStrategies* inPlayerStrategy);
 	PlayerStrategies* getPlayerStrategy() const;
 
 	const std::size_t getPlayerID() const;
-	const std::vector<Territory*> toDefend() const;
-	const std::vector<Territory*>  toAttack() const;
+	std::vector<Territory*> toDefend();
+	std::vector<Territory*> toAttack();
 
 	void AddTerritoryToAttack(Territory * inTerritoryToAttack);
 	void AddTerritoryToDefend(Territory* inTerritoryToDefend);
@@ -75,6 +79,7 @@ protected:
 	OrdersList* _orders = nullptr;
 
 private:
+	GameEngine* currentGameInstance;
 	std::size_t _id = 0;
 	std::vector<Territory*> _territoriesOwned;
 	std::vector<Territory*> _territoriesToAttack;
@@ -89,5 +94,5 @@ private:
 
 	static std::size_t _globalID;
 
-	PlayerStrategies* _playerStrategy = nullptr;
+	PlayerStrategies* _playerStrategy;
 };

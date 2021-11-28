@@ -6,3 +6,4 @@
 #define BLOCKADE_DESC "triple the number of armies on one of the current player’s territories and make it a neutral territory"
 #define AIRLIFT_DESC "Advance some armies from one of the current player’s territories to any another territory"
 #define NEGOTIATE_DESC "Prevent attacks between the current player and another player until the end of the turn"
+#define CHANGE_TERRITORY_PRIORITY_MSG "Please select a province from the list and a new priority to change its priority or type 'done' to skip"

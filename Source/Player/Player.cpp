@@ -2,8 +2,16 @@
 #include "Order/Orders.h"
 #include "Cards/Cards.h"
 #include "Map/map.h"
+#include "Engine/GameEngine.h"
 #include "Strategy/PlayerStrategies.h"
 #include "Common/CommonTypes.h"
+#include "Common/localization.h"
+
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <algorithm>
 
 // SIZE_MAX should mean it will auto increment and overflow back to 0
 std::size_t Player::_globalID = SIZE_MAX;
@@ -11,6 +19,8 @@ std::size_t Player::_globalID = SIZE_MAX;
 Player::Player()
 {
 	this->_id = ++_globalID;
+	this->currentGameInstance = nullptr;
+	this->_playerStrategy = nullptr;
 	this->_hand = new Hand();
 	this->_orders = new OrdersList();
 }
@@ -19,6 +29,8 @@ Player::Player(std::string inPlayerName)
 	: _playerName(inPlayerName)
 {
 	this->_id = ++_globalID;
+	this->currentGameInstance = nullptr;
+	this->_playerStrategy = nullptr;
 	this->_hand = new Hand();
 	this->_orders = new OrdersList();
 }
@@ -48,6 +60,8 @@ Player::Player(const Player& inPlayer)
 	this->_id = inPlayer._id;
 
 	this->_playerName = inPlayer._playerName;
+
+	this->currentGameInstance = inPlayer.currentGameInstance;
 }
 
 Player::~Player()
@@ -63,6 +77,8 @@ Player::~Player()
 		delete this->_playerStrategy;
 		this->_playerStrategy = nullptr;
 	}
+
+	this->currentGameInstance = nullptr;
 }
 
 bool Player::operator==(const Player& inRHS) const
@@ -97,14 +113,158 @@ Player& Player::operator=(const Player& inPlayer)
 
 	this->_playerName = inPlayer._playerName;
 
+	this->currentGameInstance = inPlayer.currentGameInstance;
+
 	// return the existing object so we can chain this operator
 	return *this;
 }
 
-
-const std::vector<Territory*> Player::toAttack() const
+void Player::setCurrentGameInstance(GameEngine* inInstance)
 {
+	this->currentGameInstance = inInstance;
+}
+
+GameEngine* Player::getCurrentGameInstance() const
+{
+	return this->currentGameInstance;
+}
+
+std::vector<Territory*> Player::toAttack()
+{
+	const std::vector<Territory*> allEnemyTerritories = getCurrentGameInstance()->GetEnemyTerritoryiesOfCurrentPlayer(this);
+
+	std::vector<Territory*> enemyTerritoryByPriority;
+	enemyTerritoryByPriority.insert(enemyTerritoryByPriority.begin(), allEnemyTerritories.begin(), allEnemyTerritories.end());
+
+	int toryNum = 0; 
+	int priori = 0;
+	std::string inputStr = "";
+
+	while (true)
+	{
+		std::cout << "Enemy Territories, " << setw(10) << "Enemy Territories by Priority" << std::endl;
+		std::cout << setfill('*') << setw(50) << std::endl;
+		for (int i = 0; i < allEnemyTerritories.size(); ++i)
+		{
+			std::cout << i << ": " << allEnemyTerritories[i] << setw(10) << enemyTerritoryByPriority[i] << std::endl;
+		}
+		std::cout << CHANGE_TERRITORY_PRIORITY_MSG << std::endl;
+		std::getline(std::cin, inputStr);
+		std::stringstream myStream(inputStr);
+		std::vector<std::string> words;
+		std::string tmp;
+		while (myStream >> tmp)
+		{
+			words.push_back(tmp);
+		}
+
+		if (words.size() == 2)
+		{
+			// handle new priority
+			toryNum = std::stoi(words[0]);
+			priori = std::stoi(words[1]);
+
+			if (toryNum >= 0 && toryNum < allEnemyTerritories.size())
+			{
+				int toryAtPriori = std::clamp(priori, 0, (int)allEnemyTerritories.size() - 1);
+				std::swap(enemyTerritoryByPriority[toryNum], enemyTerritoryByPriority[toryAtPriori]);
+			}
+			else
+			{
+				std::cout << "Please choose a valid territory." << std::endl;
+			}
+		}
+		else if (words.size() == 1)
+		{
+			// check if player is done
+			if (words[0].compare("done") || 
+				words[0].compare("Done") ||
+				words[0].compare("DONE"))
+			{
+				break;
+			}
+		}
+		else
+		{
+			// try again bucko
+			std::cout << "Please provide valid input." << std::endl;
+		}
+	}
+
+	_territoriesToAttack.clear();
+
+	_territoriesToAttack.insert(_territoriesToAttack.begin(), enemyTerritoryByPriority.begin(), enemyTerritoryByPriority.end());
+
 	return _territoriesToAttack;
+}
+
+std::vector<Territory*> Player::toDefend()
+{
+	const std::vector<Territory*> currentPlayerTories = this->getTerritoriesOwned();
+
+	std::vector<Territory*> currentPlayerToriesByPriority;
+	currentPlayerToriesByPriority.insert(currentPlayerTories.begin(), currentPlayerTories.begin(), currentPlayerTories.end());
+
+	int toryNum = 0;
+	int priori = 0;
+	std::string inputStr = "";
+
+	while (true)
+	{
+		std::cout << "Your Territories, " << setw(10) << "Your Territories to Defend by Priority" << std::endl;
+		std::cout << setfill('*') << setw(50) << std::endl;
+		for (int i = 0; i < currentPlayerTories.size(); ++i)
+		{
+			std::cout << i << ": " << currentPlayerTories[i] << setw(10) << currentPlayerToriesByPriority[i] << std::endl;
+		}
+		std::cout << CHANGE_TERRITORY_PRIORITY_MSG << std::endl;
+		std::getline(std::cin, inputStr);
+		std::stringstream myStream(inputStr);
+		std::vector<std::string> words;
+		std::string tmp;
+		while (myStream >> tmp)
+		{
+			words.push_back(tmp);
+		}
+
+		if (words.size() == 2)
+		{
+			// handle new priority
+			toryNum = std::stoi(words[0]);
+			priori = std::stoi(words[1]);
+
+			if (toryNum >= 0 && toryNum < currentPlayerTories.size())
+			{
+				int toryAtPriori = std::clamp(priori, 0, (int)currentPlayerTories.size() - 1);
+				std::swap(currentPlayerToriesByPriority[toryNum], currentPlayerToriesByPriority[toryAtPriori]);
+			}
+			else
+			{
+				std::cout << "Please choose a valid territory." << std::endl;
+			}
+		}
+		else if (words.size() == 1)
+		{
+			// check if player is done
+			if (words[0].compare("done") ||
+				words[0].compare("Done") ||
+				words[0].compare("DONE"))
+			{
+				break;
+			}
+		}
+		else
+		{
+			// try again bucko
+			std::cout << "Please provide valid input." << std::endl;
+		}
+	}
+
+	_territoriesToDefend.clear();
+
+	_territoriesToDefend.insert(_territoriesToAttack.begin(), currentPlayerToriesByPriority.begin(), currentPlayerToriesByPriority.end());
+
+	return _territoriesToDefend;
 }
 
 void Player::setPlayerName(std::string inPlayerName)
@@ -130,11 +290,6 @@ PlayerStrategies* Player::getPlayerStrategy() const
 const std::size_t Player::getPlayerID() const
 {
 	return this->_id;
-}
-
-const std::vector<Territory*> Player::toDefend() const
-{
-	return _territoriesToDefend;
 }
 
 /*

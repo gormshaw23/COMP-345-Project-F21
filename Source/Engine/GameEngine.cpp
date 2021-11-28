@@ -1,3 +1,8 @@
+#include "Engine/GameEngine.h"
+#include "Player/Player.h"
+#include "Map/map.h"
+#include "Cards/Cards.h"
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -5,11 +10,7 @@
 #include <vector>
 #include <Common/CommonTypes.h>
 #include <vector>
-
-#include "Engine/GameEngine.h"
-#include "Player/Player.h"
-#include "Map/map.h"
-#include "Cards/Cards.h"
+#include <random>
 
 
 vector<string> splitString(std::string str)
@@ -135,12 +136,6 @@ GameEngine& GameEngine::operator=(const GameEngine& obj)
 Player* GameEngine::getNeutralPlayer() const
 {
     return neutralPlayer;
-}
-
-GameEngine& GameEngine::getInstance()
-{
-    static GameEngine instance;
-    return instance;
 }
 
 /**
@@ -416,7 +411,6 @@ static string playername;
 static int playercount = 0;
 MapLoader* newmap = new MapLoader();
 Map* mapToUse = new Map();
-vector<Player*> playerlist;
 Deck* newDeck = new Deck(30);
 Card* newCard = newDeck->drawCard_Deck();
 vector<int> ReinforcementPools;
@@ -472,6 +466,9 @@ void GameEngine::gamestart() {
 
 	//a) fairly distribute all the territories to the players
 
+	std::random_device rd;
+	std::mt19937 g(rd());
+
 	int numberOfTerritory = mapToUse->listTerritory.size();
 	cout << endl << "The numberOfTerritory in the map is: " << numberOfTerritory << endl;
 	Territory* t = new Territory();
@@ -501,7 +498,7 @@ void GameEngine::gamestart() {
 		cout << " " << (*it)->getPlayerName();
 	}
 
-	random_shuffle(playerlist.begin(), playerlist.end());
+	std::shuffle(playerlist.begin(), playerlist.end(), g);
 
 	cout << endl << "After shuffle, the order of play is: ";
 	for (vector<Player*>::iterator it = playerlist.begin(); it != playerlist.end(); ++it) {
@@ -795,6 +792,22 @@ const void GameEngine::reinforcementPhase(Player* p, Map* map) {
 	std::cout << p->getPlayerName() << "\'s reinforcement pool: " << currentRPool << "\n" << std::endl;
 }
 
+const std::vector<Territory*> GameEngine::GetEnemyTerritoryiesOfCurrentPlayer(Player* p)
+{
+	std::vector<Territory*> allEnemyTerritories;
+	std::vector<Player*> allPlayers = getPlayerList();
+	for (auto& enemy : allPlayers)
+	{
+		allEnemyTerritories.insert(
+			allEnemyTerritories.end(),
+			enemy->getTerritoriesOwned().begin(),
+			enemy->getTerritoriesOwned().end()
+		);
+	}
+
+	return allEnemyTerritories;
+}
+
 /*
 * Issue players orders and place them in their order list
 *
@@ -806,6 +819,23 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 	std::vector<int> territoryIds = map->getTerritoryIds();
 	std::vector<Territory*> inTerritories;
 	std::vector<int> inArmies;
+
+	// issuing orders phase has three parts that I can tell
+	// (1a) the player determines the priority of territories to attack
+	// (1b) the player determines the priority of territories to defend
+	// (2) the player chooses which territories to deploy and how many armies,
+	// from a list given in the order chosen in 1b.
+	// (3) the players which territories to advance from, and then which territories to
+	// advance towards. 
+	// There should be a list of its own territories to pick from in any case, provided in
+	// priority as it was picked; and a list of territories to attack, similarly listed in
+	// priority as it was picked. Since this seems excessively tedious there should be an
+	// option to accept the list as is.
+	// for convenience I think I will provide a list of adjacent territories.
+	// eg: New_Brunswick: [Prince_Edward_Island, Nova_Scotia, etc]
+	std::vector<Territory*> currentPlayerTerritories = p->getTerritoriesOwned();
+
+
 
 	/*
 	Initialization of variables for the option
@@ -1123,4 +1153,13 @@ const void GameEngine::executeOrdersPhase(Player* p) {
 		}
 		ol->remove(0);
 	}
+}
+
+std::vector<Player*> GameEngine::getPlayerList() const
+{
+	return this->playerlist;
+}
+std::vector<Player*>& GameEngine::getPlayerList()
+{
+	return this->playerlist;
 }

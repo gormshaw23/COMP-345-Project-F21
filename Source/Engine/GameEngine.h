@@ -2,7 +2,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
-#include<string>
+#include <string>
 
 #include "Player/Player.h"
 #include "../GameLog/LoggingObserver.h"
@@ -47,23 +47,28 @@ public:
     GameEngine& operator=(const GameEngine& obj);//Assignment operator
 
     Player* getNeutralPlayer() const;
+    std::vector<Player*> getPlayerList() const;
+    std::vector<Player*>& getPlayerList();
 
     void mainGameLoop(std::vector<Player*> players, Map* map); //Game loop function
 
     void startupPhase();
 
-
-    static GameEngine& getInstance();
+    const std::vector<Territory*> GetEnemyTerritoryiesOfCurrentPlayer(Player* p);
 private:
     GameState* eState;
     void setCurrentState(GameState eState);
     const void reinforcementPhase(Player* p, Map* m);
+    /* issueOrdersPhase methods */
+    // issueOrdersPhase
     const void issueOrdersPhase(Player* p, Map* map);
     const void executeOrdersPhase(Player* p);
     void gamestart();
     std::string extractName(std::string);//extract name from loadmap and addplayer command
     void addPlayer(std::string);//add player
 
+
+    std::vector<Player*> playerlist;
     Player* neutralPlayer = nullptr;
 };
 
