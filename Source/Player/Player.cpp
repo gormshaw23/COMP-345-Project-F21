@@ -206,20 +206,9 @@ std::vector<Territory*> Player::toDefend()
 			// if territory has an enemy territory adjacent to it OR has troops present, return it
 			bool enemyAdjacent = false;
 			// players are generally interested in territories where their armies are
-			int threat = ownedTerritory->getNbArmy();
+			int threat = ownedTerritory->CalculateValue(enemyAdjacent);
 
-			for (auto& adjacentTerritory : ownedTerritory->getBorderList())
-			{
-				enemyAdjacent = true;
-				// threat to the current territory is increased linearly according to
-				// the nuber of enemy armies that are adjacent to it
-				if (*adjacentTerritory->getPlayer() != *((Player*)this))
-				{
-					threat += adjacentTerritory->getNbArmy();
-				}
-			}
-
-			if (enemyAdjacent || threat > 0)
+			if (enemyAdjacent || ownedTerritory->getNbArmy() > 0)
 			{
 				currentPlayerToriesByPriority.push_back(std::pair<Territory*, int>(ownedTerritory, threat));
 			}

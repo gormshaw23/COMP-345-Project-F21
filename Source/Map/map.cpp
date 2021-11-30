@@ -625,7 +625,30 @@ Player* Territory::getPlayer() { return player; };
 int Territory::getNbArmy() const { return nbArmy; };
 std::vector<Territory*>& Territory::getBorderList() { return this->listBorder; };
 
+void Territory::setValue(int inValue) { this->value = inValue; }
+int Territory::getValue() const { return this->value; }
 
+// the value or the level of interest of a territory is determined by the current number of 
+// armies present and the surrounding number of hostile armies that could attack it.
+// insuring all territories with friendly troops are always at the player's attention
+// and all territories currently being threatened are known.
+int Territory::CalculateValue(bool& bIsEnemyAdjacent)
+{
+    int _value = getNbArmy();
+    
+    for (auto& adjacentTerritory : this->getBorderList())
+    {
+        if (*adjacentTerritory->getPlayer() != *((Player*)this))
+        {
+            bIsEnemyAdjacent = true;
+            _value += adjacentTerritory->getNbArmy();
+        }
+    }
+
+    setValue(_value);
+
+    return _value;
+}
 
 //================= Start of the section for the destructor =============================\\
 
