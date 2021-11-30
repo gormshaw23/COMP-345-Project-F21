@@ -66,7 +66,7 @@ private:
 
     Player* neutralPlayer = nullptr;
 
-    bool isATournament;
+    bool isATournament; //Determines if a game is part of a tournament
 };
 
 
