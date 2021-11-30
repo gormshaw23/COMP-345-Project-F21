@@ -48,7 +48,7 @@ public:
 
     Player* getNeutralPlayer() const;
 
-    void mainGameLoop(std::vector<Player*> players, Map* map); //Game loop function
+    void mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns); //Game loop function
 
     void startupPhase();
 
@@ -65,6 +65,8 @@ private:
     void addPlayer(std::string);//add player
 
     Player* neutralPlayer = nullptr;
+
+    bool isATournament;
 };
 
 

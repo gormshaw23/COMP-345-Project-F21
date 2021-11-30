@@ -699,8 +699,9 @@ void GameEngine::startupPhase() {
 /*
 * The main game loop of the Warzone game
 */
-void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
-	while (players.size() != 1) { //Loop if there are 2 or more players left
+void GameEngine::mainGameLoop(vector<Player*> players, Map* map, int maxNumberOfTurns) {
+	int turn = 1;
+	while (players.size() != 1 && turn != maxNumberOfTurns) { //Loop if there are 2 or more players left
 		int initPlayersSize = players.size();
 
 		//Give a number of armies to each player
@@ -727,8 +728,11 @@ void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
 				playerIndex++;
 			}
 		}
+		turn++;
 	}//end while
-	std::cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
+	std::string endGameMessage = (players.size() == 1) ? "Game over, " + players.at(0)->getPlayerName() + " wins\n"
+		: "The game has exceeded the amount of turns, therefore the game is a draw.\n";
+	std::cout << endGameMessage;
 }
 
 /*
