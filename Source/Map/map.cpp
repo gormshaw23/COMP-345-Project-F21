@@ -622,7 +622,7 @@ int Territory::getPosx() { return posx; };
 int Territory::getPosy() { return posy; };
 std::string Territory::getName() { return name; };
 Player* Territory::getPlayer() { return player; };
-int Territory::getNbArmy() { return nbArmy; };
+int Territory::getNbArmy() const { return nbArmy; };
 std::vector<Territory*>& Territory::getBorderList() { return this->listBorder; };
 
 

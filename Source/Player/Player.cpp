@@ -86,6 +86,11 @@ bool Player::operator==(const Player& inRHS) const
 	return this->getPlayerID() == inRHS.getPlayerID();
 }
 
+bool Player::operator!=(const Player& inRHS) const
+{
+	return !(*this == inRHS);
+}
+
 Player& Player::operator=(const Player& inPlayer)
 {
 	if (this == &inPlayer)
@@ -129,67 +134,56 @@ GameEngine* Player::getCurrentGameInstance() const
 	return this->currentGameInstance;
 }
 
+bool SortByArmySize(const Territory* lhs, const Territory* rhs)
+{
+	if (lhs == nullptr)
+	{
+		return false;
+	}
+
+	if (rhs == nullptr)
+	{
+		return true;
+	}
+
+	return (lhs->getNbArmy() > rhs->getNbArmy());
+}
+
 std::vector<Territory*> Player::toAttack()
 {
+	// toAttack will turn a list of all adjacent enemy territories, in order of territories with the most troops
 	const std::vector<Territory*> allEnemyTerritories = getCurrentGameInstance()->GetEnemyTerritoriesOfCurrentPlayer(this);
 
 	std::vector<Territory*> enemyTerritoryByPriority;
-	enemyTerritoryByPriority.insert(enemyTerritoryByPriority.begin(), allEnemyTerritories.begin(), allEnemyTerritories.end());
 
-	int toryNum = 0; 
-	int priori = 0;
-	std::string inputStr = "";
+	const std::vector<Territory*> allCurrentPlayerTerritories = this->getTerritoriesOwned();
 
-	while (true)
+	// loop through all territories adjacent 
+	for (auto& ownedTerritory : allCurrentPlayerTerritories)
 	{
-		std::cout << "Enemy Territories, " << setw(10) << "Enemy Territories by Priority" << std::endl;
-		std::cout << setfill('*') << setw(50) << std::endl;
-		for (int i = 0; i < allEnemyTerritories.size(); ++i)
+		if (ownedTerritory != nullptr)
 		{
-			std::cout << i << ": " << allEnemyTerritories[i] << setw(10) << enemyTerritoryByPriority[i] << std::endl;
-		}
-		std::cout << CHANGE_TERRITORY_PRIORITY_MSG << std::endl;
-		std::getline(std::cin, inputStr);
-		std::stringstream myStream(inputStr);
-		std::vector<std::string> words;
-		std::string tmp;
-		while (myStream >> tmp)
-		{
-			words.push_back(tmp);
-		}
-
-		if (words.size() == 2)
-		{
-			// handle new priority
-			toryNum = std::stoi(words[0]);
-			priori = std::stoi(words[1]);
-
-			if (toryNum >= 0 && toryNum < allEnemyTerritories.size())
+			for (auto& adjacentTerritory : ownedTerritory->getBorderList())
 			{
-				int toryAtPriori = std::clamp(priori, 0, (int)allEnemyTerritories.size() - 1);
-				std::swap(enemyTerritoryByPriority[toryNum], enemyTerritoryByPriority[toryAtPriori]);
+				if (*adjacentTerritory->getPlayer() != *((Player*)this))
+				{
+					// making sure no dupes
+					if (enemyTerritoryByPriority.empty() || 
+						std::find
+						(
+							enemyTerritoryByPriority.begin(),
+							enemyTerritoryByPriority.end(),
+							adjacentTerritory
+						) == enemyTerritoryByPriority.end())
+					{
+						enemyTerritoryByPriority.push_back(adjacentTerritory);
+					}
+				}
 			}
-			else
-			{
-				std::cout << "Please choose a valid territory." << std::endl;
-			}
-		}
-		else if (words.size() == 1)
-		{
-			// check if player is done
-			if (words[0].compare("done") || 
-				words[0].compare("Done") ||
-				words[0].compare("DONE"))
-			{
-				break;
-			}
-		}
-		else
-		{
-			// try again bucko
-			std::cout << "Please provide valid input." << std::endl;
 		}
 	}
+
+	std::sort(enemyTerritoryByPriority.begin(), enemyTerritoryByPriority.end(), SortByArmySize);
 
 	_territoriesToAttack.clear();
 
@@ -202,67 +196,53 @@ std::vector<Territory*> Player::toDefend()
 {
 	const std::vector<Territory*> currentPlayerTories = this->getTerritoriesOwned();
 
-	std::vector<Territory*> currentPlayerToriesByPriority;
-	currentPlayerToriesByPriority.insert(currentPlayerTories.begin(), currentPlayerTories.begin(), currentPlayerTories.end());
+	std::vector<std::pair<Territory*, int>> currentPlayerToriesByPriority;
 
-	int toryNum = 0;
-	int priori = 0;
-	std::string inputStr = "";
-
-	while (true)
+	// loop through all territories adjacent 
+	for (auto& ownedTerritory : currentPlayerTories)
 	{
-		std::cout << "Your Territories, " << setw(10) << "Your Territories to Defend by Priority" << std::endl;
-		std::cout << setfill('*') << setw(50) << std::endl;
-		for (int i = 0; i < currentPlayerTories.size(); ++i)
+		if (ownedTerritory != nullptr)
 		{
-			std::cout << i << ": " << currentPlayerTories[i] << setw(10) << currentPlayerToriesByPriority[i] << std::endl;
-		}
-		std::cout << CHANGE_TERRITORY_PRIORITY_MSG << std::endl;
-		std::getline(std::cin, inputStr);
-		std::stringstream myStream(inputStr);
-		std::vector<std::string> words;
-		std::string tmp;
-		while (myStream >> tmp)
-		{
-			words.push_back(tmp);
-		}
+			// if territory has an enemy territory adjacent to it OR has troops present, return it
+			bool enemyAdjacent = false;
+			// players are generally interested in territories where their armies are
+			int threat = ownedTerritory->getNbArmy();
 
-		if (words.size() == 2)
-		{
-			// handle new priority
-			toryNum = std::stoi(words[0]);
-			priori = std::stoi(words[1]);
+			for (auto& adjacentTerritory : ownedTerritory->getBorderList())
+			{
+				enemyAdjacent = true;
+				// threat to the current territory is increased linearly according to
+				// the nuber of enemy armies that are adjacent to it
+				if (*adjacentTerritory->getPlayer() != *((Player*)this))
+				{
+					threat += adjacentTerritory->getNbArmy();
+				}
+			}
 
-			if (toryNum >= 0 && toryNum < currentPlayerTories.size())
+			if (enemyAdjacent || threat > 0)
 			{
-				int toryAtPriori = std::clamp(priori, 0, (int)currentPlayerTories.size() - 1);
-				std::swap(currentPlayerToriesByPriority[toryNum], currentPlayerToriesByPriority[toryAtPriori]);
+				currentPlayerToriesByPriority.push_back(std::pair<Territory*, int>(ownedTerritory, threat));
 			}
-			else
-			{
-				std::cout << "Please choose a valid territory." << std::endl;
-			}
-		}
-		else if (words.size() == 1)
-		{
-			// check if player is done
-			if (words[0].compare("done") ||
-				words[0].compare("Done") ||
-				words[0].compare("DONE"))
-			{
-				break;
-			}
-		}
-		else
-		{
-			// try again bucko
-			std::cout << "Please provide valid input." << std::endl;
 		}
 	}
 
+	// hopefully sorts in descending order
+	std::sort
+	(
+		currentPlayerToriesByPriority.begin(),
+		currentPlayerToriesByPriority.end(),
+		[](const std::pair<Territory*, int>& a, std::pair<Territory*, int>& b) -> bool 
+		{
+			return a.second > b.second;
+		}
+	);
+
 	_territoriesToDefend.clear();
 
-	_territoriesToDefend.insert(_territoriesToAttack.begin(), currentPlayerToriesByPriority.begin(), currentPlayerToriesByPriority.end());
+	for (auto& tory : currentPlayerToriesByPriority)
+	{
+		_territoriesToDefend.push_back(tory.first);
+	}
 
 	return _territoriesToDefend;
 }

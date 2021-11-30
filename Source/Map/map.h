@@ -30,7 +30,7 @@ public:
 	int getPosy();
 	std::string getName();
 	Player* getPlayer();
-	int getNbArmy();
+	int getNbArmy() const;
 	std::vector<Territory*>& getBorderList();
 
 	friend std::ostream& operator << (std::ostream& out, Territory& t);

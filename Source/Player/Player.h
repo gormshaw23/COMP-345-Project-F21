@@ -31,6 +31,7 @@ public:
 	~Player();
 	/* op overrides */
 	bool operator==(const Player& inRHS) const;
+	bool operator!=(const Player& inRHS) const;
 	Player& operator= (const Player& inPlayer);
 	friend std::ostream& operator<<(std::ostream& out, const Player& inPlayer);
 	/* public member functions */
@@ -44,7 +45,9 @@ public:
 	PlayerStrategies* getPlayerStrategy() const;
 
 	const std::size_t getPlayerID() const;
+	// returns list of owned territories adjacent to enemy territories in order of owned army strength
 	std::vector<Territory*> toDefend();
+	// returns list of adjacent enemy territories in order of army strength
 	std::vector<Territory*> toAttack();
 
 	void AddTerritoryToAttack(Territory * inTerritoryToAttack);
