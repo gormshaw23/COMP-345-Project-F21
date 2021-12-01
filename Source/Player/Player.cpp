@@ -23,6 +23,7 @@ Player::Player()
 	this->_playerStrategy = nullptr;
 	this->_hand = new Hand();
 	this->_orders = new OrdersList();
+	this->_playerStrategy = nullptr;
 }
 
 Player::Player(std::string inPlayerName)
@@ -62,6 +63,8 @@ Player::Player(const Player& inPlayer)
 	this->_playerName = inPlayer._playerName;
 
 	this->currentGameInstance = inPlayer.currentGameInstance;
+
+	this->_playerStrategy = inPlayer._playerStrategy;
 }
 
 Player::~Player()
@@ -276,84 +279,7 @@ void Player::issueOrder
 	const std::vector<int> inNumArmies
 )
 {
-	
-	////Sort input territories between toAttack and toDefend
-	std::vector<Territory*> territoriesToAttack;
-	for (Territory* t : inTerritories)
-	{
-		//If the territory belongs to another player, add to territories to attack
-		if (t->getPlayer()->getPlayerName().compare(this->getPlayerName()) != 0)
-			territoriesToAttack.push_back(t);
-	}
-	this->SetTerritoriesToAttack(territoriesToAttack);
 
-	std::vector<Territory*> territoriesToDefend;
-	for (Territory* t : inTerritories)
-	{
-		//If the territory belongs to the player, add to territories to defend
-		if (t->getPlayer()->getPlayerName().compare(this->getPlayerName()) == 0)
-			territoriesToDefend.push_back(t);
-	}
-
-	this->SetTerritoriesToDefend(territoriesToDefend);
-
-	for (Territory* t : territoriesToDefend)
-	{
-		switch (inOrderType) {
-		case EOrderType::Deploy:
-			this->_orders->add(new Deploy());
-			break;
-
-		case EOrderType::Advance:
-			this->_orders->add(new Advance());
-			break;
-
-		case EOrderType::Bomb:
-			this->_orders->add(new Bomb());
-			break;
-
-		case EOrderType::Blockade:
-			this->_orders->add(new Blockade());
-			break;
-
-		case EOrderType::Airlift:
-			this->_orders->add(new Airlift());
-			break;
-
-		case EOrderType::Negotiate:
-			this->_orders->add(new Negotiate());
-			break;
-		}
-	}
-
-	//Create order(s) based on territories to attack
-	for (Territory* t : territoriesToAttack) {
-		switch (inOrderType) {
-		case EOrderType::Deploy:
-			this->_orders->add(new Deploy());
-			break;
-
-		case EOrderType::Advance:
-			this->_orders->add(new Advance());
-			break;
-
-		case EOrderType::Bomb:
-			this->_orders->add(new Bomb());
-			break;
-
-		case EOrderType::Blockade:
-			this->_orders->add(new Blockade());
-			break;
-
-		case EOrderType::Airlift:
-			this->_orders->add(new Airlift());
-			break;
-
-		case EOrderType::Negotiate:
-			this->_orders->add(new Negotiate());
-			break;
-		}
-	}
 }
 
 OrdersList* Player::getOrders() const
@@ -435,4 +361,159 @@ void Player::SetTerritoriesToAttack(std::vector<Territory*> inTerritories)
 void Player::SetTerritoriesToDefend(std::vector<Territory*> inTerritories)
 {
 	this->_territoriesToDefend = inTerritories;
+}
+
+std::vector<Territory*>& Player::getTerritoriesToDefend()
+{
+	return this->_territoriesToDefend;
+}
+const std::vector<Territory*>& Player::getTerritoriesToDefend() const
+{
+	return this->_territoriesToDefend;
+}
+std::vector<Territory*>& Player::getTerritoriesToAttack()
+{
+	return this->_territoriesToAttack;
+}
+const std::vector<Territory*>& Player::getTerritoriesToAttack() const
+{
+	return this->_territoriesToAttack;
+}
+
+void Player::issueOrder()
+{
+	// Get territories to attack in order of priority
+	const std::vector<Territory*> plToriesToAttack = toAttack();
+	// Get territories to defend in order of priority
+	const std::vector<Territory*> plToriesToDefend = toDefend();
+
+	// Get the player's current hand 
+	Hand* currentPlayerHand = getCurrentHand();
+
+	std::cout << "Issuing orders for " << getPlayerName() << "\n";
+	setPlayerTurnPhase(EPlayerTurnPhase::PlayingReinforcementCards);
+
+	while (getPlayerTurnPhase() != EPlayerTurnPhase::EndOfTurn)
+	{
+		switch (getPlayerTurnPhase())
+		{
+		case EPlayerTurnPhase::PlayingReinforcementCards:
+			// The player starts by playing any reinforcement cards they have
+			// Before they deploy their reinforcement armies
+			PlayReinforcementCards();
+			break;
+		case EPlayerTurnPhase::DeployingArmies:
+			//DisplayPlayerToriesToDefend(plToriesToDefend);
+			break;
+		case EPlayerTurnPhase::AdvancingArmies:
+			break;
+		case EPlayerTurnPhase::PlayingOtherCards:
+			break;
+		default:
+			setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
+			break;
+		}
+	}
+}
+
+void Player::PlayReinforcementCards()
+{
+	Hand* currentHand = getCurrentHand();
+
+	if (currentHand == nullptr)
+	{
+		return;
+	}
+
+	std::vector<Card*> reinforcementCards;
+	for (auto& card : currentHand->getHand())
+	{
+		if (card->getCardType() == ECardTypes::Reinforcement)
+		{
+			reinforcementCards.push_back(card);
+		}
+	}
+
+	int reinforcementInput;
+	std::string inputStr = "";
+
+	if (reinforcementCards.size() > 0)
+	{
+		std::cout << "You have " << reinforcementCards.size() << " Reinforcement cards. Would you like to issue any now?" << std::endl;
+		std::cout << "Type either 'yes' or 'no'" << std::endl;
+		inputStr = "";
+		std::getline(std::cin, inputStr);
+		std::stringstream myStream(inputStr);
+		std::vector<std::string> words;
+		std::string tmp;
+		while (myStream >> tmp)
+		{
+			words.push_back(tmp);
+		}
+
+		if (words[0].compare("yes") || words[0].compare("Yes") || words[0].compare("YES"))
+		{
+			setReinforcementPool(getReinforcementPoolSize() + REINFORCEMENT_SIZE);
+		}
+		else if (words[0].compare("no") || words[0].compare("No") || words[0].compare("NO"))
+		{
+			setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
+		}
+		else
+		{
+			std::cout << "Input is invalid" << std::endl;
+		}
+	}
+	else
+	{
+		setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
+	}
+}
+
+void Player::DisplayPlayerToriesToDefend(const std::vector<Territory*> inPlToriesToDefend)
+{
+
+	std::cout << "Displaying " << getPlayerName() << "'s Territories to Defend." << std::endl;
+	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+	std::cout << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
+	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+	for (int i = 0; i < inPlToriesToDefend.size(); ++i)
+	{
+		if (inPlToriesToDefend[i] != nullptr)
+		{
+			std::cout << i << std::setw(5) << " : " << inPlToriesToDefend[i] << std::setw(15) << " : " << inPlToriesToDefend[i]->getNbArmy() << std::endl;
+		}
+	}
+}
+
+void Player::setPlayerTurnPhase(int inPhase)
+{
+	switch (inPhase)
+	{
+	case 1:
+		setPlayerTurnPhase(EPlayerTurnPhase::PlayingReinforcementCards);
+		break;
+	case 2:
+		setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
+		break;
+	case 3:
+		setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+		break;
+	case 4:
+		setPlayerTurnPhase(EPlayerTurnPhase::PlayingOtherCards);
+		break;
+	default:
+		setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
+		break;
+	}
+}
+
+void Player::setPlayerTurnPhase(EPlayerTurnPhase inPhase)
+{
+	this->_currentPhase = inPhase;
+}
+
+Player::EPlayerTurnPhase Player::getPlayerTurnPhase() const
+{
+	return this->_currentPhase;
 }

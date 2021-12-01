@@ -126,7 +126,7 @@ public:
 	~Map();
 
 private:
-	bool isValidFile ;
+	bool isValidFile;
 	
 	//Continent* arrayContinent[];
 };

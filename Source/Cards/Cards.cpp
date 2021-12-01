@@ -6,6 +6,7 @@
 #include <random>
 
 #include "Order/Orders.h"
+#include "Common/CommonTypes.h"
 
 using namespace std; 
 
@@ -15,139 +16,124 @@ using namespace std;
 
 */
 
-Card::cardType Card::getNewCardType() {
+ECardTypes Card::getCardType() const {
 
-	return *newCardType; 
-
-}
-
-void Card::setNewCardType(Card::cardType cType) {
-
-	*newCardType = cType; 
+	return cardType; 
 
 }
 
-Card::Card(Card::cardType cType) {
-
-	newCardType = new cardType(cType); 
-
+void Card::setCardType(ECardTypes cType) {
+	cardType = cType; 
 }
 
-Card::Card() {
+Card::Card(ECardTypes cType) {
+	cardType = cType;
+}
 
-	newCardType = new cardType(Bomb);
+Card::Card() 
+{
 }
 
 Card::~Card() {
-
-	delete newCardType;
-	newCardType = nullptr;
 }
 
 Card::Card(Card& cType) {
-
-	newCardType = new cardType();
-	*newCardType = *(cType.newCardType); 
-
+	cardType = cType.cardType;
 }
 
-// might cause problems later? 
-
 Card Card::operator=(Card& cType) {
-
 	Card temp; 
-	temp.newCardType = cType.newCardType; 
+	temp.cardType = cType.cardType; 
 	return temp; 
-
 }
 
 
 /* Insertion operation overloader */
-
 ostream& operator<<(ostream& os, Card& cType) {
 
-		Card::cardType card_type = cType.getNewCardType();
+	ECardTypes cardType = cType.getCardType();
 
-	if (card_type == Card::Bomb) { os << "Bomb" << endl; }
+	std::string msg = "";
+	switch (cardType)
+	{
+	case ECardTypes::Bomb:
+		msg = "Bomb";
+		break;
+	case ECardTypes::Reinforcement:
+		msg = "Reinforcement";
+		break;
+	case ECardTypes::Blockade:
+		msg = "Blockade";
+		break;
+	case ECardTypes::Airlift:
+		msg = "Airlift";
+		break;
+	case ECardTypes::Diplomacy:
+		msg = "Diplomacy";
+		break;
+	default:
+		break;
+	}
 
-	else if (card_type == Card::Reinforcement) { os << "Reinforcement" << endl; }
-
-	else if (card_type == Card::Blockade) { os << "Blockade" << endl; }
-
-	else if (card_type == Card::Airlift) { os << "Airlift" << endl; }
-
-	else if (card_type == Card::Diplomacy) { os << "Diplomacy" << endl; }
+	os << msg << std::endl;
 
 	return os;
-
 }
 
-
-
 /*
-*
- Deck class implementation
-
+	Deck class implementation
 */
 
 /*
-Getters and setters 
-
+	Getters and setters 
 */
 int Deck::getCurrentCard()
 {
-	return *currentCard;
+	return currentCard;
 }
 
 void Deck::setDeckSize(int someCards)
 {
-	*deckSize = someCards; 
+	deckSize = someCards; 
 }
-int Deck::getDeckSize()
+int Deck::getDeckSize() const
 {
-	return *deckSize;
+	return deckSize;
 }
 
 void Deck::setCurrentCard(int cCard)
 {
-	*currentCard = cCard;
+	currentCard = cCard;
 }
-
-
 
 Deck::Deck()
 {
-
+	deckSize = 0;
+	currentCard = 0;
 }
 
 // fix later, similar to Card 
 
 Deck::Deck(const Deck& aDeck)
 {
-	newDeck = new vector<Card*>(); 
-	for (auto i : *(aDeck.newDeck))
+	for (auto& card : aDeck.deck)
 	{
-		newDeck->push_back(new Card(*i)); 
+		deck.push_back(new Card(*card)); 
 	}
 
-	deckSize = new int();
-	*deckSize = *(aDeck.deckSize);
+	deckSize = deck.size();
+	currentCard = 0;
 }
 
 Deck::Deck(int someCards)
-{
-	
+{	
 	/* Deck must be multiple of 5 or not empty due to the nature of the card types */
 	while (someCards == 0 || someCards % 5 != 0 ) {
-
 		cout << "Please enter a multiple of 5 to create a deck. " << endl;
-		cin >> someCards; 
-
+		cin >> someCards;
 	}
 
-	newDeck = new vector<Card*>();
-	deckSize = new int(someCards);
-
+	deckSize = someCards;
 
 	cout << "Debug: Size of deck is: " << getDeckSize() << endl; 
 
@@ -156,34 +142,31 @@ Deck::Deck(int someCards)
 	cout << "Debug: Check if deck can receive card objects " << endl; 
 
 	for (int i = 0; i < getDeckSize(); i++) {
+		int j = i % 5;
 
-		if (i % 5 == 0) {
-
-			newDeck->push_back(new Card(Card::Bomb));
-			
+		switch (j)
+		{
+		case 0:
+			deck.push_back(new Card(ECardTypes::Bomb));
+			break;
+		case 1:
+			deck.push_back(new Card(ECardTypes::Reinforcement));
+			break;
+		case 2:
+			deck.push_back(new Card(ECardTypes::Blockade));
+			break;
+		case 3:
+			deck.push_back(new Card(ECardTypes::Airlift));
+			break;
+		default:
+			deck.push_back(new Card(ECardTypes::Diplomacy));
+			break;
 		}
-		else if (i % 5 == 1) {
 
-			newDeck->push_back(new Card(Card::Reinforcement));
-
-		}
-		else if (i % 5 == 2) {
-
-			newDeck->push_back(new Card(Card::Blockade)); 
-
-		}
-		else if (i % 5 == 3) {
-
-			newDeck->push_back(new Card(Card::Airlift));
-			
-		}
-		else {
-			
-			newDeck->push_back(new Card(Card::Diplomacy));
-			
-		}
-		 
-		cout << *newDeck->at(i) << endl; 
+		if (deck[i] != nullptr)
+		{
+			cout << deck[i] << endl;
+		} 
 	}
 		
 	this->ShuffleDeck(); 
@@ -194,159 +177,140 @@ Deck::Deck(int someCards)
 }
 
 /* Shuffle method */
-
 void Deck::ShuffleDeck() {
 	auto randomClock = std::chrono::high_resolution_clock::now();
 	auto seed = randomClock.time_since_epoch().count();
 	auto randomizer = std::default_random_engine(seed);
-	std::shuffle(newDeck->begin(), newDeck->end(), randomizer);
+	std::shuffle(deck.begin(), deck.end(), randomizer);
 }
+
 /* Draw method */
-
 Card* Deck::drawCard_Deck() {
-
-	Card* topOfDeck = newDeck->back();
-	newDeck->pop_back(); 
+	Card* topOfDeck = deck.back();
+	deck.pop_back();
 	this->ShuffleDeck(); 
-	(*deckSize)--; 
+	deckSize--;
 	return topOfDeck; 
-
 }
 
 /* Insert method */
-
 void Deck::insertCard_Deck(Card* someCards)
 {
-	newDeck->push_back(someCards); 
-	(*deckSize)++; 
+	deck.push_back(someCards); 
+	deckSize++;
 }
 
 /* Show all contents in the deck */
-
 void Deck::showDeck() {
-
-	for (int i = 0; i < getDeckSize(); i++) {
-
-		cout << *newDeck->at(i) << endl;
+	for (auto& card : deck)
+	{
+		if (card != nullptr)
+		{
+			cout << card << endl;
+		}
 	}
 }
 
 Deck::~Deck()
 {
-
-	for (auto i : *newDeck) {
+	for (auto& i : deck) {
 		delete i;
 	}
-	newDeck->clear();
-
-	delete newDeck;
-	newDeck = nullptr;
-
-	delete deckSize; 
-	deckSize = nullptr; 
-
+	deck.clear();
+	deckSize = 0;
 }
-
 
 Deck Deck::operator=(Deck& aDeck)
 {
 	Deck temp;
-	temp.newDeck = aDeck.newDeck;
-	temp.deckSize = aDeck.deckSize;
+	for (auto& card : aDeck.deck)
+	{
+		temp.deck.push_back(new Card(*card));
+	}
+	temp.deckSize = temp.deck.size();
 	return temp;
-
 }
 
 /* Insertion operation overloader */
-
-//ostream& operator<<(ostream& o, Deck& aDeck)
-//{
-//	// TODO: insert return statement here
-//}
-
-
-
-int Hand::getHandSize()
+ostream& operator<<(ostream& os, Deck& aDeck)
 {
-	return *handSize; 
+	// TODO: insert return statement here
+	return os;
+}
 
+int Hand::getHandSize() const
+{
+	return handSize;
 }
 
 void Hand::setHandSize(int someCards)
 {
-	*handSize = someCards; 
+	handSize = someCards; 
 }
 
 Hand::Hand()
 {
-	newHand = new vector<Card*>();
-	handSize = new int();
+	handSize = 0;
 }
 
 Hand::Hand(int someCards)
 {
-
-	newHand = new vector<Card*>();
-	handSize = new int();
- 
+	handSize = someCards;
 }
 
 Hand::~Hand()
 {
+	for (auto& card : hand) {
+		delete card;
+	}
 
-	//for (auto i : *newHand) {
-	//	delete i;
-	//}
-	newHand->clear();
-	newHand->shrink_to_fit();
-
-	delete newHand;
-	newHand = nullptr;
-
-	delete handSize;
-	handSize = nullptr;
+	hand.clear();
+	hand.shrink_to_fit();
+	handSize = 0;
 }
 
 Hand::Hand(const Hand& aHand)
 {
-	newHand = new vector<Card*>();
-	for (auto i : *(aHand.newHand))
+	for (auto& card : aHand.hand)
 	{
-		newHand->push_back(new Card(*i));
+		hand.push_back(new Card(*card));
 	}
 
-	handSize = new int();
-	*handSize = *(aHand.handSize);
+	handSize = hand.size();
 }
-
 
 Hand Hand::operator=(Hand& aHand)
 {
 	Hand temp;
-	temp.newHand = aHand.newHand;
-	temp.handSize = aHand.handSize;
+	for (auto& card : aHand.hand)
+	{
+		temp.hand.push_back(new Card(*card));
+	}
+	temp.handSize = temp.hand.size();
 	return temp;
 }
 
 void Hand::showHand() {
-
-	for (int i = 0; i < getHandSize(); i++) {
-
-		cout << *newHand->at(i) << endl;
+	for (auto& card : hand)
+	{
+		if (card != nullptr)
+		{
+			cout << card << endl;
+		}
 	}
 }
 
 void Hand::insertCard_Hand(Card* someCards)
 {
-	newHand->push_back(someCards);
-	(*handSize)++;
+	hand.push_back(someCards);
+	handSize++;
 }
 
 Card* Hand::drawCard_Hand()
 {
-	Card* topOfHand = newHand->back();
-	newHand->pop_back();
-	(*handSize)--;
+	Card* topOfHand = hand.back();
+	hand.pop_back();
+	handSize--;
 	return topOfHand;
 }
 
@@ -355,17 +319,17 @@ Card* Hand::drawCard_Hand()
 * for an order to be issued
 */
 EOrderType Hand::play(Card* someCards) {
-	switch (someCards->getNewCardType()) {
-	case Card::Bomb:
+	switch (someCards->getCardType()) {
+	case ECardTypes::Bomb:
 		return EOrderType::Bomb;
 		break;
-	case Card::Blockade:
+	case ECardTypes::Blockade:
 		return EOrderType::Blockade;
 		break;
-	case Card::Airlift:
+	case ECardTypes::Airlift:
 		return EOrderType::Airlift;
 		break;
-	case Card::Diplomacy:
+	case ECardTypes::Diplomacy:
 		return EOrderType::Negotiate;
 		break;
 	default:
@@ -374,7 +338,15 @@ EOrderType Hand::play(Card* someCards) {
 }
 
 
+std::vector<Card*>& Hand::getHand()
+{
+	return this->hand;
+}
 
+const std::vector<Card*>& Hand::getHand() const
+{
+	return this->hand;
+}
 
 
 

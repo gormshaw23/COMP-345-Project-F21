@@ -67,7 +67,6 @@ private:
     std::string extractName(std::string);//extract name from loadmap and addplayer command
     void addPlayer(std::string);//add player
 
-
     std::vector<Player*> playerlist;
     Player* neutralPlayer = nullptr;
 };

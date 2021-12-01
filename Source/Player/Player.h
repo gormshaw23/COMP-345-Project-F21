@@ -24,6 +24,14 @@ enum class EOrderType;
 */
 class Player {
 public:
+	enum class EPlayerTurnPhase {
+		PlayingReinforcementCards,
+		DeployingArmies,
+		AdvancingArmies,
+		PlayingOtherCards,
+		EndOfTurn
+	};
+
 	/* ctors */
 	Player();
 	Player(std::string inPlayerName);
@@ -50,6 +58,11 @@ public:
 	// returns list of adjacent enemy territories in order of army strength
 	std::vector<Territory*> toAttack();
 
+	std::vector<Territory*>& getTerritoriesToDefend();
+	const std::vector<Territory*>& getTerritoriesToDefend() const;
+	std::vector<Territory*>& getTerritoriesToAttack();
+	const std::vector<Territory*>& getTerritoriesToAttack() const;
+
 	void AddTerritoryToAttack(Territory * inTerritoryToAttack);
 	void AddTerritoryToDefend(Territory* inTerritoryToDefend);
 	void SetTerritoriesToAttack(std::vector<Territory*> inTerritories);
@@ -63,6 +76,8 @@ public:
 		const std::vector<Territory*> inTerritories,
 		const std::vector<int> inNumArmies
 	);
+
+	void issueOrder();
 
 	OrdersList* getOrders() const;
 	Hand* getCurrentHand() const;
@@ -96,6 +111,16 @@ private:
 	std::vector<Player*> _playersNotToAttack;
 
 	static std::size_t _globalID;
+
+	void setPlayerTurnPhase(EPlayerTurnPhase inPhase);
+	void setPlayerTurnPhase(int inPhase);
+	EPlayerTurnPhase getPlayerTurnPhase() const;
+
+	void DisplayPlayerToriesToDefend(const std::vector<Territory*> inPlToriesToDefend);
+
+	void PlayReinforcementCards();
+
+	EPlayerTurnPhase _currentPhase;
 
 	PlayerStrategies* _playerStrategy;
 };
