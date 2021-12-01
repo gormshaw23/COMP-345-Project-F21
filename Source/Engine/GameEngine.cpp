@@ -1140,3 +1140,73 @@ const void GameEngine::executeOrdersPhase(Player* p) {
 		ol->remove(0);
 	}
 }
+
+
+
+/**
+* function of TournamentMode in GameEngine class
+* @param: int M listofmapfiles, int P listofplayerstrategies, int G numberofgames, int D maxnumberofturns
+* @return: void
+*/
+void GameEngine::TournamentMode(int M, int P, int G, int D) {
+
+	// create map list
+	MapLoader* newmap = new MapLoader();
+	Map* map = new Map();
+	vector<Map*> maps;
+	//map1
+	newmap->MapLoader::loadMap("canada");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	//map2
+	newmap->MapLoader::loadMap("caribbean");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	//map3
+	newmap->MapLoader::loadMap("chutes");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	//map4
+	newmap->MapLoader::loadMap("myImortal");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	//map5
+	newmap->MapLoader::loadMap("simpsons_world");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+
+	// create player list
+	Player* p1(new AggressivePlayerStrategy());
+	vector<Player*> playerlist;
+	playerlist.push_back(p1);
+	p1.setStrategy(new BenevolentPlayerStrategy());
+	playerlist.push_back(p1);
+	p1.setStrategy(new NeutralPlayerStrategy());
+	playerlist.push_back(p1);
+	p1.setStrategy(new CheaterPlayerStrategy());
+	playerlist.push_back(p1);
+
+	// create current player list
+	vector<Player*> currentPlayerlist;
+	for (int ii = 0; ii < P; ii++) {
+		currentPlayerlist.push_back(playerlist.at(i));
+	}
+
+
+	Map* currentMap = new map();
+	// outer loop for listofmapfiles
+	for (int i = 0; i < M; i++) {
+		currentMap = maps.at(i);
+
+		// inner loop for numberofgames
+		for (int j = 0; j < G; j++) {
+
+			mainGameLoop(currentPlayerlist, currentMap, D);
+
+		}//end of inner loop
+	}//end of outer loop
+}//end of TournamentMode
+
+
+
+

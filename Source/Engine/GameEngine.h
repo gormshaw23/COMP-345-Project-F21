@@ -54,6 +54,8 @@ public:
 
 
     static GameEngine& getInstance();
+
+    void TournamentMode(int M, int P, int G, int D); //map and player set up for tournament mode
 private:
     GameState* eState;
     void setCurrentState(GameState eState);
