@@ -67,6 +67,7 @@ std::string Command::getEffect() const
 void Command::saveEffect(std::string effect)
 {
 	this->effect = effect;
+	Command::Notify(*this);
 }
 
 std::string Command::stringToLog() {
@@ -86,7 +87,7 @@ CommandProcessor::CommandProcessor() {
 }
 
 CommandProcessor::CommandProcessor(Observer* observ) {
-	std::cout << "In the command processor";
+	
 	this->Attach(observ);
 }
 
@@ -156,8 +157,20 @@ std::string CommandProcessor::readCommand()
 bool CommandProcessor::validate(Command* c, std::string gameState) {
 
 
-	if (gameState.compare("loadmap")==0) {
-		if (c->getCommand().compare("loadmap")==0) {
+	if (gameState.compare("loadmap")==0) {								//identifying the loadmap command.
+		int toTest = c->getCommand().substr(0, 9).compare(gameState);
+		if (c->getCommand().substr(0, 7).compare(gameState)==0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else if (gameState.compare("tournament") == 0) {					//Identifying and validating the first word of the trounament command. 
+		std::cout << "In tournament validate \n";
+		int toTest = c->getCommand().substr(0, 10).compare(gameState);
+		if (c->getCommand().substr(0, 10).compare(gameState) == 0 /* i dont know why but if the word is written correctly its return -1*/) {
+			std::cout << "tournament validated \n";
 			return true;
 		}
 		else {
@@ -165,71 +178,28 @@ bool CommandProcessor::validate(Command* c, std::string gameState) {
 		}
 	}
 	else if (gameState.compare("validatemap")==0) {
-		if (c->getCommand().compare("validatemap")==0) {
+		if (c->getCommand().compare(gameState)==0) {
 			return true;
 		}
 		else {
 			return false;
 		}
-
-		
 	}
 	else if (gameState.compare("addplayer")==0) {
-		if (c->getCommand().compare("addplayer")==0) {
+		if (c->getCommand().substr(0, 9).compare(gameState)==0) {
 			return true;
 		}
 		else {
 			return false;
-		}
-
-		
+		}		
 	}
-	else if (gameState.compare("assigncountries")==0) {
-		if (c->getCommand().compare("assigncountries")==0) {
+	else if (gameState.compare("gamestart") == 0) {
+		if (c->getCommand().compare(gameState) == 0) {
 			return true;
 		}
 		else {
 			return false;
 		}
-
-		
-	}
-	else if (gameState.compare("issueorder")==0) {
-		if (c->getCommand().compare("issueorder")==0) {
-			return true;
-		}
-		else {
-			return false;
-		}
-
-	}
-	else if (gameState.compare("endissueorders")==0) {
-		if (c->getCommand().compare("endissueorders")==0) {
-			return true;
-		}
-		else {
-			return false;
-		}
-		
-		
-	}
-	else if (gameState.compare("execorder")==0) {
-		if (c->getCommand().compare("execorder")==0) {
-			return true;
-		}
-		else {
-			return false;
-		}
-
-	}
-	else if (gameState.compare("endexecorders")==0) {
-		if (c->getCommand().compare("endexecorders")==0) {
-			return true;
-		}
-		else {
-			return false;
-		}
-
 	}
 	else if (gameState.compare("win")==0) {
 		if (c->getCommand().compare("win")==0) {
@@ -258,7 +228,11 @@ bool CommandProcessor::validate(Command* c, std::string gameState) {
 		}
 
 	}
-	return false;
+	else {
+		return false;
+
+		
+	}
 }
 
 FileCommandProcessorAdapter::FileCommandProcessorAdapter(CommandProcessor* c) {
@@ -309,7 +283,7 @@ std::string FileCommandProcessorAdapter::readCommand() {
 	std::string input = "";
 
 
-	std::ifstream inputFile(filepath);
+	std::ifstream inputFile(filepath+".txt");
 	if (inputFile) {
 		std::cout << "File existe\n";
 		inputFile.seekg(posInFile);
@@ -339,7 +313,7 @@ std::string FileCommandProcessorAdapter::readCommand() {
 }
 
 Command* FileCommandProcessorAdapter::getCommand() {
-	 std::string command =FileCommandProcessorAdapter::readCommand();
+	 std::string command =readCommand();
 	 return saveCommand(command);
 
 }
@@ -355,11 +329,16 @@ Command* FileCommandProcessorAdapter::saveCommand(std::string fromReadCommand)
 	}
 	listOfCommands.push_back(aCommand);
 	commandINMemmory = fromReadCommand;
-	cout << "The command : " << aCommand << " will now be saved into the list of commands " << endl;
-	Notify(*this);
+	cout << "The command : " << aCommand->getCommand() << " will now be saved into the list of commands " << endl;
+	this->Notify(*this);
 	return aCommand;
 
 
+}
+
+std::string FileCommandProcessorAdapter::stringToLog() {
+
+	return "<CommandProcessor> Command saved : " + this->commandINMemmory;
 }
 
 

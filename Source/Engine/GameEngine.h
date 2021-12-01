@@ -29,6 +29,7 @@ enum game_user_input {
     VALIDATEMAP,
     ADDPLAYER,
     GAMESTART,
+    TOURNAMENT,
 };
 
 class GameEngine : virtual public Subject, virtual  public ILoggable /*,  public CommandProcessor*/ {

@@ -562,68 +562,103 @@ void GameEngine::startupPhase() {
 	user_input_list[VALIDATEMAP] = "validatemap";
 	user_input_list[ADDPLAYER] = "addplayer";
 	user_input_list[GAMESTART] = "gamestart";
+	user_input_list[TOURNAMENT] = "tournament";
 
 	//using a loop to read the input until the end of the state
 	while (true) {
-
-		user_input = get_user_input(*eState, this);
-
-		//compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
+		//We need to use command processor insted
+		Command* userCommand = commandProces->getCommand();
+		user_input = userCommand->getCommand();
+	
+		//Compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
 		switch (*eState) {
 
 		case  GAME_STATE_START:
-			if (!user_input.substr(0, 7).compare(user_input_list[LOADMAP])) {
+			if (/*!user_input.substr(0, 7).compare(user_input_list[LOADMAP])*/commandProces->validate(userCommand, user_input_list[LOADMAP])) {
 				//do mapload
 				filename = extractName(user_input);
 				setCurrentState(GAME_STATE_MAP_LOAD);
+				userCommand->saveEffect("Passing from  <GAME_STATE_START> to <GAME_STATE_MAP_LOAD>");
 				cout << "Map loaded!\nPlease try: " << "\"" << user_input_list[VALIDATEMAP] << "\" to validate the current map, or " 
 					<< "\"" << user_input_list[LOADMAP] << " <filename>\" to load another map." << "\n";
 			}
-			else {
+			else if(commandProces->validate(userCommand, user_input_list[TOURNAMENT])) {
+				//To do :  add the process to creat the tournament  here
+				std::cout << "pass the validation" << std::endl;
+				vector<string> inTournamentCommend = splitString(user_input);
+				string listMapCommand = "null"; // The list of map file name to load for the tournament;
+				string listPLayerStrategyCommand = "null" ; // The list of player strategies
+				int nbGameCommand = 0; // The number of game 
+				int maxNbTurnCommand = 0; //inTournamentCommend.at(8);
+				
+				//int a =  std::find(inTournamentCommend.begin(),inTournamentCommend.end() , "-p");
 
+
+				int tournyCommendSize = inTournamentCommend.size();
+				for (int i = 0; i < tournyCommendSize; i++) {
+					//find the appropriate pre data word ( EX: -M) and add the  value of the next  word in the associate variable;
+					if (inTournamentCommend.at(i) == "-M") {
+						i++;
+						listMapCommand = inTournamentCommend.at(i);
+					}
+					else if (inTournamentCommend.at(i) == "-P") {
+						i++;
+						listPLayerStrategyCommand = inTournamentCommend.at(i);
+					}
+					else if (inTournamentCommend.at(i) == "-G") {
+						i++;
+						nbGameCommand = std::stoi(extractName(inTournamentCommend.at(i)));
+					}
+					else if (inTournamentCommend.at(i) == "-D") {
+						i++;
+						maxNbTurnCommand = std::stoi(extractName(inTournamentCommend.at(i)));
+					}
+				}
+
+				userCommand->saveEffect("Creating a tournament with the parameter : -M <"+listMapCommand+">  -P <"+ listPLayerStrategyCommand +">  -G <"+std::to_string(nbGameCommand)+">  -D <"+ std::to_string(maxNbTurnCommand)+">.");
+			}
+			else {
 				cout << "Error input(please try: \"loadmap <filename>)\"\n";
 			}
 			break;
 		case  GAME_STATE_MAP_LOAD:
-			if (!user_input.substr(0, 7).compare(user_input_list[LOADMAP])) {
-				//do mapload
+			if (commandProces->validate(userCommand, user_input_list[LOADMAP])) {
+				//do mapload	
 				filename = extractName(user_input);
 				setCurrentState(GAME_STATE_MAP_LOAD);
+				userCommand->saveEffect("Passing from  <GAME_STATE_START> to <GAME_STATE_MAP_LOAD>");
 				cout << "Map loaded!\nPlease try: " << "\"" << user_input_list[VALIDATEMAP] << "\" to validate the current map, or "
 					<< "\"" << user_input_list[LOADMAP] << " <filename>\" to load another map." << "\n";
 				
 			}
-			else if (!user_input.compare(user_input_list[VALIDATEMAP])) {
-
-
+			else if (commandProces->validate(userCommand, user_input_list[VALIDATEMAP])) {
 				cout << "filename: " << filename << endl;
 				bool mapload = newmap->MapLoader::loadMap(filename);
 
 				if (mapload == true) {
 					mapToUse = newmap->getListMap()->at(0);
 					setCurrentState(GAME_STATE_MAP_VALIDATED);
+					userCommand->saveEffect("Passing from  <GAME_STATE_MAP_LOAD> to <GAME_STATE_MAP_VALIDATED> : Map validated :"+ filename);
 					cout << "Map validated!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add a player." << "\n";
 				}
 				else {
 					setCurrentState(GAME_STATE_START);
+					userCommand->saveEffect("Passing from  <GAME_STATE_MAP_LOAD> to <GAME_STATE_START>");
 					cout << "The map is invalid, let's try that again!" << endl; 
-					cout << "Please enter \"loadmap <filename>\" in the mentioned format to start playing. " << endl;
-					
+					cout << "Please enter \"loadmap <filename>\" in the mentioned format to start playing. " << endl;	
 				}
-
 			}
 			else {
-
 				cout << "Error input(please try: " << user_input_list[VALIDATEMAP] << " or "
 					<< user_input_list[LOADMAP] << "\n";
 			}
 			break;
 		case GAME_STATE_MAP_VALIDATED:
 
-			if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
-
+			if (commandProces->validate(userCommand, user_input_list[ADDPLAYER])) {
 				addPlayer(user_input);
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
+				userCommand->saveEffect("Passing from  <GAME_STATE_MAP_VALIDATED> to <GAME_STATE_PLAYERS_ADDED> , new player added");
 				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player." << "\n";
 			}
 			else {
@@ -633,13 +668,12 @@ void GameEngine::startupPhase() {
 
 		case GAME_STATE_PLAYERS_ADDED:
 			if (playercount < 2) {
-				if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
-
+				if (commandProces->validate(userCommand, user_input_list[ADDPLAYER])) {
 					addPlayer(user_input);
 					setCurrentState(GAME_STATE_PLAYERS_ADDED);
+					userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAYERS_ADDED> , new player added");
 					cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
 						<< "\"" << user_input_list[GAMESTART] << "\" to begin playing." << "\n";
-	
 				}
 				else {
 					cout << "The players are less than 2, there should be 2-6 players in this game." << endl;
@@ -648,35 +682,37 @@ void GameEngine::startupPhase() {
 			}
 
 			else if (playercount >= 6) {
-				if (!user_input.compare(user_input_list[GAMESTART])) {
-
+				if (commandProces->validate(userCommand, user_input_list[GAMESTART])) {
 					GameEngine::gamestart();
 					setCurrentState(GAME_STATE_PLAY);
+					userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAY> , The game will start");
 					cout << "Player limit reached! There is a limit of 6." << endl;
 					cout << "All set! Ready to play!" << endl;
 					//TODO: Add variable for maxNumberOfTurns
-					mainGameLoop(playerlist, mapToUse);
+					int tempMaxTurn = 10;//Samuel temp fix Potato 
+					mainGameLoop(playerlist, mapToUse, tempMaxTurn);
 				}
 				else {
 					cout << "Error input! The players have reached to upper limit of 6. Please enter gamestart." << endl;
 				}
 
 			}
-			else if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
-
+			else if (commandProces->validate(userCommand, user_input_list[ADDPLAYER])) {
 				addPlayer(user_input);
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
+				userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAYERS_ADDED> , new player added ");
 				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
 					<< "\"" << user_input_list[GAMESTART] << " <filename>\" to begin playing." << "\n";
 
 			}
-			else if (!user_input.compare(user_input_list[GAMESTART])) {
-
+			else if (commandProces->validate(userCommand, user_input_list[GAMESTART])) {
 				GameEngine::gamestart();
 				setCurrentState(GAME_STATE_PLAY);
+				userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAY> , The game will start");
 				cout << "All set! Ready to play!" << endl; 
 				//TODO: Add variable for maxNumberOfTurns
-				mainGameLoop(playerlist, mapToUse);
+				int tempMaxTurn = 10;//Samuel temp fix Potato
+				mainGameLoop(playerlist, mapToUse, tempMaxTurn);
 			}
 			else {
 				cout << "Error input(please try: " << user_input_list[ADDPLAYER] << " or "
