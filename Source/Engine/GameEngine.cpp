@@ -16,17 +16,32 @@ vector<string> splitString(std::string str)
 {
 	std::string word = "";
 	std::vector<string> splitstring;
+	bool betwenbrakets = false;
 	for (auto x : str)
 	{
-		if (x == ' ')
-		{
-			//cout << word << endl;
-			splitstring.push_back(word);
-			word = "";
+		if (x == '<') {
+			betwenbrakets = true;
+		}
+		if (betwenbrakets == false) {
+			if (x == ' ')
+			{
+				//cout << word << endl;
+				splitstring.push_back(word);
+				word = "";
+			}
+			else {
+				word = word + x;
+			}
 		}
 		else {
-			word = word + x;
+			if (x == '>') {
+				betwenbrakets = false;
+			}
+			else {
+				word = word + x;
+			}
 		}
+		
 	}
 	splitstring.push_back(word);
 	return splitstring;
@@ -590,6 +605,7 @@ void GameEngine::startupPhase() {
 				string listPLayerStrategyCommand = "null" ; // The list of player strategies
 				int nbGameCommand = 0; // The number of game 
 				int maxNbTurnCommand = 0; //inTournamentCommend.at(8);
+				bool valideTournamentCommend = false;
 				
 				//int a =  std::find(inTournamentCommend.begin(),inTournamentCommend.end() , "-p");
 
@@ -603,7 +619,7 @@ void GameEngine::startupPhase() {
 					}
 					else if (inTournamentCommend.at(i) == "-P") {
 						i++;
-						listPLayerStrategyCommand = inTournamentCommend.at(i);
+						listPLayerStrategyCommand = extractName(inTournamentCommend.at(i));
 					}
 					else if (inTournamentCommend.at(i) == "-G") {
 						i++;
@@ -614,8 +630,35 @@ void GameEngine::startupPhase() {
 						maxNbTurnCommand = std::stoi(extractName(inTournamentCommend.at(i)));
 					}
 				}
+				// Testing if the command is valid / if all the info are correcly entered 
 
-				userCommand->saveEffect("Creating a tournament with the parameter : -M <"+listMapCommand+">  -P <"+ listPLayerStrategyCommand +">  -G <"+std::to_string(nbGameCommand)+">  -D <"+ std::to_string(maxNbTurnCommand)+">.");
+				if (listMapCommand != "null") {
+					if (listPLayerStrategyCommand != "null") {
+						vector<string> strategyTypeCheck = splitString(listPLayerStrategyCommand);
+						bool typeCheckBool = false;
+						for (int j = 0; j < strategyTypeCheck.size(); j++) {
+							if (strategyTypeCheck.at(j) == "Human" || strategyTypeCheck.at(j) == "Aggressive" || strategyTypeCheck.at(j) == "Benevolent" || strategyTypeCheck.at(j) == "Neutral" || strategyTypeCheck.at(j) == "Cheater") {
+								typeCheckBool = true;
+							}
+							
+							if (typeCheckBool == false) {
+								return;
+							}
+						}
+						
+						if (nbGameCommand > 0) {
+							if (maxNbTurnCommand >= 10) {
+								valideTournamentCommend = true;
+							}
+						}
+					}
+				}
+				 
+				//use this part and all the  extracted parameter to start the tournament 
+				if (valideTournamentCommend) {
+					userCommand->saveEffect("Creating a tournament with the parameter : -M <" + listMapCommand + ">  -P <" + listPLayerStrategyCommand + ">  -G <" + std::to_string(nbGameCommand) + ">  -D <" + std::to_string(maxNbTurnCommand) + ">.");
+				}
+				
 			}
 			else {
 				cout << "Error input(please try: \"loadmap <filename>)\"\n";
