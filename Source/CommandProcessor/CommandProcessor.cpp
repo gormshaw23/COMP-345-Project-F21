@@ -125,7 +125,7 @@ Command* CommandProcessor::saveCommand(std::string fromReadCommand)
 	}
 	listOfCommands.push_back(aCommand);
 	commandINMemmory = fromReadCommand;
-	cout << "The command : " << aCommand->getCommand() << " will now be saved into the list of commands " << endl;
+	cout << "The command : " << aCommand->getCommand() << " will now be saved into the list of commands " << endl<<endl;
 	this->Notify(*this);
 	return aCommand;
 	

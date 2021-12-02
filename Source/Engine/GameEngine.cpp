@@ -52,6 +52,7 @@ vector<string> splitString(std::string str)
 GameEngine::GameEngine()
 {
 	eState = new GameState(GAME_STATE_UNKNOWN);
+	isATournament = false;
 #ifdef DEBUG_ENABLE
 	cout << "constructor\n";
 #endif
@@ -64,6 +65,7 @@ GameEngine::GameEngine(const GameEngine& obj)
 	eState = new GameState;
 	*eState = *obj.eState;
 	commandProces = obj.commandProces;
+	isATournament = false;
 
 }
 
@@ -73,6 +75,7 @@ GameEngine::GameEngine(Observer* list)
 {
     eState = new GameState(GAME_STATE_UNKNOWN);
 	commandProces = nullptr;
+	isATournament = false;
 	std::string inputType;
 	std::vector<std::string> proccesInput;
 	bool goodInput = false;
@@ -786,7 +789,7 @@ void GameEngine::startupPhase() {
 */
 void GameEngine::mainGameLoop(vector<Player*> players, Map* map, int maxNumberOfTurns) {
 	int turn = 1; //Turn counter
-	while (players.size() != 1 && turn > maxNumberOfTurns) { //Loop if there are 2 or more players left
+	while (players.size() != 1 && turn < maxNumberOfTurns) { //Loop if there are 2 or more players left
 		int initPlayersSize = players.size();
 
 		//Give a number of armies to each player
@@ -911,6 +914,7 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 		//TODO: Code to add for issuing orders without human interactions
 	}
 	else {
+		Command* userCommand = NULL;
 		while (!turnEnded) {
 			//Input player order
 			int input;
@@ -920,7 +924,19 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 				<< "2 - Advance Armies\n"
 				<< "3 - Play Card\n"
 				<< "4 - End turn\n";
-			std::cin >> input;
+			userCommand = commandProces->getCommand();
+			try
+			{
+				 input =std::stoi(userCommand->getCommand());
+			}
+			catch (const std::exception&)
+			{
+				input = 0;
+			}
+			
+			//input = userCommand->getCommand();
+			std::cout << "Pass the catch throw"<<std::endl;
+			//std::cin >> input;
 
 			//Check if the input is valid
 			switch (input) {
@@ -930,16 +946,27 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 				{
 					//Input territory id
 					int territory;
-					std::cout << "Enter the territory id you would like to deploy to: \n";
-					std::cout << "Territory name and Id----------Number of units" << std::endl;
+					userCommand = NULL;
+					
+					std::cout << "Territory name and Id----------Number of units\n" << std::endl;
 					int  nbTerritory = p->getTerritoriesOwned().size();
 					for (size_t i = 0; i < nbTerritory; i++)
 					{
 						Territory* currentTerritory = p->getTerritoriesOwned().at(i);
 						std::cout << currentTerritory->getName() << " : " << currentTerritory->getID() << "-------" << currentTerritory->getNbArmy() << std::endl;
-
 					}
-					std::cin >> territory;
+					std::cout << "Enter the territory id you would like to deploy to: \n";
+					try
+					{
+						userCommand = commandProces->getCommand();
+						territory = std::stoi(userCommand->getCommand());
+					}
+					catch (const std::exception&)
+					{
+						territory = -1;
+					}
+					
+					//std::cin >> territory;
 
 					//Check if territory exists
 					if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
@@ -950,7 +977,17 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 						//Input number of armies to deploy
 						int armies;
 						std::cout << "Current reinfrocement pool: " << currentRPool << "\nEnter the number of armies you would like to deploy: \n";
-						std::cin >> armies;
+					
+						try
+						{
+							userCommand = commandProces->getCommand();
+							armies = std::stoi(userCommand->getCommand());
+						}
+						catch (const std::exception&)
+						{
+							armies = -1;
+						}
+						
 
 						//Check if number of armies is greater than 0 and less or equal than the reinforcement pool
 						if (armies > 0 && armies <= currentRPool)
@@ -962,7 +999,20 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 							//Input user if they would like to add another territory
 							string yesOrNo;
 							std::cout << "Would you like to add another territory? (y/n)\n";
-							std::cin >> yesOrNo;
+							userCommand = commandProces->getCommand();
+							yesOrNo = userCommand->getCommand();
+							//std::cin >> yesOrNo;
+							if (yesOrNo.compare("n") == 0) {
+								isValidInput = true;
+							}
+						}
+						if (armies == 0) {
+							std::cout << "No army added." << std::endl;
+							string yesOrNo;
+							std::cout << "Would you like to add another territory? (y/n)\n";
+							userCommand = commandProces->getCommand();
+							yesOrNo = userCommand->getCommand();
+							//std::cin >> yesOrNo;
 							if (yesOrNo.compare("n") == 0) {
 								isValidInput = true;
 							}
@@ -1186,6 +1236,7 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 				std::cout << "The given input is invalid\n";
 				break;
 			}//end switch
+			userCommand = NULL;
 		}//end while - continue if turnEnded is false
 	}
 }
