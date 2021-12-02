@@ -135,11 +135,11 @@ Deck::Deck(int someCards)
 
 	deckSize = someCards;
 
-	cout << "Debug: Size of deck is: " << getDeckSize() << endl; 
+	//cout << "Debug: Size of deck is: " << getDeckSize() << endl; 
 
 	/* Populating the deck with Card objects */
 
-	cout << "Debug: Check if deck can receive card objects " << endl; 
+	//cout << "Debug: Check if deck can receive card objects " << endl; 
 
 	for (int i = 0; i < getDeckSize(); i++) {
 		int j = i % 5;
@@ -163,17 +163,17 @@ Deck::Deck(int someCards)
 			break;
 		}
 
-		if (deck[i] != nullptr)
-		{
-			cout << deck[i] << endl;
-		} 
+		//if (deck[i] != nullptr)
+		//{
+		//	cout << *deck[i] << endl;
+		//} 
 	}
 		
 	this->ShuffleDeck(); 
 
-	cout << "Debug: Check if deck can be shuffled " << endl;
+	//cout << "Debug: Check if deck can be shuffled " << endl;
 
-	this->showDeck(); 
+	//this->showDeck(); 
 }
 
 /* Shuffle method */
@@ -206,7 +206,7 @@ void Deck::showDeck() {
 	{
 		if (card != nullptr)
 		{
-			cout << card << endl;
+			cout << *card << endl;
 		}
 	}
 }
@@ -295,7 +295,7 @@ void Hand::showHand() {
 	{
 		if (card != nullptr)
 		{
-			cout << card << endl;
+			cout << *card << endl;
 		}
 	}
 }

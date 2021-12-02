@@ -543,7 +543,7 @@ Territory::Territory() {
      continent=0;
      posx=0;
      posy=0;
-     player = new Player();
+     player = nullptr;
      nbArmy = 0;
      name="null";
 }

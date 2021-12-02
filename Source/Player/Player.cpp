@@ -24,6 +24,7 @@ Player::Player()
 	this->_hand = new Hand();
 	this->_orders = new OrdersList();
 	this->_playerStrategy = nullptr;
+	this->_currentPhase = EPlayerTurnPhase::DeployingArmies;
 }
 
 Player::Player(std::string inPlayerName)
@@ -34,6 +35,7 @@ Player::Player(std::string inPlayerName)
 	this->_playerStrategy = nullptr;
 	this->_hand = new Hand();
 	this->_orders = new OrdersList();
+	this->_currentPhase = EPlayerTurnPhase::DeployingArmies;
 }
 
 Player::Player(const Player& inPlayer)
@@ -65,6 +67,8 @@ Player::Player(const Player& inPlayer)
 	this->currentGameInstance = inPlayer.currentGameInstance;
 
 	this->_playerStrategy = inPlayer._playerStrategy;
+
+	this->_currentPhase = inPlayer._currentPhase;
 }
 
 Player::~Player()
@@ -123,6 +127,8 @@ Player& Player::operator=(const Player& inPlayer)
 
 	this->currentGameInstance = inPlayer.currentGameInstance;
 
+	this->_currentPhase = inPlayer._currentPhase;
+
 	// return the existing object so we can chain this operator
 	return *this;
 }
@@ -168,7 +174,13 @@ std::vector<Territory*> Player::toAttack()
 		{
 			for (auto& adjacentTerritory : ownedTerritory->getBorderList())
 			{
-				if (*adjacentTerritory->getPlayer() != *((Player*)this))
+				if (adjacentTerritory->getPlayer() == nullptr)
+				{
+					std::cout << "Warning! Territory has no owner!" << std::endl;
+					continue;
+				}
+
+				if (adjacentTerritory->getPlayer()->getPlayerID() != getPlayerID())
 				{
 					// making sure no dupes
 					if (enemyTerritoryByPriority.empty() || 
@@ -452,6 +464,7 @@ void Player::DeployArmies_Human()
 				if (selectedTory >= 0 && selectedTory < plToriesToDefend.size())
 				{
 					IssueDeployOrder(plToriesToDefend[selectedTory], amount);
+					setReinforcementPool(getReinforcementPoolSize() - amount);
 				}
 				else
 				{
@@ -835,8 +848,9 @@ void Player::DisplayPlayerToriesToDefendAndAttack()
 
 	std::cout << "Displaying " << getPlayerName() << "'s Territories to Defend." << std::endl;
 	std::cout << std::setfill('*') << std::setw(50) << std::endl;
-	std::cout << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
+	std::cout << std::setfill(' ') << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
 	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+	std::cout << std::setfill(' ') << std::endl;
 	for (int i = 0; i < toriesToDefendEndIndex; ++i)
 	{
 		if (toriesToDefendAndAttack[i] != nullptr)
@@ -854,7 +868,7 @@ void Player::DisplayPlayerToriesToDefendAndAttack()
 	{
 		if (toriesToDefendAndAttack[i] != nullptr)
 		{
-			std::cout << i << std::setw(5) << " : " << toriesToDefendAndAttack[i] << std::setw(15) << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
+			std::cout << i << std::setw(5) << " : " << toriesToDefendAndAttack[i]->getName() << std::setw(15) << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
 		}
 	}
 }
@@ -964,6 +978,7 @@ void Player::DisplayPlayerToriesToDefend()
 {
 	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
 
+	//std::cout << std::endl;
 	std::cout << "Displaying " << getPlayerName() << "'s Territories to Defend." << std::endl;
 	std::cout << std::setfill('*') << std::setw(50) << std::endl;
 	std::cout << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
@@ -972,7 +987,7 @@ void Player::DisplayPlayerToriesToDefend()
 	{
 		if (plToriesToDefend[i] != nullptr)
 		{
-			std::cout << i << std::setw(5) << " : " << plToriesToDefend[i] << std::setw(15) << " : " << plToriesToDefend[i]->getNbArmy() << std::endl;
+			std::cout << i << std::setw(5) << " : " << plToriesToDefend[i]->getName() << std::setw(15) << " : " << plToriesToDefend[i]->getNbArmy() << std::endl;
 		}
 	}
 }

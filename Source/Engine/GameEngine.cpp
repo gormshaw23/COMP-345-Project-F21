@@ -439,11 +439,14 @@ std::string GameEngine::extractName(std::string str) {
  */
 
 void GameEngine::addPlayer(std::string user_input) {
-	std::cout << "-Please enter the player name. "<<std::endl;
-	Command * userCommand = commandProces->getCommand();
+	playername = extractName(user_input);
 
-	playername = extractName(userCommand->getCommand());
+	//std::cout << "-Please enter the player name. "<<std::endl;
+	//Command * userCommand = commandProces->getCommand();
+
+	//playername = extractName(userCommand->getCommand());
 	Player* p = new Player(playername);
+	p->setCurrentGameInstance(this);
 	playerlist.push_back(p);
 	playercount++;
 	std::cout << "The player " << playername << " is added." << std::endl;
@@ -453,7 +456,6 @@ void GameEngine::addPlayer(std::string user_input) {
 		std::cout << i + 1 << "             " << playerlist.at(i)->getPlayerName() << std::endl;
 	}
 	std::cout << std::endl;
-
 }
 
 
@@ -477,6 +479,7 @@ void GameEngine::gamestart() {
 	for (int ii = 0; ii < round; ii++) {
 		for (int i = 0; i < playercount; i++) {
 			t = mapToUse->listTerritory.at(i + ii * playercount);
+			t->setPlayer(playerlist[i]);
 			playerlist[i]->getTerritoriesOwned().push_back(t);
 		}
 	}
@@ -529,9 +532,12 @@ void GameEngine::gamestart() {
 	std::cout << "players' initial cards are: " << std::endl;
 	std::cout << "player name        cards" << std::endl;
 	for (int i = 0; i < playercount; i++) {
-
-		std::cout << playerlist.at(i)->getPlayerName() << "              ";
-		playerlist.at(i)->getCurrentHand()->showHand();
+		std::cout << playerlist.at(i)->getPlayerName() << std::endl;
+		const Hand* plHand = playerlist[i]->getCurrentHand();
+		for (const auto& card : plHand->getHand())
+		{
+			std::cout << "\t" << *card << std::endl;
+		}
 		std::cout << std::endl;
 	}
 }
@@ -604,7 +610,7 @@ void GameEngine::startupPhase() {
 			break;
 		case GAME_STATE_MAP_VALIDATED:
 			if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
-				addPlayer(user_input);
+				addPlayer(user_input.substr(user_input_list[ADDPLAYER].size() + 1, user_input.size()));
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
 				std::cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player." << "\n";
 			}
@@ -615,8 +621,7 @@ void GameEngine::startupPhase() {
 		case GAME_STATE_PLAYERS_ADDED:
 			if (playercount < 2) {
 				if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
-
-					addPlayer(user_input);
+					addPlayer(user_input.substr(user_input_list[ADDPLAYER].size() + 1, user_input.size()));
 					setCurrentState(GAME_STATE_PLAYERS_ADDED);
 					std::cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
 						<< "\"" << user_input_list[GAMESTART] << "\" to begin playing." << "\n";	
@@ -628,7 +633,6 @@ void GameEngine::startupPhase() {
 			}
 			else if (playercount >= 6) {
 				if (!user_input.compare(user_input_list[GAMESTART])) {
-
 					GameEngine::gamestart();
 					setCurrentState(GAME_STATE_PLAY);
 					std::cout << "Player limit reached! There is a limit of 6." << std::endl;
