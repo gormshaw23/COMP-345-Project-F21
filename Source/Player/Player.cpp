@@ -480,7 +480,9 @@ void Player::DeployArmies_Human()
 		{
 			if (words[0].compare("done") || words[0].compare("Done") || words[0].compare("DONE"))
 			{
+				std::cout << "User ended deployment orders phase..." << std::endl;
 				setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+				HandleSaveEffect("Entering advancing armies step");
 			}
 			else
 			{
