@@ -832,6 +832,7 @@ std::vector<Player*> GameEngine::getPlayerList() const
 {
 	return this->playerlist;
 }
+
 std::vector<Player*>& GameEngine::getPlayerList()
 {
 	return this->playerlist;
