@@ -8,6 +8,7 @@
 #include <string>
 
 #include "Order/Orders.h"
+#include "Common/CommonTypes.h"
 
 class Card;
 class Hand;
@@ -25,10 +26,9 @@ enum class EOrderType;
 class Player {
 public:
 	enum class EPlayerTurnPhase {
-		PlayingReinforcementCards,
 		DeployingArmies,
 		AdvancingArmies,
-		PlayingOtherCards,
+		PlayingCards,
 		EndOfTurn
 	};
 
@@ -96,31 +96,59 @@ protected:
 	Hand* _hand = nullptr;
 	OrdersList* _orders = nullptr;
 
+	// helper functions for issuing orders to the orders list
+	void IssueDeployOrder(Territory* inDst, uint32 inArmiesToDeploy);
+	void IssueAdvanceOrder(Territory* inSrc, Territory* inDst, uint32 inArmiesToAdvance);
+	void IssueBombOrder(Territory* inDst);
+	void IssueBlockadeOrder(Territory* inDst);
+	void IssueAirliftOrder(Territory* inSrc, Territory* inDst, std::size_t inArmiesToAirlift);
+	void IssueNegotiateOrder(Player* inTarget);
+
 private:
-	GameEngine* currentGameInstance;
-	std::size_t _id = 0;
-	std::vector<Territory*> _territoriesOwned;
-	std::vector<Territory*> _territoriesToAttack;
-	std::vector<Territory*> _territoriesToDefend;
+	// Human specific Player functions, requiring human input
+	// For specifying parameters for Orders to be issued
+	void DeployArmies_Human();
+	void AdvanceArmies_Human();
+	void PlayingCards_Human();
+	void PlayingBombCard_Human();
+	void PlayingBlockadeCard_Human();
+	void PlayingAirliftCard_Human();
+	void PlayingDiplomacyCard_Human();
 
-	std::string _playerName = "";
-
-	std::size_t availableReinforcements = 0;
-	bool bTookTerritory = false;
-
-	std::vector<Player*> _playersNotToAttack;
-
-	static std::size_t _globalID;
-
+	// divides up the issueingOrders phase for the player
 	void setPlayerTurnPhase(EPlayerTurnPhase inPhase);
 	void setPlayerTurnPhase(int inPhase);
 	EPlayerTurnPhase getPlayerTurnPhase() const;
 
-	void DisplayPlayerToriesToDefend(const std::vector<Territory*> inPlToriesToDefend);
+	// Helper functions for displaying territories to the human player
+	void DisplayToriesToDefendAndAdjacencts();
+	void DisplayPlayerToriesToDefendAndAttack();
+	void DisplayPlayerToriesToDefend();
+	void DisplayPlayerToriesToAttack();
 
-	void PlayReinforcementCards();
-
+	// tracks subphase of issueingOrders phase
 	EPlayerTurnPhase _currentPhase;
 
+	std::vector<Territory*> _territoriesOwned;
+	std::vector<Territory*> _territoriesToAttack;
+	std::vector<Territory*> _territoriesToDefend;
+
+	std::size_t availableReinforcements = 0;
+
+	// flag for whether territory was taken this turn
+	bool bTookTerritory = false;
+
+	std::vector<Player*> _playersNotToAttack;
+
+	/* Essential member attributes */
+	GameEngine* currentGameInstance;
+
 	PlayerStrategies* _playerStrategy;
+
+	std::string _playerName = "";
+
+	// auto-incrementing ID
+	std::size_t _id = 0;
+	static std::size_t _globalID;
+	/* End Essential member attributes */
 };

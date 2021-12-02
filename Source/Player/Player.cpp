@@ -391,23 +391,23 @@ void Player::issueOrder()
 	Hand* currentPlayerHand = getCurrentHand();
 
 	std::cout << "Issuing orders for " << getPlayerName() << "\n";
-	setPlayerTurnPhase(EPlayerTurnPhase::PlayingReinforcementCards);
+	setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
 
 	while (getPlayerTurnPhase() != EPlayerTurnPhase::EndOfTurn)
 	{
 		switch (getPlayerTurnPhase())
 		{
-		case EPlayerTurnPhase::PlayingReinforcementCards:
-			// The player starts by playing any reinforcement cards they have
-			// Before they deploy their reinforcement armies
-			PlayReinforcementCards();
-			break;
 		case EPlayerTurnPhase::DeployingArmies:
-			//DisplayPlayerToriesToDefend(plToriesToDefend);
+			DeployArmies_Human();
 			break;
 		case EPlayerTurnPhase::AdvancingArmies:
+			AdvanceArmies_Human();
 			break;
-		case EPlayerTurnPhase::PlayingOtherCards:
+		case EPlayerTurnPhase::PlayingCards:
+			PlayingCards_Human();
+			break;
+		case EPlayerTurnPhase::EndOfTurn:
+			std::cout << "End of " << getPlayerName() << "'s turn" << std::endl;
 			break;
 		default:
 			setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
@@ -416,72 +416,563 @@ void Player::issueOrder()
 	}
 }
 
-void Player::PlayReinforcementCards()
+void Player::DeployArmies_Human()
 {
-	Hand* currentHand = getCurrentHand();
+	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
 
-	if (currentHand == nullptr)
+	std::cout << "You have " << getReinforcementPoolSize() << " armies remaining to deploy." << std::endl;
+
+	if (getReinforcementPoolSize() > 0)
 	{
-		return;
-	}
+		std::cout << "Please select a territory from the list and the number of armies to deploy." << std::endl;
+		std::cout << "Or type 'done' to skip:" << std::endl;
+		DisplayPlayerToriesToDefend();
 
-	std::vector<Card*> reinforcementCards;
-	for (auto& card : currentHand->getHand())
-	{
-		if (card->getCardType() == ECardTypes::Reinforcement)
-		{
-			reinforcementCards.push_back(card);
-		}
-	}
-
-	int reinforcementInput;
-	std::string inputStr = "";
-
-	if (reinforcementCards.size() > 0)
-	{
-		std::cout << "You have " << reinforcementCards.size() << " Reinforcement cards. Would you like to issue any now?" << std::endl;
-		std::cout << "Type either 'yes' or 'no'" << std::endl;
-		inputStr = "";
+		std::string inputStr = "";
 		std::getline(std::cin, inputStr);
 		std::stringstream myStream(inputStr);
 		std::vector<std::string> words;
 		std::string tmp;
+		int selectedTory = 0;
+		int amount = 0;
 		while (myStream >> tmp)
 		{
 			words.push_back(tmp);
 		}
 
-		if (words[0].compare("yes") || words[0].compare("Yes") || words[0].compare("YES"))
+		if (words.size() == 2)
 		{
-			setReinforcementPool(getReinforcementPoolSize() + REINFORCEMENT_SIZE);
+			if (!(std::stoi(words[0]) >> selectedTory) || !(std::stoi(words[1]) >> amount))
+			{
+				std::cout << "Invalid input." << std::endl;
+			}
+			else
+			{
+				amount = std::min(amount, (int)getReinforcementPoolSize());
+				if (selectedTory >= 0 && selectedTory < plToriesToDefend.size())
+				{
+					IssueDeployOrder(plToriesToDefend[selectedTory], amount);
+				}
+				else
+				{
+					std::cout << "Invalid territory selected input." << std::endl;
+				}
+			}
 		}
-		else if (words[0].compare("no") || words[0].compare("No") || words[0].compare("NO"))
+		else if (words.size() == 1)
 		{
-			setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
+			if (words[0].compare("done") || words[0].compare("Done") || words[0].compare("DONE"))
+			{
+				setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+			}
+			else
+			{
+				std::cout << "Invalid input." << std::endl;
+			}
 		}
 		else
 		{
-			std::cout << "Input is invalid" << std::endl;
+			std::cout << "Invalid input." << std::endl;
 		}
 	}
 	else
 	{
-		setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
+		std::cout << "End of deployment orders phase..." << std::endl;
+		setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
 	}
 }
 
-void Player::DisplayPlayerToriesToDefend(const std::vector<Territory*> inPlToriesToDefend)
+void Player::AdvanceArmies_Human()
 {
+	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
+	const int toriesToDefendEndIndex = plToriesToDefend.size();
+
+	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
+
+	std::vector<Territory*> toriesToDefendAndAttack;
+	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToDefend.begin(), plToriesToDefend.end());
+	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToAttack.begin(), plToriesToAttack.end());
+
+	DisplayPlayerToriesToDefendAndAttack();
+	std::cout << "Please select a territory from the list to move troops from," << std::endl;
+	std::cout << "And select a territory from the list to move troops to." << std::endl;
+	std::cout << "And select the number of troops to Advance." << std::endl;
+
+	DisplayToriesToDefendAndAdjacencts();
+	std::cout << "For convenience, here is every territory toDefend along with" << std::endl;
+	std::cout << "every adjacent territory, its owner, and the number of armies present." << std::endl;
+
+	std::string inputStr = "";
+	std::getline(std::cin, inputStr);
+	std::stringstream myStream(inputStr);
+	std::vector<std::string> words;
+	std::string tmp;
+	int selectedTorySrc = 0;
+	int selectedToryDst = 0;
+	int armiesToAdvance = 0;
+	while (myStream >> tmp)
+	{
+		words.push_back(tmp);
+	}
+
+	if (words.size() == 3)
+	{
+		if ((std::stoi(words[0]) >> selectedTorySrc) &&
+			(std::stoi(words[1]) >> selectedToryDst) &&
+			(std::stoi(words[2]) >> armiesToAdvance))
+		{
+			if ((selectedTorySrc >= 0 && selectedTorySrc < toriesToDefendAndAttack.size()) &&
+				(selectedToryDst >= 0 && selectedToryDst < toriesToDefendAndAttack.size()))
+			{
+				IssueAdvanceOrder(
+					toriesToDefendAndAttack[selectedTorySrc],
+					toriesToDefendAndAttack[selectedToryDst],
+					armiesToAdvance
+				);
+			}
+			else
+			{
+				std::cout << "Invalid territory selected as input." << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Invalid input." << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Invalid input." << std::endl;
+	}
+}
+
+void Player::PlayingCards_Human()
+{
+	if (this->getCurrentHand()->getHand().size() > 0)
+	{
+		std::cout << getPlayerName() << " has " << this->getCurrentHand()->getHand().size() << " cards to play." << std::endl;
+		std::cout << "Displaying current hand:" << std::endl;
+
+		for (int i = 0; i < this->getCurrentHand()->getHand().size(); i++)
+		{
+			std::cout << i << " : " << this->getCurrentHand()->getHand()[i] << std::endl;
+		}
+
+		std::cout << "Please select a card to play, or 'done' to skip." << std::endl;
+
+		std::string inputStr = "";
+		std::getline(std::cin, inputStr);
+		std::stringstream myStream(inputStr);
+		std::vector<std::string> words;
+		std::string tmp;
+		int selectedCard = 0;
+
+		while (myStream >> tmp)
+		{
+			words.push_back(tmp);
+		}
+
+		if (words.size() == 1)
+		{
+			if (std::stoi(words[0]) >> selectedCard)
+			{
+				if (selectedCard >= 0 && selectedCard < this->getCurrentHand()->getHand().size())
+				{
+					// play card
+					std::cout << "Playing card... " << this->getCurrentHand()->getHand()[selectedCard] << std::endl;
+
+					switch (this->getCurrentHand()->getHand()[selectedCard]->getCardType())
+					{
+					case ECardTypes::Bomb:
+						PlayingBombCard_Human();
+						break;
+					case ECardTypes::Blockade:
+						PlayingBlockadeCard_Human();
+						break;
+					case ECardTypes::Airlift:
+						PlayingAirliftCard_Human();
+						break;
+					case ECardTypes::Diplomacy:
+						PlayingDiplomacyCard_Human();
+						break;
+					default:
+						std::cout << "Invalid card" << std::endl;
+						break;
+					}
+
+					// change state
+					setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
+				}
+				else
+				{
+					std::cout << "Invalid input" << std::endl;
+				}
+			}
+			else if (words[0].compare("done") || words[0].compare("Done") || words[0].compare("DONE"))
+			{
+				setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
+			}
+			else
+			{
+				std::cout << "Invalid input" << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Invalid input" << std::endl;
+		}
+	}
+	else
+	{
+		setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
+	}
+}
+
+void Player::PlayingBombCard_Human()
+{
+	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
+
+	DisplayPlayerToriesToAttack();
+
+	std::cout << "Please select a territory to bomb" << std::endl;
+
+	std::string inputStr = "";
+	std::getline(std::cin, inputStr);
+	std::stringstream myStream(inputStr);
+	std::vector<std::string> words;
+	std::string tmp;
+	int selectedToryDst = 0;
+	while (myStream >> tmp)
+	{
+		words.push_back(tmp);
+	}
+
+	if (words.size() == 1)
+	{
+		if ((std::stoi(words[0]) >> selectedToryDst))
+		{
+			if (selectedToryDst >= 0 && selectedToryDst < plToriesToAttack.size())
+			{
+				IssueBombOrder(plToriesToAttack[selectedToryDst]);
+			}
+			else
+			{
+				std::cout << "Invalid range" << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Invalid input" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Invalid input" << std::endl;
+	}
+}
+
+void Player::PlayingBlockadeCard_Human()
+{
+	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
+
+	DisplayPlayerToriesToDefend();
+
+	std::cout << "Please select a territory to blockade" << std::endl;
+
+	std::string inputStr = "";
+	std::getline(std::cin, inputStr);
+	std::stringstream myStream(inputStr);
+	std::vector<std::string> words;
+	std::string tmp;
+	int selectedToryDst = 0;
+	while (myStream >> tmp)
+	{
+		words.push_back(tmp);
+	}
+
+	if (words.size() == 1)
+	{
+		if ((std::stoi(words[0]) >> selectedToryDst))
+		{
+			if (selectedToryDst >= 0 && selectedToryDst < plToriesToDefend.size())
+			{
+				IssueBlockadeOrder(plToriesToDefend[selectedToryDst]);
+			}
+			else
+			{
+				std::cout << "Invalid range" << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Invalid input" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Invalid input" << std::endl;
+	}
+}
+
+void Player::PlayingAirliftCard_Human()
+{
+	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
+
+	DisplayPlayerToriesToDefend();
+
+	std::cout << "Please select a territory to airlift troops from, a destination to airlift them to" << std::endl;
+	std::cout << "and a number of troops to be airlifted." << std::endl;
+
+	std::string inputStr = "";
+	std::getline(std::cin, inputStr);
+	std::stringstream myStream(inputStr);
+	std::vector<std::string> words;
+	std::string tmp;
+	int selectedTorySrc = 0;
+	int selectedToryDst = 0;
+	int armiesToAirlift = 0;
+	while (myStream >> tmp)
+	{
+		words.push_back(tmp);
+	}
+
+	if (words.size() == 3)
+	{
+		if ((std::stoi(words[0]) >> selectedTorySrc) &&
+			(std::stoi(words[1]) >> selectedToryDst) &&
+			(std::stoi(words[2]) >> armiesToAirlift))
+		{
+			if ((selectedTorySrc >= 0 && selectedTorySrc < plToriesToDefend.size()) &&
+				(selectedToryDst >= 0 && selectedToryDst < plToriesToDefend.size()))
+			{
+				IssueAirliftOrder(
+					plToriesToDefend[selectedTorySrc],
+					plToriesToDefend[selectedToryDst],
+					armiesToAirlift
+				);
+			}
+			else
+			{
+				std::cout << "Invalid territories selected" << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Invalid input" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Invalid input" << std::endl;
+	}
+}
+
+void Player::PlayingDiplomacyCard_Human()
+{
+	GameEngine* gameInstance = getCurrentGameInstance();
+	if (gameInstance == nullptr)
+	{
+		return;
+	}
+
+	const std::vector<Player*> currentPlayers = gameInstance->getPlayerList();
+
+	for (int i = 0; i < currentPlayers.size(); ++i)
+	{
+		if (currentPlayers[i] != nullptr)
+		{
+			std::cout << i << " : " << currentPlayers[i]->getPlayerName() << std::endl;
+		}
+	}
+
+	std::cout << "Please select a player to negotiate with, note that you cannot negotiate with yourself." << std::endl;
+
+	std::string inputStr = "";
+	std::getline(std::cin, inputStr);
+	std::stringstream myStream(inputStr);
+	std::vector<std::string> words;
+	std::string tmp;
+	int selectedPlayer = 0;
+	while (myStream >> tmp)
+	{
+		words.push_back(tmp);
+	}
+
+	if (words.size() == 1)
+	{
+		if ((std::stoi(words[0]) >> selectedPlayer))
+		{
+			if (selectedPlayer >= 0 && selectedPlayer < currentPlayers.size())
+			{
+				IssueNegotiateOrder(currentPlayers[selectedPlayer]);
+			}
+			else
+			{
+				std::cout << "Invalid player selected" << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Invalid input" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Invalid input" << std::endl;
+	}
+}
+
+void Player::DisplayPlayerToriesToDefendAndAttack()
+{
+	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
+	const int toriesToDefendEndIndex = plToriesToDefend.size();
+
+	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
+
+	std::vector<Territory*> toriesToDefendAndAttack;
+	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToDefend.begin(), plToriesToDefend.end());
+	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToAttack.begin(), plToriesToAttack.end());
 
 	std::cout << "Displaying " << getPlayerName() << "'s Territories to Defend." << std::endl;
 	std::cout << std::setfill('*') << std::setw(50) << std::endl;
 	std::cout << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
 	std::cout << std::setfill('*') << std::setw(50) << std::endl;
-	for (int i = 0; i < inPlToriesToDefend.size(); ++i)
+	for (int i = 0; i < toriesToDefendEndIndex; ++i)
 	{
-		if (inPlToriesToDefend[i] != nullptr)
+		if (toriesToDefendAndAttack[i] != nullptr)
 		{
-			std::cout << i << std::setw(5) << " : " << inPlToriesToDefend[i] << std::setw(15) << " : " << inPlToriesToDefend[i]->getNbArmy() << std::endl;
+			std::cout << i << std::setw(5) << " : " << toriesToDefendAndAttack[i] << std::setw(15) << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
+		}
+	}
+
+	std::cout << "Displaying " << getPlayerName() << "'s Territories to Attack." << std::endl;
+	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+	std::cout << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
+	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+
+	for (int i = toriesToDefendEndIndex; i < toriesToDefendAndAttack.size(); ++i)
+	{
+		if (toriesToDefendAndAttack[i] != nullptr)
+		{
+			std::cout << i << std::setw(5) << " : " << toriesToDefendAndAttack[i] << std::setw(15) << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
+		}
+	}
+}
+
+void Player::DisplayToriesToDefendAndAdjacencts()
+{
+	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
+
+	for (int i = 0; i < plToriesToDefend.size(); ++i)
+	{
+		if (plToriesToDefend[i] != nullptr)
+		{
+			std::cout << plToriesToDefend[i]->getName() << std::setw(10)
+					  << "(" << plToriesToDefend[i]->getNbArmy() << ") : " << std::endl;
+
+			std::vector<Territory*> allies;
+			std::map<int, std::vector<Territory*>> adjacentEnemyTerritories;
+			// sort adjacent territories into friendly or enemy
+			for (auto& neighbour : plToriesToDefend[i]->getBorderList())
+			{
+				if (neighbour != nullptr)
+				{
+					if (neighbour->getPlayer() == this)
+					{
+						allies.push_back(neighbour);
+					}
+					else
+					{
+						adjacentEnemyTerritories[neighbour->getPlayer()->getPlayerID()].push_back(neighbour);
+					}
+				}
+			}
+
+			// display the result in a informative format
+			std::cout << "[" << this->getPlayerName() << ":";
+			int count = 0;
+			for (auto& allyTory : allies)
+			{
+				std::cout << allyTory->getName() << "(" << allyTory->getNbArmy() << ")";
+				if (count < allies.size())
+				{
+					std::cout << ",";
+				}
+				count++;
+			}
+			std::cout << "]";
+
+
+			if (adjacentEnemyTerritories.size() > 0)
+			{
+				int adjacentEnemyCounter = 0;
+				std::cout << ",";
+				for (const auto& [key, value] : adjacentEnemyTerritories)
+				{
+					std::string plName = "";
+					if (value[0] != nullptr && value[0]->getPlayer())
+					{
+						plName = value[0]->getPlayer()->getPlayerName();
+					}
+					std::cout << "[" << plName << ":";
+
+					int enemyToryCount = 0;
+					for (const auto& enemyTory : value)
+					{
+						if (enemyTory != nullptr)
+						{
+							std::cout << enemyTory->getName() << "(" << enemyTory->getNbArmy() << ")";
+							if (enemyToryCount < value.size())
+							{
+								std::cout << ",";
+							}
+							enemyToryCount++;
+						}
+					}
+
+					std::cout << "]";
+					if (adjacentEnemyCounter < adjacentEnemyTerritories.size())
+					{
+						std::cout << ",";
+					}
+					adjacentEnemyCounter++;
+				}
+			}
+		}
+	}
+}
+
+void Player::DisplayPlayerToriesToAttack()
+{
+	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
+
+	std::cout << "Displaying " << getPlayerName() << "'s Territories to Attack." << std::endl;
+	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+	std::cout << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
+	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+
+	for (int i = 0; i < plToriesToAttack.size(); ++i)
+	{
+		if (plToriesToAttack[i] != nullptr)
+		{
+			std::cout << i << std::setw(5) << " : " << plToriesToAttack[i] << std::setw(15) << " : " << plToriesToAttack[i]->getNbArmy() << std::endl;
+		}
+	}
+}
+
+void Player::DisplayPlayerToriesToDefend()
+{
+	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
+
+	std::cout << "Displaying " << getPlayerName() << "'s Territories to Defend." << std::endl;
+	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+	std::cout << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
+	std::cout << std::setfill('*') << std::setw(50) << std::endl;
+	for (int i = 0; i < plToriesToDefend.size(); ++i)
+	{
+		if (plToriesToDefend[i] != nullptr)
+		{
+			std::cout << i << std::setw(5) << " : " << plToriesToDefend[i] << std::setw(15) << " : " << plToriesToDefend[i]->getNbArmy() << std::endl;
 		}
 	}
 }
@@ -491,16 +982,13 @@ void Player::setPlayerTurnPhase(int inPhase)
 	switch (inPhase)
 	{
 	case 1:
-		setPlayerTurnPhase(EPlayerTurnPhase::PlayingReinforcementCards);
-		break;
-	case 2:
 		setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
 		break;
-	case 3:
+	case 2:
 		setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
 		break;
-	case 4:
-		setPlayerTurnPhase(EPlayerTurnPhase::PlayingOtherCards);
+	case 3:
+		setPlayerTurnPhase(EPlayerTurnPhase::PlayingCards);
 		break;
 	default:
 		setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
@@ -516,4 +1004,52 @@ void Player::setPlayerTurnPhase(EPlayerTurnPhase inPhase)
 Player::EPlayerTurnPhase Player::getPlayerTurnPhase() const
 {
 	return this->_currentPhase;
+}
+
+void Player::IssueDeployOrder(Territory* inDst, uint32 inArmiesToDeploy)
+{
+	if (_orders != nullptr)
+	{
+		_orders->add(new Deploy(this, inArmiesToDeploy, inDst));
+	}
+}
+
+void Player::IssueAdvanceOrder(Territory* inSrc, Territory* inDst, uint32 inArmiesToAdvance)
+{
+	if (_orders != nullptr)
+	{
+		_orders->add(new Advance(this, inSrc, inDst, inArmiesToAdvance));
+	}
+}
+
+void Player::IssueBombOrder(Territory* inDst)
+{
+	if (_orders != nullptr)
+	{
+		_orders->add(new Bomb(this, inDst));
+	}
+}
+
+void Player::IssueBlockadeOrder(Territory* inDst)
+{
+	if (_orders != nullptr)
+	{
+		_orders->add(new Blockade(this->getCurrentGameInstance(), this, inDst));
+	}
+}
+
+void Player::IssueAirliftOrder(Territory* inSrc, Territory* inDst, std::size_t inArmiesToAirlift)
+{
+	if (_orders != nullptr)
+	{
+		_orders->add(new Airlift(this, inSrc, inDst, inArmiesToAirlift));
+	}
+}
+
+void Player::IssueNegotiateOrder(Player* inTarget)
+{
+	if (_orders != nullptr)
+	{
+		_orders->add(new Negotiate(this, inTarget));
+	}
 }
