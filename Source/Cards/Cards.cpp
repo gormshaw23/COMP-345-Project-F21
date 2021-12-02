@@ -295,7 +295,7 @@ void Hand::showHand() {
 	{
 		if (card != nullptr)
 		{
-			cout << card << endl;
+			cout << *card << endl;
 		}
 	}
 }

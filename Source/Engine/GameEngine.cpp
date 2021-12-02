@@ -444,6 +444,7 @@ void GameEngine::addPlayer(std::string user_input) {
 
 	playername = extractName(userCommand->getCommand());
 	Player* p = new Player(playername);
+	p->setCurrentGameInstance(this);
 	playerlist.push_back(p);
 	playercount++;
 	std::cout << "The player " << playername << " is added." << std::endl;
@@ -828,6 +829,7 @@ std::vector<Player*> GameEngine::getPlayerList() const
 {
 	return this->playerlist;
 }
+
 std::vector<Player*>& GameEngine::getPlayerList()
 {
 	return this->playerlist;

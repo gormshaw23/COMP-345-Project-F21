@@ -424,9 +424,10 @@ void Player::DeployArmies_Human()
 
 	if (getReinforcementPoolSize() > 0)
 	{
+		
+		DisplayPlayerToriesToDefend();
 		std::cout << "Please select a territory from the list and the number of armies to deploy." << std::endl;
 		std::cout << "Or type 'done' to skip:" << std::endl;
-		DisplayPlayerToriesToDefend();
 
 		std::string inputStr = "";
 		std::getline(std::cin, inputStr);
@@ -972,7 +973,7 @@ void Player::DisplayPlayerToriesToDefend()
 	{
 		if (plToriesToDefend[i] != nullptr)
 		{
-			std::cout << i << std::setw(5) << " : " << plToriesToDefend[i] << std::setw(15) << " : " << plToriesToDefend[i]->getNbArmy() << std::endl;
+			std::cout << plToriesToDefend.at(i)->getID() << std::setw(5) << " : " << plToriesToDefend.at(i)->getName() << std::setw(15) << " : " << plToriesToDefend.at(i)->getNbArmy() << std::endl;
 		}
 	}
 }
