@@ -638,7 +638,12 @@ int Territory::CalculateValue(bool& bIsEnemyAdjacent)
     
     for (auto& adjacentTerritory : this->getBorderList())
     {
-        if (*adjacentTerritory->getPlayer() != *((Player*)this))
+        if (adjacentTerritory->getPlayer() == nullptr || getPlayer() == nullptr)
+        {
+            std::cout << "Player not assigned to territory." << std::endl;
+        }
+
+        if (adjacentTerritory->getPlayer() != getPlayer())
         {
             bIsEnemyAdjacent = true;
             _value += adjacentTerritory->getNbArmy();

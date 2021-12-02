@@ -17,6 +17,7 @@ class OrdersList;
 class Territory;
 class PlayerStrategies;
 class GameEngine;
+class Command;
 class CommandProcessor;
 
 enum class EOrderType;
@@ -129,8 +130,8 @@ private:
 	void DisplayPlayerToriesToDefend();
 	void DisplayPlayerToriesToAttack();
 
-	std::string GetUserInput();
-	void HandleSaveEffect(std::string inMsg);
+	std::string GetUserInput(Command* userCommand);
+	void HandleSaveEffect(Command* inCommand, std::string inMsg);
 
 	// tracks subphase of issueingOrders phase
 	EPlayerTurnPhase _currentPhase;
