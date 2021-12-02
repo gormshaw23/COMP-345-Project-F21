@@ -174,6 +174,10 @@ const std::string Order::getDescription()
     return description;
 }
 
+void Order::setDescrption(std::string inOrderEffect)
+{
+    description = inOrderEffect;
+}
 
 
 std::string Order::stringToLog() {
@@ -237,9 +241,20 @@ void Deploy::execute()
         */
         std::size_t armies = std::min(armiesToDeploy, owner->getReinforcementPoolSize());
         owner->setReinforcementPool(owner->getReinforcementPoolSize() - armies);
+        
+        // Pizza start
+        // Get the effect of the order into a string 
+        std::string orderEffect = "Order type : " + getTypeName() +", With the effect :  Owner : "+owner->getPlayerName() + ", Target territory : "+ targetTerritory->getName() + ", Number of army added  : " + " added army to Todo find how to add armiesToDeploy to the string "+ "" ;
+       
+        // change the description with the new string 
+        setDescrption(orderEffect);
+        // Pizza end
+
         targetTerritory->setNbArmy(armies);
     }
-    Notify(*this);
+    // Pizza  
+    // call notify at the end of the execute function
+     Notify(*this);
 }
 
 bool Deploy::validate()
