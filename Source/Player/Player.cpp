@@ -6,6 +6,7 @@
 #include "Strategy/PlayerStrategies.h"
 #include "Common/CommonTypes.h"
 #include "Common/localization.h"
+#include "CommandProcessor/CommandProcessor.h"
 
 #include <iomanip>
 #include <iostream>
@@ -25,6 +26,7 @@ Player::Player()
 	this->_orders = new OrdersList();
 	this->_playerStrategy = nullptr;
 	this->_currentPhase = EPlayerTurnPhase::DeployingArmies;
+	this->commandProcess;
 }
 
 Player::Player(std::string inPlayerName)
@@ -36,6 +38,7 @@ Player::Player(std::string inPlayerName)
 	this->_hand = new Hand();
 	this->_orders = new OrdersList();
 	this->_currentPhase = EPlayerTurnPhase::DeployingArmies;
+	this->commandProcess = nullptr;
 }
 
 Player::Player(const Player& inPlayer)
@@ -404,12 +407,13 @@ void Player::issueOrder()
 
 	std::cout << "Issuing orders for " << getPlayerName() << "\n";
 	setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
+	HandleSaveEffect("Entering deploying armies step");
 
 	while (getPlayerTurnPhase() != EPlayerTurnPhase::EndOfTurn)
 	{
 		switch (getPlayerTurnPhase())
 		{
-		case EPlayerTurnPhase::DeployingArmies:
+		case EPlayerTurnPhase::DeployingArmies:			
 			DeployArmies_Human();
 			break;
 		case EPlayerTurnPhase::AdvancingArmies:
@@ -441,8 +445,7 @@ void Player::DeployArmies_Human()
 		std::cout << "Please select a territory from the list and the number of armies to deploy." << std::endl;
 		std::cout << "Or type 'done' to skip:" << std::endl;
 
-		std::string inputStr = "";
-		std::getline(std::cin, inputStr);
+		std::string inputStr = GetUserInput();
 		std::stringstream myStream(inputStr);
 		std::vector<std::string> words;
 		std::string tmp;
@@ -493,6 +496,7 @@ void Player::DeployArmies_Human()
 	{
 		std::cout << "End of deployment orders phase..." << std::endl;
 		setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+		HandleSaveEffect("Entering advancing armies step");
 	}
 }
 
@@ -516,8 +520,7 @@ void Player::AdvanceArmies_Human()
 	std::cout << "For convenience, here is every territory toDefend along with" << std::endl;
 	std::cout << "every adjacent territory, its owner, and the number of armies present." << std::endl;
 
-	std::string inputStr = "";
-	std::getline(std::cin, inputStr);
+	std::string inputStr = GetUserInput();
 	std::stringstream myStream(inputStr);
 	std::vector<std::string> words;
 	std::string tmp;
@@ -554,6 +557,19 @@ void Player::AdvanceArmies_Human()
 			std::cout << "Invalid input." << std::endl;
 		}
 	}
+	else if (words.size() == 1)
+	{
+		if (words[0].compare("done") || words[0].compare("Done") || words[0].compare("DONE"))
+		{
+			std::cout << "End of advance orders phase..." << std::endl;
+			setPlayerTurnPhase(EPlayerTurnPhase::PlayingCards);
+			HandleSaveEffect("Entering playing cards step");
+		}
+		else
+		{
+			std::cout << "Invalid input." << std::endl;
+		}
+	}
 	else
 	{
 		std::cout << "Invalid input." << std::endl;
@@ -574,8 +590,7 @@ void Player::PlayingCards_Human()
 
 		std::cout << "Please select a card to play, or 'done' to skip." << std::endl;
 
-		std::string inputStr = "";
-		std::getline(std::cin, inputStr);
+		std::string inputStr = GetUserInput();
 		std::stringstream myStream(inputStr);
 		std::vector<std::string> words;
 		std::string tmp;
@@ -625,6 +640,7 @@ void Player::PlayingCards_Human()
 			else if (words[0].compare("done") || words[0].compare("Done") || words[0].compare("DONE"))
 			{
 				setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
+				HandleSaveEffect("End of the player's turn");
 			}
 			else
 			{
@@ -650,8 +666,7 @@ void Player::PlayingBombCard_Human()
 
 	std::cout << "Please select a territory to bomb" << std::endl;
 
-	std::string inputStr = "";
-	std::getline(std::cin, inputStr);
+	std::string inputStr = GetUserInput();
 	std::stringstream myStream(inputStr);
 	std::vector<std::string> words;
 	std::string tmp;
@@ -693,8 +708,7 @@ void Player::PlayingBlockadeCard_Human()
 
 	std::cout << "Please select a territory to blockade" << std::endl;
 
-	std::string inputStr = "";
-	std::getline(std::cin, inputStr);
+	std::string inputStr = GetUserInput();
 	std::stringstream myStream(inputStr);
 	std::vector<std::string> words;
 	std::string tmp;
@@ -737,8 +751,7 @@ void Player::PlayingAirliftCard_Human()
 	std::cout << "Please select a territory to airlift troops from, a destination to airlift them to" << std::endl;
 	std::cout << "and a number of troops to be airlifted." << std::endl;
 
-	std::string inputStr = "";
-	std::getline(std::cin, inputStr);
+	std::string inputStr = GetUserInput();
 	std::stringstream myStream(inputStr);
 	std::vector<std::string> words;
 	std::string tmp;
@@ -801,8 +814,7 @@ void Player::PlayingDiplomacyCard_Human()
 
 	std::cout << "Please select a player to negotiate with, note that you cannot negotiate with yourself." << std::endl;
 
-	std::string inputStr = "";
-	std::getline(std::cin, inputStr);
+	std::string inputStr = GetUserInput();
 	std::stringstream myStream(inputStr);
 	std::vector<std::string> words;
 	std::string tmp;
@@ -1027,6 +1039,7 @@ void Player::IssueDeployOrder(Territory* inDst, uint32 inArmiesToDeploy)
 	if (_orders != nullptr)
 	{
 		_orders->add(new Deploy(this, inArmiesToDeploy, inDst));
+		HandleSaveEffect("Deploy order issued");
 	}
 }
 
@@ -1035,6 +1048,7 @@ void Player::IssueAdvanceOrder(Territory* inSrc, Territory* inDst, uint32 inArmi
 	if (_orders != nullptr)
 	{
 		_orders->add(new Advance(this, inSrc, inDst, inArmiesToAdvance));
+		HandleSaveEffect("Advance order issued");
 	}
 }
 
@@ -1043,6 +1057,7 @@ void Player::IssueBombOrder(Territory* inDst)
 	if (_orders != nullptr)
 	{
 		_orders->add(new Bomb(this, inDst));
+		HandleSaveEffect("Bomb order issued");
 	}
 }
 
@@ -1051,6 +1066,7 @@ void Player::IssueBlockadeOrder(Territory* inDst)
 	if (_orders != nullptr)
 	{
 		_orders->add(new Blockade(this->getCurrentGameInstance(), this, inDst));
+		HandleSaveEffect("Blockade order issued");
 	}
 }
 
@@ -1059,6 +1075,7 @@ void Player::IssueAirliftOrder(Territory* inSrc, Territory* inDst, std::size_t i
 	if (_orders != nullptr)
 	{
 		_orders->add(new Airlift(this, inSrc, inDst, inArmiesToAirlift));
+		HandleSaveEffect("Airlift order issued");
 	}
 }
 
@@ -1067,5 +1084,46 @@ void Player::IssueNegotiateOrder(Player* inTarget)
 	if (_orders != nullptr)
 	{
 		_orders->add(new Negotiate(this, inTarget));
+		HandleSaveEffect("Negotiate order issued");
+	}
+}
+
+void Player::setCommandProcessor(CommandProcessor* inProcessor)
+{
+	this->commandProcess = inProcessor;
+}
+
+std::string Player::GetUserInput()
+{
+	if (commandProcess == nullptr)
+	{
+		std::cout << "Command Process isn't assigned to player." << std::endl;
+		return "";
+	}
+
+	Command* userCommand = commandProcess->getCommand();
+
+	if (userCommand == nullptr)
+	{
+		std::cout << "User Command is null." << std::endl;
+		return "";
+	}
+
+	return userCommand->getCommand();
+}
+
+void Player::HandleSaveEffect(std::string inMsg)
+{
+	if (commandProcess == nullptr)
+	{
+		std::cout << "Command Process isn't assigned to player." << std::endl;
+		return;
+	}
+
+	Command* userCommand = commandProcess->getCommand();
+
+	if (userCommand != nullptr)
+	{
+		userCommand->saveEffect(inMsg);
 	}
 }

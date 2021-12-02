@@ -17,6 +17,7 @@ class OrdersList;
 class Territory;
 class PlayerStrategies;
 class GameEngine;
+class CommandProcessor;
 
 enum class EOrderType;
 
@@ -92,6 +93,8 @@ public:
 	void setCapturedTerritoryFlag(bool bInFlag);
 	bool getCapturedTerritoryFlag() const;
 
+	void setCommandProcessor(CommandProcessor* inProcessor);
+
 protected:
 	Hand* _hand = nullptr;
 	OrdersList* _orders = nullptr;
@@ -126,6 +129,9 @@ private:
 	void DisplayPlayerToriesToDefend();
 	void DisplayPlayerToriesToAttack();
 
+	std::string GetUserInput();
+	void HandleSaveEffect(std::string inMsg);
+
 	// tracks subphase of issueingOrders phase
 	EPlayerTurnPhase _currentPhase;
 
@@ -146,6 +152,8 @@ private:
 	PlayerStrategies* _playerStrategy;
 
 	std::string _playerName = "";
+
+	CommandProcessor* commandProcess;
 
 	// auto-incrementing ID
 	std::size_t _id = 0;
