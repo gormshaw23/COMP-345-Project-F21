@@ -809,15 +809,7 @@ const std::vector<Territory*> GameEngine::GetEnemyTerritoriesOfCurrentPlayer(Pla
 * @param *p pointer to a Player object
 */
 const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
-	if (getIsATournament()) {
-		//Issue orders based on a given player strategy (no human interaction)
-		p->getPlayerStrategy()->issueOrder();
-	}
-	else {
-		//Issue orders based on human or computer interaction
-		p->issueOrder();
-	}
-	
+	p->issueOrder();
 }
 
 /*
