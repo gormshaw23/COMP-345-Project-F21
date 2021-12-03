@@ -54,10 +54,12 @@ public:
 
     void startupPhase();
 
-
     static GameEngine& getInstance();
 
     void TournamentMode(int M, int P, int G, int D); //map and player set up for tournament mode
+
+    bool getIsATournament();
+    void setIsATournament(bool tournamentValue);
 
     const std::vector<Territory*> GetEnemyTerritoriesOfCurrentPlayer(Player* p);
 private:
