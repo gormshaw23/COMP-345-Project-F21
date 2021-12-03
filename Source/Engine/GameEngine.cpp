@@ -640,7 +640,7 @@ void GameEngine::startupPhase() {
 					setCurrentState(GAME_STATE_PLAY);
 					std::cout << "Player limit reached! There is a limit of 6." << std::endl;
 					std::cout << "All set! Ready to play!" << std::endl;
-					mainGameLoop(playerlist, mapToUse);
+					//mainGameLoop(playerlist, mapToUse);
 				}
 				else {
 					std::cout << "Error input! The players have reached to upper limit of 6. Please enter gamestart." << std::endl;
@@ -658,7 +658,7 @@ void GameEngine::startupPhase() {
 				GameEngine::gamestart();
 				setCurrentState(GAME_STATE_PLAY);
 				std::cout << "All set! Ready to play!" << std::endl; 
-				mainGameLoop(playerlist, mapToUse);
+				//mainGameLoop(playerlist, mapToUse);
 			}
 			else {
 				std::cout << "Error input(please try: " << user_input_list[ADDPLAYER] << " or "
@@ -721,7 +721,6 @@ void GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNum
 	std::string endGameMessage = (players.size() == 1) ? "Game over, " + players.at(0)->getPlayerName() + " wins\n"
 		: "The game has exceeded the amount of turns, therefore the game is a draw.\n";
 	std::cout << endGameMessage;
-	//TODO: Code to log result?
 }
 
 /*
