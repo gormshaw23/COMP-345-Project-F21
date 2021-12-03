@@ -69,13 +69,13 @@ void HumanPlayerStrategy::issueOrder()
 		switch (currentPlayer->getPlayerTurnPhase())
 		{
 		case EPlayerTurnPhase::DeployingArmies:
-			DeployArmies_Human(availableReserves);
+			DeployArmies(availableReserves);
 			break;
 		case EPlayerTurnPhase::AdvancingArmies:
-			AdvanceArmies_Human();
+			AdvanceArmies();
 			break;
 		case EPlayerTurnPhase::PlayingCards:
-			PlayingCards_Human();
+			PlayingCards();
 			break;
 		case EPlayerTurnPhase::EndOfTurn:
 			std::cout << "End of " << currentPlayer->getPlayerName() << "'s turn" << std::endl;
@@ -193,7 +193,7 @@ void HumanPlayerStrategy::toDefend()
 	}
 }
 
-void HumanPlayerStrategy::DeployArmies_Human(int& availableReserves)
+void HumanPlayerStrategy::DeployArmies(int& availableReserves)
 {
 	Player* currentPlayer = getPlayer();
 	if (currentPlayer == nullptr)
@@ -282,7 +282,7 @@ void HumanPlayerStrategy::DeployArmies_Human(int& availableReserves)
 	}
 }
 
-void HumanPlayerStrategy::AdvanceArmies_Human()
+void HumanPlayerStrategy::AdvanceArmies()
 {
 	Player* currentPlayer = getPlayer();
 	if (currentPlayer == nullptr)
@@ -386,7 +386,7 @@ void HumanPlayerStrategy::AdvanceArmies_Human()
 	}
 }
 
-void HumanPlayerStrategy::PlayingCards_Human()
+void HumanPlayerStrategy::PlayingCards()
 {
 	Player* currentPlayer = getPlayer();
 	if (currentPlayer == nullptr)
@@ -439,16 +439,16 @@ void HumanPlayerStrategy::PlayingCards_Human()
 					switch (currentPlayer->getCurrentHand()->getHand()[selectedCard]->getCardType())
 					{
 					case ECardTypes::Bomb:
-						PlayingBombCard_Human();
+						PlayingBombCard();
 						break;
 					case ECardTypes::Blockade:
-						PlayingBlockadeCard_Human();
+						PlayingBlockadeCard();
 						break;
 					case ECardTypes::Airlift:
-						PlayingAirliftCard_Human();
+						PlayingAirliftCard();
 						break;
 					case ECardTypes::Diplomacy:
-						PlayingDiplomacyCard_Human();
+						PlayingDiplomacyCard();
 						break;
 					default:
 						std::cout << "Invalid card" << std::endl;
@@ -483,7 +483,7 @@ void HumanPlayerStrategy::PlayingCards_Human()
 	}
 }
 
-void HumanPlayerStrategy::PlayingBombCard_Human()
+void HumanPlayerStrategy::PlayingBombCard()
 {
 	Player* currentPlayer = getPlayer();
 	if (currentPlayer == nullptr)
@@ -544,7 +544,7 @@ void HumanPlayerStrategy::PlayingBombCard_Human()
 	}
 }
 
-void HumanPlayerStrategy::PlayingBlockadeCard_Human()
+void HumanPlayerStrategy::PlayingBlockadeCard()
 {
 	Player* currentPlayer = getPlayer();
 	if (currentPlayer == nullptr)
@@ -605,7 +605,7 @@ void HumanPlayerStrategy::PlayingBlockadeCard_Human()
 	}
 }
 
-void HumanPlayerStrategy::PlayingAirliftCard_Human()
+void HumanPlayerStrategy::PlayingAirliftCard()
 {
 	Player* currentPlayer = getPlayer();
 	if (currentPlayer == nullptr)
@@ -684,7 +684,7 @@ void HumanPlayerStrategy::PlayingAirliftCard_Human()
 	}
 }
 
-void HumanPlayerStrategy::PlayingDiplomacyCard_Human()
+void HumanPlayerStrategy::PlayingDiplomacyCard()
 {
 	Player* currentPlayer = getPlayer();
 	if (currentPlayer == nullptr)
