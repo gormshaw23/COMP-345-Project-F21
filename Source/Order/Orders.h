@@ -49,7 +49,7 @@ public:
     const EOrderType getType(); //Gets OrderType enum
     const std::string getTypeName(); //Gets name of the order type
     const std::string getDescription();
-
+    void setDescrption(std::string inOrderEffect);
     virtual std::string stringToLog();  //use to send the effect of the order as a string 
 
     
@@ -61,6 +61,8 @@ private:
 /**
  * The function and member declarations of the Deploy class 
  */
+
+// Pizza , add (virtual public Subject , virtual public ILoggable,) in all the other type of Order 
 class Deploy :  virtual public Subject , virtual public ILoggable, public Order
 {
 public:
@@ -69,6 +71,7 @@ public:
     ~Deploy();                                                       //Destructor
     Deploy(const Deploy &dep);                                       //Copy constructor
     Deploy &operator=(const Deploy &dep);                            //Assignment operator
+
 
     virtual void execute() override;
     virtual bool validate() override;
