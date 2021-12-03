@@ -15,6 +15,14 @@ Player::Player()
 	this->_orders = new OrdersList();
 }
 
+Player::Player(PlayerStrategies* ps, std::string playerName) {
+	this->_id = ++_globalID;
+	this->_hand = new Hand();
+	this->_orders = new OrdersList();
+	this->setPlayerStrategy(ps);
+	this->setPlayerName(playerName);
+};
+
 Player::Player(std::string inPlayerName)
 	: _playerName(inPlayerName)
 {

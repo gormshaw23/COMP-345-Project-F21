@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Engine/GameEngine.h"
+#include "Strategy/PlayerStrategies.h"
 #include "Player/Player.h"
 #include "Map/map.h"
 #include "Cards/Cards.h"
@@ -618,7 +619,7 @@ void GameEngine::startupPhase() {
 					//find the appropriate pre data word ( EX: -M) and add the  value of the next  word in the associate variable;
 					if (inTournamentCommend.at(i) == "-M") {
 						i++;
-						listMapCommand = inTournamentCommend.at(i);
+						listMapCommand = extractName(inTournamentCommend.at(i));
 					}
 					else if (inTournamentCommend.at(i) == "-P") {
 						i++;
@@ -660,6 +661,9 @@ void GameEngine::startupPhase() {
 				//use this part and all the  extracted parameter to start the tournament 
 				if (valideTournamentCommend) {
 					userCommand->saveEffect("Creating a tournament with the parameter : -M <" + listMapCommand + ">  -P <" + listPLayerStrategyCommand + ">  -G <" + std::to_string(nbGameCommand) + ">  -D <" + std::to_string(maxNbTurnCommand) + ">.");
+					TournamentMode(listMapCommand, listPLayerStrategyCommand, nbGameCommand, maxNbTurnCommand);
+
+					//void GameEngine::TournamentMode(int M, int P, int G, int D) {
 				}
 				
 			}
@@ -1280,12 +1284,29 @@ const void GameEngine::executeOrdersPhase(Player* p) {
 * @param: int M listofmapfiles, int P listofplayerstrategies, int G numberofgames, int D maxnumberofturns
 * @return: void
 */
-void GameEngine::TournamentMode(int M, int P, int G, int D) {
+void GameEngine::TournamentMode(string M, string P, int G, int D) {
 
 	// create map list
 	MapLoader* newmap = new MapLoader();
 	Map* map = new Map();
 	vector<Map*> maps;
+	vector<string> listMapName = splitString(M);
+	int nbGameFromMap = listMapName.size();
+	
+	for (int x = 0; x < listMapName.size(); x++) {
+		if (newmap->loadMap(listMapName.at(x))) {
+			map = newmap->getListMap()->at(x);
+			maps.push_back(map);
+		}
+		else {
+			std::cout << "The map in invalid the default one will be use insted.\n ";
+			newmap->MapLoader::loadMap("canada");
+			exit(1);
+			map = newmap->getListMap()->at(0);
+			maps.push_back(map);
+		}
+	}
+	/*
 	//map1
 	newmap->MapLoader::loadMap("canada");
 	map = newmap->getListMap()->at(0);
@@ -1306,35 +1327,73 @@ void GameEngine::TournamentMode(int M, int P, int G, int D) {
 	newmap->MapLoader::loadMap("simpsons_world");
 	map = newmap->getListMap()->at(0);
 	maps.push_back(map);
-
-	// create player list
-	Player* p1(new AggressivePlayerStrategy());
+	*/
+	vector<string> listPlayerFromConsole = splitString(P);
+	Player* p = nullptr;
 	vector<Player*> playerlist;
+	string playerName;
+	for (int y = 0; y < listPlayerFromConsole.size(); y++) {
+		playerName = "player " + std::to_string(y);
+		if (listPlayerFromConsole.at(y) == "Human") {
+			
+			p = new Player(playerName);
+		}
+		if (listPlayerFromConsole.at(y) == "Aggressive") {
+			p = new Player(new AggressivePlayerStrategy(), playerName);
+
+		}
+		if (listPlayerFromConsole.at(y) == "Benevolent") {
+			p = new Player(new BenevolentPlayerStrategy(), playerName);
+
+		}
+		if (listPlayerFromConsole.at(y) == "Neutral") {
+			p = new Player(new NeutralPlayerStrategy(), playerName);
+
+		}
+		if (listPlayerFromConsole.at(y) == "Cheater") {
+			p = new Player(new CheaterPlayerStrategy(), playerName);
+
+		}
+		playerlist.push_back(p);
+
+	}
+	/*
+	// create player list
+	Player* p1 = new Player (new AggressivePlayerStrategy());
+	
 	playerlist.push_back(p1);
-	p1.setStrategy(new BenevolentPlayerStrategy());
-	playerlist.push_back(p1);
-	p1.setStrategy(new NeutralPlayerStrategy());
-	playerlist.push_back(p1);
-	p1.setStrategy(new CheaterPlayerStrategy());
-	playerlist.push_back(p1);
+	Player* p2 = new Player(new BenevolentPlayerStrategy());
+	//p1->setPlayerStrategy();
+	playerlist.push_back(p2);
+
+	Player* p3 = new Player(new NeutralPlayerStrategy());	
+	playerlist.push_back(p3);
+	
+	Player* p4 = new Player(new CheaterPlayerStrategy());
+	playerlist.push_back(p4);
+	*/
 
 	// create current player list
 	vector<Player*> currentPlayerlist;
-	for (int ii = 0; ii < P; ii++) {
+	
+	for (int i = 0; i < 2/*P*/; i++) {
 		currentPlayerlist.push_back(playerlist.at(i));
 	}
 
 
-	Map* currentMap = new map();
+	Map* currentMap = nullptr;
 	// outer loop for listofmapfiles
-	for (int i = 0; i < M; i++) {
+	for (int i = 0; i < nbGameFromMap; i++) {
 		currentMap = maps.at(i);
-
+		
 		// inner loop for numberofgames
 		for (int j = 0; j < G; j++) {
-
+			for (int i = 0; i < 2/*P*/; i++) {
+				currentPlayerlist.push_back(playerlist.at(i));
+			}
+			
 			mainGameLoop(currentPlayerlist, currentMap, D);
-
+			currentPlayerlist.clear();
 		}//end of inner loop
 	}//end of outer loop
 }//end of TournamentMode

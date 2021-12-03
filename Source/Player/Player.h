@@ -27,6 +27,7 @@ public:
 	Player();
 	Player(std::string inPlayerName);
 	Player(const Player& inPlayer);
+	Player(PlayerStrategies* playerStrat, std::string playerName);
 	~Player();
 	/* op overrides */
 	bool operator==(const Player& inRHS) const;
