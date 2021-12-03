@@ -685,7 +685,8 @@ void GameEngine::startupPhase() {
 					mapToUse = newmap->getListMap()->at(0);
 					setCurrentState(GAME_STATE_MAP_VALIDATED);
 					userCommand->saveEffect("Passing from  <GAME_STATE_MAP_LOAD> to <GAME_STATE_MAP_VALIDATED> : Map validated :"+ filename);
-					cout << "Map validated!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add a player." << "\n";
+					cout << "Map validated!\nPlease enter: \"addplayer\" command to begin adding players." << "\n";
+					
 				}
 				else {
 					setCurrentState(GAME_STATE_START);
@@ -705,7 +706,7 @@ void GameEngine::startupPhase() {
 				addPlayer(user_input);
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
 				userCommand->saveEffect("Passing from  <GAME_STATE_MAP_VALIDATED> to <GAME_STATE_PLAYERS_ADDED> , new player added");
-				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player." << "\n";
+				cout << "New player added!\nPlease enter: \"addplayer\" command to continue adding players." << "\n";
 			}
 			else {
 				cout << "Error input(please try: \"addplayer <playername>\" to add a player."<< "\n";
@@ -714,12 +715,13 @@ void GameEngine::startupPhase() {
 
 		case GAME_STATE_PLAYERS_ADDED:
 			if (playercount < 2) {
+				
 				if (commandProces->validate(userCommand, user_input_list[ADDPLAYER])) {
 					addPlayer(user_input);
 					setCurrentState(GAME_STATE_PLAYERS_ADDED);
 					userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAYERS_ADDED> , new player added");
-					cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
-						<< "\"" << user_input_list[GAMESTART] << "\" to begin playing." << "\n";
+					cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << "\" to add another player, or "
+						<< "\"" << user_input_list[GAMESTART] << "\" to begin playing.Duh" << "\n";
 				}
 				else {
 					cout << "The players are less than 2, there should be 2-6 players in this game." << endl;
@@ -747,8 +749,8 @@ void GameEngine::startupPhase() {
 				addPlayer(user_input);
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
 				userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAYERS_ADDED> , new player added ");
-				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
-					<< "\"" << user_input_list[GAMESTART] << " <filename>\" to begin playing." << "\n";
+				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << "\" to add another player, or "
+					<< "\"" << user_input_list[GAMESTART] << "\" to begin playing." << "\n";
 
 			}
 			else if (commandProces->validate(userCommand, user_input_list[GAMESTART])) {
