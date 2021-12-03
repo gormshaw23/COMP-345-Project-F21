@@ -75,7 +75,7 @@ ostream& operator<<(ostream& os, Card& cType) {
 		break;
 	}
 
-	os << msg << std::endl;
+	os << msg;
 
 	return os;
 }

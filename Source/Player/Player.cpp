@@ -407,13 +407,14 @@ void Player::issueOrder()
 
 	std::cout << "Issuing orders for " << getPlayerName() << "\n";
 	setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
+	int availableReserves = getReinforcementPoolSize();
 
 	while (getPlayerTurnPhase() != EPlayerTurnPhase::EndOfTurn)
 	{
 		switch (getPlayerTurnPhase())
 		{
 		case EPlayerTurnPhase::DeployingArmies:			
-			DeployArmies_Human();
+			DeployArmies_Human(availableReserves);
 			break;
 		case EPlayerTurnPhase::AdvancingArmies:
 			AdvanceArmies_Human();
@@ -431,15 +432,21 @@ void Player::issueOrder()
 	}
 }
 
-void Player::DeployArmies_Human()
+void Player::DeployArmies_Human(int& availableReserves)
 {
 	Command* userCommand = nullptr;
 
 	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
 
-	std::cout << "You have " << getReinforcementPoolSize() << " armies remaining to deploy." << std::endl;
+	std::map<int, Territory*> toriesForDeploy;
+	for (const auto& tory : plToriesToDefend)
+	{
+		toriesForDeploy[tory->getID()] = tory;
+	}
 
-	if (getReinforcementPoolSize() > 0)
+	std::cout << "You have " << availableReserves << " armies remaining to deploy." << std::endl;
+
+	if (availableReserves > 0)
 	{
 		
 		DisplayPlayerToriesToDefend();
@@ -461,17 +468,22 @@ void Player::DeployArmies_Human()
 		{
 			if ((std::stringstream(words[0]) >> selectedTory) && (std::stringstream(words[1]) >> amount))
 			{
-				amount = std::min(amount, (int)getReinforcementPoolSize());
-				if (selectedTory >= 0 && selectedTory < plToriesToDefend.size())
+				amount = std::max(0, amount);
+
+				Territory* dst = nullptr;
+
+				std::map<int, Territory*>::iterator itor;
+
+				itor = toriesForDeploy.find(selectedTory);
+
+				if (itor != toriesForDeploy.end())
 				{
-					IssueDeployOrder(plToriesToDefend[selectedTory], amount);
-					HandleSaveEffect(userCommand, "Deploy order issued");
-					setReinforcementPool(getReinforcementPoolSize() - amount);
+					dst = toriesForDeploy[selectedTory];
 				}
-				else
-				{
-					std::cout << "Invalid territory selected input." << std::endl;
-				}
+
+				IssueDeployOrder(dst, amount);
+				HandleSaveEffect(userCommand, "Deploy order issued");
+				availableReserves -= amount;
 			}
 			else
 			{
@@ -516,12 +528,18 @@ void Player::AdvanceArmies_Human()
 	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToDefend.begin(), plToriesToDefend.end());
 	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToAttack.begin(), plToriesToAttack.end());
 
+	std::map<int, Territory*> toriesForAdvance;
+	for (const auto& tory : toriesToDefendAndAttack)
+	{
+		toriesForAdvance[tory->getID()] = tory;
+	}
+
 	DisplayPlayerToriesToDefendAndAttack();
 	std::cout << "Please select a territory from the list to move troops from," << std::endl;
 	std::cout << "And select a territory from the list to move troops to." << std::endl;
 	std::cout << "And select the number of troops to Advance." << std::endl;
 
-	DisplayToriesToDefendAndAdjacencts();
+	DisplayToriesToDefendAndAdjacents();
 	std::cout << "For convenience, here is every territory toDefend along with" << std::endl;
 	std::cout << "every adjacent territory, its owner, and the number of armies present." << std::endl;
 
@@ -543,20 +561,33 @@ void Player::AdvanceArmies_Human()
 			(std::stringstream(words[1]) >> selectedToryDst) &&
 			(std::stringstream(words[2]) >> armiesToAdvance))
 		{
-			if ((selectedTorySrc >= 0 && selectedTorySrc < toriesToDefendAndAttack.size()) &&
-				(selectedToryDst >= 0 && selectedToryDst < toriesToDefendAndAttack.size()))
+			Territory* src = nullptr;
+			Territory* dst = nullptr;
+
+			std::map<int, Territory*>::iterator srcItor;
+			std::map<int, Territory*>::iterator dstItor;
+
+			srcItor = toriesForAdvance.find(selectedTorySrc);
+
+			if (srcItor != toriesForAdvance.end())
 			{
-				IssueAdvanceOrder(
-					toriesToDefendAndAttack[selectedTorySrc],
-					toriesToDefendAndAttack[selectedToryDst],
-					armiesToAdvance
-				);
-				HandleSaveEffect(userCommand, "Advance order issued");
+				src = toriesForAdvance[selectedTorySrc];
 			}
-			else
+
+			dstItor = toriesForAdvance.find(selectedToryDst);
+
+			if (dstItor != toriesForAdvance.end())
 			{
-				std::cout << "Invalid territory selected as input." << std::endl;
+				dst = toriesForAdvance[selectedToryDst];
 			}
+
+			IssueAdvanceOrder(
+				src,
+				dst,
+				std::max(0, armiesToAdvance)
+			);
+
+			HandleSaveEffect(userCommand, "Advance order issued");
 		}
 		else
 		{
@@ -623,7 +654,7 @@ void Player::PlayingCards_Human()
 				if (selectedCard >= 0 && selectedCard < this->getCurrentHand()->getHand().size())
 				{
 					// play card
-					std::cout << "Playing card... " << this->getCurrentHand()->getHand()[selectedCard] << std::endl;
+					std::cout << "Playing card... " << *this->getCurrentHand()->getHand()[selectedCard] << std::endl;
 
 					switch (this->getCurrentHand()->getHand()[selectedCard]->getCardType())
 					{
@@ -643,7 +674,6 @@ void Player::PlayingCards_Human()
 						std::cout << "Invalid card" << std::endl;
 						break;
 					}
-
 					// change state
 					setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 				}
@@ -679,6 +709,12 @@ void Player::PlayingBombCard_Human()
 
 	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
 
+	std::map<int, Territory*> toriesForBombing;
+	for (const auto& tory : plToriesToAttack)
+	{
+		toriesForBombing[tory->getID()] = tory;
+	}
+
 	DisplayPlayerToriesToAttack();
 
 	std::cout << "Please select a territory to bomb" << std::endl;
@@ -697,15 +733,19 @@ void Player::PlayingBombCard_Human()
 	{
 		if ((std::stringstream(words[0]) >> selectedToryDst))
 		{
-			if (selectedToryDst >= 0 && selectedToryDst < plToriesToAttack.size())
+			Territory* dst = nullptr;
+
+			std::map<int, Territory*>::iterator dstItor;
+
+			dstItor = toriesForBombing.find(selectedToryDst);
+
+			if (dstItor != toriesForBombing.end())
 			{
-				IssueBombOrder(plToriesToAttack[selectedToryDst]);
-				HandleSaveEffect(userCommand, "Bomb order issued");
+				dst = toriesForBombing[selectedToryDst];
 			}
-			else
-			{
-				std::cout << "Invalid range" << std::endl;
-			}
+
+			IssueBombOrder(dst);
+			HandleSaveEffect(userCommand, "Bomb order issued");
 		}
 		else
 		{
@@ -723,6 +763,12 @@ void Player::PlayingBlockadeCard_Human()
 	Command* userCommand = nullptr;
 
 	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
+
+	std::map<int, Territory*> toriesForBlockading;
+	for (const auto& tory : plToriesToDefend)
+	{
+		toriesForBlockading[tory->getID()] = tory;
+	}
 
 	DisplayPlayerToriesToDefend();
 
@@ -742,15 +788,19 @@ void Player::PlayingBlockadeCard_Human()
 	{
 		if ((std::stringstream(words[0]) >> selectedToryDst))
 		{
-			if (selectedToryDst >= 0 && selectedToryDst < plToriesToDefend.size())
+			Territory* dst = nullptr;
+
+			std::map<int, Territory*>::iterator dstItor;
+
+			dstItor = toriesForBlockading.find(selectedToryDst);
+
+			if (dstItor != toriesForBlockading.end())
 			{
-				IssueBlockadeOrder(plToriesToDefend[selectedToryDst]);
-				HandleSaveEffect(userCommand, "Blockade order issued");
+				dst = toriesForBlockading[selectedToryDst];
 			}
-			else
-			{
-				std::cout << "Invalid range" << std::endl;
-			}
+
+			IssueBlockadeOrder(dst);
+			HandleSaveEffect(userCommand, "Blockade order issued");
 		}
 		else
 		{
@@ -768,6 +818,12 @@ void Player::PlayingAirliftCard_Human()
 	Command* userCommand = nullptr;
 
 	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
+
+	std::map<int, Territory*> toriesForAirlifting;
+	for (const auto& tory : plToriesToDefend)
+	{
+		toriesForAirlifting[tory->getID()] = tory;
+	}
 
 	DisplayPlayerToriesToDefend();
 
@@ -792,20 +848,32 @@ void Player::PlayingAirliftCard_Human()
 			(std::stringstream(words[1]) >> selectedToryDst) &&
 			(std::stringstream(words[2]) >> armiesToAirlift))
 		{
-			if ((selectedTorySrc >= 0 && selectedTorySrc < plToriesToDefend.size()) &&
-				(selectedToryDst >= 0 && selectedToryDst < plToriesToDefend.size()))
+			Territory* src = nullptr;
+			Territory* dst = nullptr;
+
+			std::map<int, Territory*>::iterator srcItor;
+			std::map<int, Territory*>::iterator dstItor;
+
+			srcItor = toriesForAirlifting.find(selectedTorySrc);
+
+			if (srcItor != toriesForAirlifting.end())
 			{
-				IssueAirliftOrder(
-					plToriesToDefend[selectedTorySrc],
-					plToriesToDefend[selectedToryDst],
-					armiesToAirlift
-				);
-				HandleSaveEffect(userCommand, "Airlift order issued");
+				src = toriesForAirlifting[selectedTorySrc];
 			}
-			else
+
+			dstItor = toriesForAirlifting.find(selectedToryDst);
+
+			if (dstItor != toriesForAirlifting.end())
 			{
-				std::cout << "Invalid territories selected" << std::endl;
+				dst = toriesForAirlifting[selectedToryDst];
 			}
+
+			IssueAirliftOrder(
+				src,
+				dst,
+				std::max(0, armiesToAirlift)
+			);
+			HandleSaveEffect(userCommand, "Airlift order issued");
 		}
 		else
 		{
@@ -895,7 +963,7 @@ void Player::DisplayPlayerToriesToDefendAndAttack()
 	{
 		if (toriesToDefendAndAttack[i] != nullptr)
 		{
-			std::cout << i << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << toriesToDefendAndAttack[i]->getName() << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
+			std::cout << toriesToDefendAndAttack[i]->getID() << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << toriesToDefendAndAttack[i]->getName() << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
 		}
 		else
 		{
@@ -915,7 +983,7 @@ void Player::DisplayPlayerToriesToDefendAndAttack()
 	{
 		if (toriesToDefendAndAttack[i] != nullptr)
 		{
-			std::cout << i << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << toriesToDefendAndAttack[i]->getName() << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
+			std::cout << toriesToDefendAndAttack[i]->getID() << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << toriesToDefendAndAttack[i]->getName() << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
 		}
 		else
 		{
@@ -926,7 +994,7 @@ void Player::DisplayPlayerToriesToDefendAndAttack()
 	std::cout << std::endl;
 }
 
-void Player::DisplayToriesToDefendAndAdjacencts()
+void Player::DisplayToriesToDefendAndAdjacents()
 {
 	std::cout << std::setfill(' ');
 
@@ -936,8 +1004,8 @@ void Player::DisplayToriesToDefendAndAdjacencts()
 	{
 		if (plToriesToDefend[i] != nullptr)
 		{
-			std::cout << plToriesToDefend[i]->getName()
-					  << " (" << plToriesToDefend[i]->getNbArmy() << "): " << std::endl;
+			std::cout << "{ID:" << plToriesToDefend[i]->getID() << "}" << plToriesToDefend[i]->getName()
+					  << "(units:" << plToriesToDefend[i]->getNbArmy() << "): " << std::endl;
 
 			std::vector<Territory*> allies;
 			std::map<int, std::vector<Territory*>> adjacentEnemyTerritories;
@@ -948,7 +1016,7 @@ void Player::DisplayToriesToDefendAndAdjacencts()
 				{
 					if (neighbour->getPlayer() == nullptr)
 					{
-						std::cout << "Territory not assigned to a player: DisplayToriesToDefendAndAdjacencts." << std::endl;
+						std::cout << "Territory not assigned to a player: DisplayToriesToDefendAndAdjacents." << std::endl;
 						continue;
 					}
 
@@ -970,7 +1038,8 @@ void Player::DisplayToriesToDefendAndAdjacencts()
 				int count = 0;
 				for (auto& allyTory : allies)
 				{
-					std::cout << allyTory->getName() << "(" << allyTory->getNbArmy() << ")";
+					std::cout << "{ID:" << allyTory->getID() << "}:" << allyTory->getName() << "(units:" 
+							  << allyTory->getNbArmy() << ")";
 					if (count < allies.size() - 1)
 					{
 						std::cout << ",";
@@ -997,7 +1066,8 @@ void Player::DisplayToriesToDefendAndAdjacencts()
 					{
 						if (enemyTory != nullptr)
 						{
-							std::cout << enemyTory->getName() << "(" << enemyTory->getNbArmy() << ")";
+							std::cout << "{ID:" << enemyTory->getID() << "}:" << enemyTory->getName() 
+									  << "(units:" << enemyTory->getNbArmy() << ")";
 							if (enemyToryCount < value.size() - 1)
 							{
 								std::cout << ",";
@@ -1021,7 +1091,7 @@ void Player::DisplayPlayerToriesToAttack()
 {
 	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
 
-	std::cout << "Displaying " << getPlayerName() << "'s Territories to Attack." << std::endl;
+	std::cout << "Displaying Territories " << getPlayerName() << " can Attack." << std::endl;
 	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
 	std::cout << std::setfill(' ') << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
 	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
@@ -1031,7 +1101,7 @@ void Player::DisplayPlayerToriesToAttack()
 	{
 		if (plToriesToAttack[i] != nullptr)
 		{
-			std::cout << i << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << plToriesToAttack[i]->getName() << " : " << plToriesToAttack[i]->getNbArmy() << std::endl;
+			std::cout << plToriesToAttack[i]->getID() << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << plToriesToAttack[i]->getName() << " : " << plToriesToAttack[i]->getNbArmy() << std::endl;
 		}
 		else
 		{
@@ -1048,15 +1118,48 @@ void Player::DisplayPlayerToriesToDefend()
 
 	//std::cout << std::endl;
 	std::cout << "Displaying " << getPlayerName() << "'s Territories to Defend." << std::endl;
-	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
-	std::cout << std::setfill(' ') << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
-	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
+	std::cout << std::setfill('*') << std::setw(100) << "" << std::endl;
+	std::cout << std::setfill(' ') << "* Territory #:  " << std::setw(10) << " Territory Name " 
+			  << std::setw(15) << "# of Armies" << std::setw(5) << "Adjacent Enemy Territories" << std::endl;
+	std::cout << std::setfill('*') << std::setw(100) << "" << std::endl;
 	std::cout << std::setfill(' ') << std::endl;
 	for (int i = 0; i < plToriesToDefend.size(); ++i)
 	{
 		if (plToriesToDefend[i] != nullptr)
 		{
-			std::cout << i << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << plToriesToDefend[i]->getName() << " : " << plToriesToDefend[i]->getNbArmy() << std::endl;
+			std::cout << plToriesToDefend[i]->getID() << std::setw(5 - std::to_string(i).size()) << " : "
+				<< plToriesToDefend[i]->getName() << " : " << plToriesToDefend[i]->getNbArmy()
+				<< std::endl;
+
+			std::map<int, std::vector<Territory*>> neighbourPlTories;
+
+			for (const auto& neighbour : plToriesToDefend[i]->getBorderList())
+			{
+				if (neighbour == nullptr || neighbour->getPlayer() == nullptr)
+				{
+					std::cout << "A neighbour territory is null" << std::endl;
+					continue;
+				}
+
+				if (neighbour->getPlayer() == nullptr)
+				{
+					std::cout << "A neighbour territory player is null" << std::endl;
+					continue;
+				}
+
+				neighbourPlTories[neighbour->getPlayer()->getPlayerID()].push_back(neighbour);
+			}
+
+			for (const auto& [key, value] : neighbourPlTories)
+			{
+				std::cout << std::setw(35);
+				std::cout << value[0]->getPlayer()->getPlayerName() << ":" << std::endl;
+				for (const auto& tory : value)
+				{
+					std::cout << std::setw(35 + tory->getName().size());
+					std::cout << tory->getName() << "(" << tory->getNbArmy() << ")" << std::endl;
+				}
+			}
 		}
 		else
 		{

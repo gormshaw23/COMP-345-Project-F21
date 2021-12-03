@@ -111,7 +111,7 @@ protected:
 private:
 	// Human specific Player functions, requiring human input
 	// For specifying parameters for Orders to be issued
-	void DeployArmies_Human();
+	void DeployArmies_Human(int& inAvailableReserves);
 	void AdvanceArmies_Human();
 	void PlayingCards_Human();
 	void PlayingBombCard_Human();
@@ -125,7 +125,7 @@ private:
 	EPlayerTurnPhase getPlayerTurnPhase() const;
 
 	// Helper functions for displaying territories to the human player
-	void DisplayToriesToDefendAndAdjacencts();
+	void DisplayToriesToDefendAndAdjacents();
 	void DisplayPlayerToriesToDefendAndAttack();
 	void DisplayPlayerToriesToDefend();
 	void DisplayPlayerToriesToAttack();
