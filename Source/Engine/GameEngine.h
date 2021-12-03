@@ -20,6 +20,7 @@ enum GameState
     GAME_STATE_MAP_VALIDATED = 3,
     GAME_STATE_PLAYERS_ADDED = 4,
     GAME_STATE_PLAY = 5,
+    GAME_STATE_FINISHED = 6,
     GAME_STATE_MAX = 0XFFFF,//set a max value to prevent overflow
 
 };
@@ -46,6 +47,14 @@ public:
     void game_run();
     virtual std::string stringToLog() override;
     GameEngine& operator=(const GameEngine& obj);//Assignment operator
+
+    /* variable to print the tournament result*/
+    vector<std::string> listPlayerFromConsole;
+    vector<string> listMapName;
+    int numberGamePrint;
+    int drawTurnLimitPrint;
+    std::string gameresult;
+
 
     Player* getNeutralPlayer() const;
 

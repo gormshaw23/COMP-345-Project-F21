@@ -40,6 +40,9 @@ public:
 	void setPlayerStrategy(PlayerStrategies* inPlayerStrategy);
 	PlayerStrategies* getPlayerStrategy() const;
 
+	
+
+
 	const std::size_t getPlayerID() const;
 	const std::vector<Territory*> toDefend() const;
 	const std::vector<Territory*>  toAttack() const;
