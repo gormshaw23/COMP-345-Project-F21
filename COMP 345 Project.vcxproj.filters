@@ -90,6 +90,9 @@
     <ClCompile Include="Source\Strategy\PlayerStrategies.cpp">
       <Filter>Source Files\Strategy</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Common\Utilities.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Player\Player.h">
@@ -121,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="Source\Strategy\PlayerStrategies.h">
       <Filter>Source Files\Strategy</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Common\Utilities.h">
+      <Filter>Source Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

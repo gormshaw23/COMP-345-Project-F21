@@ -24,9 +24,8 @@ Player::Player()
 	this->_playerStrategy = nullptr;
 	this->_hand = new Hand();
 	this->_orders = new OrdersList();
-	this->_playerStrategy = nullptr;
 	this->_currentPhase = EPlayerTurnPhase::DeployingArmies;
-	this->commandProcess;
+	this->commandProcess = nullptr;
 }
 
 Player::Player(std::string inPlayerName)
@@ -41,7 +40,31 @@ Player::Player(std::string inPlayerName)
 	this->commandProcess = nullptr;
 }
 
-Player::Player(const Player& inPlayer)
+Player::Player(std::string inPlayerName, PlayerStrategies* inPS)
+	: _playerName(inPlayerName)
+{
+	this->_id = ++_globalID;
+	this->currentGameInstance = nullptr;
+	this->_playerStrategy = inPS;
+	this->_hand = new Hand();
+	this->_orders = new OrdersList();
+	this->_currentPhase = EPlayerTurnPhase::DeployingArmies;
+	this->commandProcess = nullptr;
+}
+
+Player::Player(PlayerStrategies* inPS)
+{
+	this->_id = ++_globalID;
+	this->_playerName = "robot" + std::to_string(this->_id);
+	this->currentGameInstance = nullptr;
+	this->_playerStrategy = inPS;
+	this->_hand = new Hand();
+	this->_orders = new OrdersList();
+	this->_currentPhase = EPlayerTurnPhase::DeployingArmies;
+	this->commandProcess = nullptr;
+}
+
+Player::Player(const Player& inPlayer) : Player()
 {
 	if (this == &inPlayer)
 		return;
@@ -71,6 +94,8 @@ Player::Player(const Player& inPlayer)
 
 	this->_playerStrategy = inPlayer._playerStrategy;
 
+	this->commandProcess = inPlayer.commandProcess;
+
 	this->_currentPhase = inPlayer._currentPhase;
 }
 
@@ -89,6 +114,11 @@ Player::~Player()
 	}
 
 	this->currentGameInstance = nullptr;
+
+	if (this->_playerStrategy != nullptr)
+	{
+		delete this->_playerStrategy;
+	}
 }
 
 bool Player::operator==(const Player& inRHS) const
@@ -130,6 +160,8 @@ Player& Player::operator=(const Player& inPlayer)
 
 	this->currentGameInstance = inPlayer.currentGameInstance;
 
+	this->commandProcess = inPlayer.commandProcess;
+
 	this->_currentPhase = inPlayer._currentPhase;
 
 	// return the existing object so we can chain this operator
@@ -146,112 +178,20 @@ GameEngine* Player::getCurrentGameInstance() const
 	return this->currentGameInstance;
 }
 
-bool SortByArmySize(const Territory* lhs, const Territory* rhs)
+void Player::toAttack()
 {
-	if (lhs == nullptr)
+	if (this->getPlayerStrategy() != nullptr)
 	{
-		return false;
+		this->getPlayerStrategy()->toAttack();
 	}
-
-	if (rhs == nullptr)
-	{
-		return true;
-	}
-
-	return (lhs->getNbArmy() > rhs->getNbArmy());
 }
 
-std::vector<Territory*> Player::toAttack()
+void Player::toDefend()
 {
-	// toAttack will turn a list of all adjacent enemy territories, in order of territories with the most troops
-	const std::vector<Territory*> allEnemyTerritories = getCurrentGameInstance()->GetEnemyTerritoriesOfCurrentPlayer(this);
-
-	std::vector<Territory*> enemyTerritoryByPriority;
-
-	const std::vector<Territory*> allCurrentPlayerTerritories = this->getTerritoriesOwned();
-
-	// loop through all territories adjacent 
-	for (auto& ownedTerritory : allCurrentPlayerTerritories)
+	if (this->getPlayerStrategy() != nullptr)
 	{
-		if (ownedTerritory != nullptr)
-		{
-			for (auto& adjacentTerritory : ownedTerritory->getBorderList())
-			{
-				if (adjacentTerritory->getPlayer() == nullptr)
-				{
-					std::cout << "Warning! Territory has no owner!" << std::endl;
-					continue;
-				}
-
-				if (adjacentTerritory->getPlayer()->getPlayerID() != getPlayerID())
-				{
-					// making sure no dupes
-					if (enemyTerritoryByPriority.empty() || 
-						std::find
-						(
-							enemyTerritoryByPriority.begin(),
-							enemyTerritoryByPriority.end(),
-							adjacentTerritory
-						) == enemyTerritoryByPriority.end())
-					{
-						enemyTerritoryByPriority.push_back(adjacentTerritory);
-					}
-				}
-			}
-		}
+		this->getPlayerStrategy()->toDefend();
 	}
-
-	std::sort(enemyTerritoryByPriority.begin(), enemyTerritoryByPriority.end(), SortByArmySize);
-
-	_territoriesToAttack.clear();
-
-	_territoriesToAttack.insert(_territoriesToAttack.begin(), enemyTerritoryByPriority.begin(), enemyTerritoryByPriority.end());
-
-	return _territoriesToAttack;
-}
-
-std::vector<Territory*> Player::toDefend()
-{
-	const std::vector<Territory*> currentPlayerTories = this->getTerritoriesOwned();
-
-	std::vector<std::pair<Territory*, int>> currentPlayerToriesByPriority;
-
-	// loop through all territories adjacent 
-	for (auto& ownedTerritory : currentPlayerTories)
-	{
-		if (ownedTerritory != nullptr)
-		{
-			// if territory has an enemy territory adjacent to it OR has troops present, return it
-			bool enemyAdjacent = false;
-			// players are generally interested in territories where their armies are
-			int threat = ownedTerritory->CalculateValue(enemyAdjacent);
-
-			if (enemyAdjacent || ownedTerritory->getNbArmy() > 0)
-			{
-				currentPlayerToriesByPriority.push_back(std::pair<Territory*, int>(ownedTerritory, threat));
-			}
-		}
-	}
-
-	// hopefully sorts in descending order
-	std::sort
-	(
-		currentPlayerToriesByPriority.begin(),
-		currentPlayerToriesByPriority.end(),
-		[](const std::pair<Territory*, int>& a, std::pair<Territory*, int>& b) -> bool 
-		{
-			return a.second > b.second;
-		}
-	);
-
-	_territoriesToDefend.clear();
-
-	for (auto& tory : currentPlayerToriesByPriority)
-	{
-		_territoriesToDefend.push_back(tory.first);
-	}
-
-	return _territoriesToDefend;
 }
 
 void Player::setPlayerName(std::string inPlayerName)
@@ -277,24 +217,6 @@ PlayerStrategies* Player::getPlayerStrategy() const
 const std::size_t Player::getPlayerID() const
 {
 	return this->_id;
-}
-
-/*
-* Issues a player order
-*
-* @param inOrderType The order type
-* @param inTerritories A vector of input territories
-* @param inNumArmies A vector of input armies
-*/
-void Player::issueOrder
-(
-	const EOrderType inOrderType,
-	const std::vector<Player*> inPlayers,
-	const std::vector<Territory*> inTerritories,
-	const std::vector<int> inNumArmies
-)
-{
-
 }
 
 OrdersList* Player::getOrders() const
@@ -397,777 +319,10 @@ const std::vector<Territory*>& Player::getTerritoriesToAttack() const
 
 void Player::issueOrder()
 {
-	// Get territories to attack in order of priority
-	const std::vector<Territory*> plToriesToAttack = toAttack();
-	// Get territories to defend in order of priority
-	const std::vector<Territory*> plToriesToDefend = toDefend();
-
-	// Get the player's current hand 
-	Hand* currentPlayerHand = getCurrentHand();
-
-	std::cout << "Issuing orders for " << getPlayerName() << "\n";
-	setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
-	int availableReserves = getReinforcementPoolSize();
-
-	while (getPlayerTurnPhase() != EPlayerTurnPhase::EndOfTurn)
+	if (this->getPlayerStrategy() != nullptr)
 	{
-		switch (getPlayerTurnPhase())
-		{
-		case EPlayerTurnPhase::DeployingArmies:			
-			DeployArmies_Human(availableReserves);
-			break;
-		case EPlayerTurnPhase::AdvancingArmies:
-			AdvanceArmies_Human();
-			break;
-		case EPlayerTurnPhase::PlayingCards:
-			PlayingCards_Human();
-			break;
-		case EPlayerTurnPhase::EndOfTurn:
-			std::cout << "End of " << getPlayerName() << "'s turn" << std::endl;
-			break;
-		default:
-			setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
-			break;
-		}
+		getPlayerStrategy()->issueOrder();
 	}
-}
-
-void Player::DeployArmies_Human(int& availableReserves)
-{
-	Command* userCommand = nullptr;
-
-	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
-
-	std::map<int, Territory*> toriesForDeploy;
-	for (const auto& tory : plToriesToDefend)
-	{
-		toriesForDeploy[tory->getID()] = tory;
-	}
-
-	std::cout << "You have " << availableReserves << " armies remaining to deploy." << std::endl;
-
-	if (availableReserves > 0)
-	{
-		
-		DisplayPlayerToriesToDefend();
-		std::cout << "Please select a territory from the list and the number of armies to deploy." << std::endl;
-		std::cout << "Or type 'done' to skip:" << std::endl;
-
-		std::string inputStr = GetUserInput(userCommand);
-		std::stringstream myStream(inputStr);
-		std::vector<std::string> words;
-		std::string tmp;
-		int selectedTory = 0;
-		int amount = 0;
-		while (myStream >> tmp)
-		{
-			words.push_back(tmp);
-		}
-
-		if (words.size() == 2)
-		{
-			if ((std::stringstream(words[0]) >> selectedTory) && (std::stringstream(words[1]) >> amount))
-			{
-				amount = std::max(0, amount);
-
-				Territory* dst = nullptr;
-
-				std::map<int, Territory*>::iterator itor;
-
-				itor = toriesForDeploy.find(selectedTory);
-
-				if (itor != toriesForDeploy.end())
-				{
-					dst = toriesForDeploy[selectedTory];
-				}
-
-				IssueDeployOrder(dst, amount);
-				HandleSaveEffect(userCommand, "Deploy order issued");
-				availableReserves -= amount;
-			}
-			else
-			{
-				std::cout << "Invalid input." << std::endl;
-			}
-		}
-		else if (words.size() == 1)
-		{
-			if (words[0].compare("done") || words[0].compare("Done") || words[0].compare("DONE"))
-			{
-				std::cout << "User ended deployment orders phase..." << std::endl;
-				setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
-			}
-			else
-			{
-				std::cout << "Invalid input." << std::endl;
-			}
-		}
-		else
-		{
-			std::cout << "Invalid input." << std::endl;
-		}
-	}
-	else
-	{
-		std::cout << "End of deployment orders phase..." << std::endl;
-		setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
-		HandleSaveEffect(userCommand, "Entering advancing armies step");
-	}
-}
-
-void Player::AdvanceArmies_Human()
-{
-	Command* userCommand = nullptr;
-
-	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
-	const int toriesToDefendEndIndex = plToriesToDefend.size();
-
-	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
-
-	std::vector<Territory*> toriesToDefendAndAttack;
-	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToDefend.begin(), plToriesToDefend.end());
-	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToAttack.begin(), plToriesToAttack.end());
-
-	std::map<int, Territory*> toriesForAdvance;
-	for (const auto& tory : toriesToDefendAndAttack)
-	{
-		toriesForAdvance[tory->getID()] = tory;
-	}
-
-	DisplayPlayerToriesToDefendAndAttack();
-	std::cout << "Please select a territory from the list to move troops from," << std::endl;
-	std::cout << "And select a territory from the list to move troops to." << std::endl;
-	std::cout << "And select the number of troops to Advance." << std::endl;
-
-	DisplayToriesToDefendAndAdjacents();
-	std::cout << "For convenience, here is every territory toDefend along with" << std::endl;
-	std::cout << "every adjacent territory, its owner, and the number of armies present." << std::endl;
-
-	std::string inputStr = GetUserInput(userCommand);
-	std::stringstream myStream(inputStr);
-	std::vector<std::string> words;
-	std::string tmp;
-	int selectedTorySrc = 0;
-	int selectedToryDst = 0;
-	int armiesToAdvance = 0;
-	while (myStream >> tmp)
-	{
-		words.push_back(tmp);
-	}
-
-	if (words.size() == 3)
-	{
-		if ((std::stringstream(words[0]) >> selectedTorySrc) &&
-			(std::stringstream(words[1]) >> selectedToryDst) &&
-			(std::stringstream(words[2]) >> armiesToAdvance))
-		{
-			Territory* src = nullptr;
-			Territory* dst = nullptr;
-
-			std::map<int, Territory*>::iterator srcItor;
-			std::map<int, Territory*>::iterator dstItor;
-
-			srcItor = toriesForAdvance.find(selectedTorySrc);
-
-			if (srcItor != toriesForAdvance.end())
-			{
-				src = toriesForAdvance[selectedTorySrc];
-			}
-
-			dstItor = toriesForAdvance.find(selectedToryDst);
-
-			if (dstItor != toriesForAdvance.end())
-			{
-				dst = toriesForAdvance[selectedToryDst];
-			}
-
-			IssueAdvanceOrder(
-				src,
-				dst,
-				std::max(0, armiesToAdvance)
-			);
-
-			HandleSaveEffect(userCommand, "Advance order issued");
-		}
-		else
-		{
-			std::cout << "Invalid input." << std::endl;
-		}
-	}
-	else if (words.size() == 1)
-	{
-		if (words[0].compare("done") || words[0].compare("Done") || words[0].compare("DONE"))
-		{
-			std::cout << "End of advance orders phase..." << std::endl;
-			setPlayerTurnPhase(EPlayerTurnPhase::PlayingCards);
-			//HandleSaveEffect(userCommand, "Entering playing cards step");
-		}
-		else
-		{
-			std::cout << "Invalid input." << std::endl;
-		}
-	}
-	else
-	{
-		std::cout << "Invalid input." << std::endl;
-	}
-}
-
-void Player::PlayingCards_Human()
-{
-	Command* userCommand = nullptr;
-
-	if (this->getCurrentHand()->getHand().size() > 0)
-	{
-		std::cout << getPlayerName() << " has " << this->getCurrentHand()->getHand().size() << " cards to play." << std::endl;
-		std::cout << "Displaying current hand:" << std::endl;
-
-		for (int i = 0; i < this->getCurrentHand()->getHand().size(); i++)
-		{
-			if (this->getCurrentHand()->getHand()[i] != nullptr)
-			{
-				std::cout << i << " : " << *this->getCurrentHand()->getHand()[i] << std::endl;
-			}
-			else
-			{
-				std::cout << "A card in the player's hand is null." << std::endl;
-			}
-		}
-
-		std::cout << "Please select a card to play, or 'done' to skip." << std::endl;
-
-		std::string inputStr = GetUserInput(userCommand);
-		std::stringstream myStream(inputStr);
-		std::vector<std::string> words;
-		std::string tmp;
-		int selectedCard = 0;
-
-		while (myStream >> tmp)
-		{
-			words.push_back(tmp);
-		}
-
-		if (words.size() == 1)
-		{
-			if ((std::stringstream(words[0]) >> selectedCard))
-			{
-				if (selectedCard >= 0 && selectedCard < this->getCurrentHand()->getHand().size())
-				{
-					// play card
-					std::cout << "Playing card... " << *this->getCurrentHand()->getHand()[selectedCard] << std::endl;
-
-					switch (this->getCurrentHand()->getHand()[selectedCard]->getCardType())
-					{
-					case ECardTypes::Bomb:
-						PlayingBombCard_Human();
-						break;
-					case ECardTypes::Blockade:
-						PlayingBlockadeCard_Human();
-						break;
-					case ECardTypes::Airlift:
-						PlayingAirliftCard_Human();
-						break;
-					case ECardTypes::Diplomacy:
-						PlayingDiplomacyCard_Human();
-						break;
-					default:
-						std::cout << "Invalid card" << std::endl;
-						break;
-					}
-					// change state
-					setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
-				}
-				else
-				{
-					std::cout << "Invalid input" << std::endl;
-				}
-			}
-			else if (words[0].compare("done") || words[0].compare("Done") || words[0].compare("DONE"))
-			{
-				setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
-				HandleSaveEffect(userCommand, "End of the player's turn");
-			}
-			else
-			{
-				std::cout << "Invalid input" << std::endl;
-			}
-		}
-		else
-		{
-			std::cout << "Invalid input" << std::endl;
-		}
-	}
-	else
-	{
-		setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
-	}
-}
-
-void Player::PlayingBombCard_Human()
-{
-	Command* userCommand = nullptr;
-
-	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
-
-	std::map<int, Territory*> toriesForBombing;
-	for (const auto& tory : plToriesToAttack)
-	{
-		toriesForBombing[tory->getID()] = tory;
-	}
-
-	DisplayPlayerToriesToAttack();
-
-	std::cout << "Please select a territory to bomb" << std::endl;
-
-	std::string inputStr = GetUserInput(userCommand);
-	std::stringstream myStream(inputStr);
-	std::vector<std::string> words;
-	std::string tmp;
-	int selectedToryDst = 0;
-	while (myStream >> tmp)
-	{
-		words.push_back(tmp);
-	}
-
-	if (words.size() == 1)
-	{
-		if ((std::stringstream(words[0]) >> selectedToryDst))
-		{
-			Territory* dst = nullptr;
-
-			std::map<int, Territory*>::iterator dstItor;
-
-			dstItor = toriesForBombing.find(selectedToryDst);
-
-			if (dstItor != toriesForBombing.end())
-			{
-				dst = toriesForBombing[selectedToryDst];
-			}
-
-			IssueBombOrder(dst);
-			HandleSaveEffect(userCommand, "Bomb order issued");
-		}
-		else
-		{
-			std::cout << "Invalid input" << std::endl;
-		}
-	}
-	else
-	{
-		std::cout << "Invalid input" << std::endl;
-	}
-}
-
-void Player::PlayingBlockadeCard_Human()
-{
-	Command* userCommand = nullptr;
-
-	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
-
-	std::map<int, Territory*> toriesForBlockading;
-	for (const auto& tory : plToriesToDefend)
-	{
-		toriesForBlockading[tory->getID()] = tory;
-	}
-
-	DisplayPlayerToriesToDefend();
-
-	std::cout << "Please select a territory to blockade" << std::endl;
-
-	std::string inputStr = GetUserInput(userCommand);
-	std::stringstream myStream(inputStr);
-	std::vector<std::string> words;
-	std::string tmp;
-	int selectedToryDst = 0;
-	while (myStream >> tmp)
-	{
-		words.push_back(tmp);
-	}
-
-	if (words.size() == 1)
-	{
-		if ((std::stringstream(words[0]) >> selectedToryDst))
-		{
-			Territory* dst = nullptr;
-
-			std::map<int, Territory*>::iterator dstItor;
-
-			dstItor = toriesForBlockading.find(selectedToryDst);
-
-			if (dstItor != toriesForBlockading.end())
-			{
-				dst = toriesForBlockading[selectedToryDst];
-			}
-
-			IssueBlockadeOrder(dst);
-			HandleSaveEffect(userCommand, "Blockade order issued");
-		}
-		else
-		{
-			std::cout << "Invalid input" << std::endl;
-		}
-	}
-	else
-	{
-		std::cout << "Invalid input" << std::endl;
-	}
-}
-
-void Player::PlayingAirliftCard_Human()
-{
-	Command* userCommand = nullptr;
-
-	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
-
-	std::map<int, Territory*> toriesForAirlifting;
-	for (const auto& tory : plToriesToDefend)
-	{
-		toriesForAirlifting[tory->getID()] = tory;
-	}
-
-	DisplayPlayerToriesToDefend();
-
-	std::cout << "Please select a territory to airlift troops from, a destination to airlift them to" << std::endl;
-	std::cout << "and a number of troops to be airlifted." << std::endl;
-
-	std::string inputStr = GetUserInput(userCommand);
-	std::stringstream myStream(inputStr);
-	std::vector<std::string> words;
-	std::string tmp;
-	int selectedTorySrc = 0;
-	int selectedToryDst = 0;
-	int armiesToAirlift = 0;
-	while (myStream >> tmp)
-	{
-		words.push_back(tmp);
-	}
-
-	if (words.size() == 3)
-	{
-		if ((std::stringstream(words[0]) >> selectedTorySrc) &&
-			(std::stringstream(words[1]) >> selectedToryDst) &&
-			(std::stringstream(words[2]) >> armiesToAirlift))
-		{
-			Territory* src = nullptr;
-			Territory* dst = nullptr;
-
-			std::map<int, Territory*>::iterator srcItor;
-			std::map<int, Territory*>::iterator dstItor;
-
-			srcItor = toriesForAirlifting.find(selectedTorySrc);
-
-			if (srcItor != toriesForAirlifting.end())
-			{
-				src = toriesForAirlifting[selectedTorySrc];
-			}
-
-			dstItor = toriesForAirlifting.find(selectedToryDst);
-
-			if (dstItor != toriesForAirlifting.end())
-			{
-				dst = toriesForAirlifting[selectedToryDst];
-			}
-
-			IssueAirliftOrder(
-				src,
-				dst,
-				std::max(0, armiesToAirlift)
-			);
-			HandleSaveEffect(userCommand, "Airlift order issued");
-		}
-		else
-		{
-			std::cout << "Invalid input" << std::endl;
-		}
-	}
-	else
-	{
-		std::cout << "Invalid input" << std::endl;
-	}
-}
-
-void Player::PlayingDiplomacyCard_Human()
-{
-	Command* userCommand = nullptr;
-
-	GameEngine* gameInstance = getCurrentGameInstance();
-	if (gameInstance == nullptr)
-	{
-		return;
-	}
-
-	const std::vector<Player*> currentPlayers = gameInstance->getPlayerList();
-
-	for (int i = 0; i < currentPlayers.size(); ++i)
-	{
-		if (currentPlayers[i] != nullptr)
-		{
-			std::cout << i << " : " << currentPlayers[i]->getPlayerName() << std::endl;
-		}
-	}
-
-	std::cout << "Please select a player to negotiate with, note that you cannot negotiate with yourself." << std::endl;
-
-	std::string inputStr = GetUserInput(userCommand);
-	std::stringstream myStream(inputStr);
-	std::vector<std::string> words;
-	std::string tmp;
-	int selectedPlayer = 0;
-	while (myStream >> tmp)
-	{
-		words.push_back(tmp);
-	}
-
-	if (words.size() == 1)
-	{
-		if ((std::stringstream(words[0]) >> selectedPlayer))
-		{
-			if (selectedPlayer >= 0 && selectedPlayer < currentPlayers.size())
-			{
-				IssueNegotiateOrder(currentPlayers[selectedPlayer]);
-				HandleSaveEffect(userCommand, "Negotiate order issued");
-			}
-			else
-			{
-				std::cout << "Invalid player selected" << std::endl;
-			}
-		}
-		else
-		{
-			std::cout << "Invalid input" << std::endl;
-		}
-	}
-	else
-	{
-		std::cout << "Invalid input" << std::endl;
-	}
-}
-
-void Player::DisplayPlayerToriesToDefendAndAttack()
-{
-	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
-	const int toriesToDefendEndIndex = plToriesToDefend.size();
-
-	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
-
-	std::vector<Territory*> toriesToDefendAndAttack;
-	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToDefend.begin(), plToriesToDefend.end());
-	toriesToDefendAndAttack.insert(toriesToDefendAndAttack.end(), plToriesToAttack.begin(), plToriesToAttack.end());
-
-	std::cout << "Displaying " << getPlayerName() << "'s Territories to Defend & Attack." << std::endl;
-	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
-	std::cout << std::setfill(' ') << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
-	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
-	std::cout << std::setfill(' ') << std::endl;
-	for (int i = 0; i < toriesToDefendEndIndex; ++i)
-	{
-		if (toriesToDefendAndAttack[i] != nullptr)
-		{
-			std::cout << toriesToDefendAndAttack[i]->getID() << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << toriesToDefendAndAttack[i]->getName() << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
-		}
-		else
-		{
-			std::cout << "(1) Territory in DisplayPlayerToriesToDefendAndAttack is null" << std::endl;
-		}
-	}
-
-	std::cout << std::endl;
-
-	std::cout << "Displaying " << getPlayerName() << "'s Territories to Attack." << std::endl;
-	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
-	std::cout << std::setfill(' ') << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
-	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
-	std::cout << std::setfill(' ') << std::endl;
-
-	for (int i = toriesToDefendEndIndex; i < toriesToDefendAndAttack.size(); ++i)
-	{
-		if (toriesToDefendAndAttack[i] != nullptr)
-		{
-			std::cout << toriesToDefendAndAttack[i]->getID() << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << toriesToDefendAndAttack[i]->getName() << " : " << toriesToDefendAndAttack[i]->getNbArmy() << std::endl;
-		}
-		else
-		{
-			std::cout << "(2) Territory in DisplayPlayerToriesToDefendAndAttack is null" << std::endl;
-		}
-	}
-
-	std::cout << std::endl;
-}
-
-void Player::DisplayToriesToDefendAndAdjacents()
-{
-	std::cout << std::setfill(' ');
-
-	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
-
-	for (int i = 0; i < plToriesToDefend.size(); ++i)
-	{
-		if (plToriesToDefend[i] != nullptr)
-		{
-			std::cout << "{ID:" << plToriesToDefend[i]->getID() << "}" << plToriesToDefend[i]->getName()
-					  << "(units:" << plToriesToDefend[i]->getNbArmy() << "): " << std::endl;
-
-			std::vector<Territory*> allies;
-			std::map<int, std::vector<Territory*>> adjacentEnemyTerritories;
-			// sort adjacent territories into friendly or enemy
-			for (const auto& neighbour : plToriesToDefend[i]->getBorderList())
-			{
-				if (neighbour != nullptr)
-				{
-					if (neighbour->getPlayer() == nullptr)
-					{
-						std::cout << "Territory not assigned to a player: DisplayToriesToDefendAndAdjacents." << std::endl;
-						continue;
-					}
-
-					if (neighbour->getPlayer()->getPlayerID() == getPlayerID())
-					{
-						allies.push_back(neighbour);
-					}
-					else
-					{
-						adjacentEnemyTerritories[neighbour->getPlayer()->getPlayerID()].push_back(neighbour);
-					}
-				}
-			}
-
-			// display the result in a informative format
-			if (allies.size() > 0)
-			{
-				std::cout << "\t\t[" << this->getPlayerName() << ":";
-				int count = 0;
-				for (auto& allyTory : allies)
-				{
-					std::cout << "{ID:" << allyTory->getID() << "}:" << allyTory->getName() << "(units:" 
-							  << allyTory->getNbArmy() << ")";
-					if (count < allies.size() - 1)
-					{
-						std::cout << ",";
-					}
-					count++;
-				}
-				std::cout << "]" << std::endl;
-			}
-
-			if (adjacentEnemyTerritories.size() > 0)
-			{
-				/*int adjacentEnemyCounter = 0;*/
-				for (const auto& [key, value] : adjacentEnemyTerritories)
-				{
-					std::string plName = "";
-					if (value[0] != nullptr && value[0]->getPlayer())
-					{
-						plName = value[0]->getPlayer()->getPlayerName();
-					}
-					std::cout << "\t\t[" << plName << ":";
-
-					int enemyToryCount = 0;
-					for (const auto& enemyTory : value)
-					{
-						if (enemyTory != nullptr)
-						{
-							std::cout << "{ID:" << enemyTory->getID() << "}:" << enemyTory->getName() 
-									  << "(units:" << enemyTory->getNbArmy() << ")";
-							if (enemyToryCount < value.size() - 1)
-							{
-								std::cout << ",";
-							}
-							enemyToryCount++;
-						}
-					}
-
-					std::cout << "]";
-				}
-			}
-
-			std::cout << std::endl;
-		}
-	}
-
-	std::cout << std::endl;
-}
-
-void Player::DisplayPlayerToriesToAttack()
-{
-	const std::vector<Territory*> plToriesToAttack = this->getTerritoriesToAttack();
-
-	std::cout << "Displaying Territories " << getPlayerName() << " can Attack." << std::endl;
-	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
-	std::cout << std::setfill(' ') << "* Territory #:  " << std::setw(10) << " Territory Name " << std::setw(15) << "# of Armies" << std::endl;
-	std::cout << std::setfill('*') << std::setw(50) << "" << std::endl;
-	std::cout << std::setfill(' ') << std::endl;
-
-	for (int i = 0; i < plToriesToAttack.size(); ++i)
-	{
-		if (plToriesToAttack[i] != nullptr)
-		{
-			std::cout << plToriesToAttack[i]->getID() << std::setw(5 - std::to_string(i).size()) << " : " << std::setw(40) << plToriesToAttack[i]->getName() << " : " << plToriesToAttack[i]->getNbArmy() << std::endl;
-		}
-		else
-		{
-			std::cout << "A territory is null" << std::endl;
-		}
-	}
-
-	std::cout << std::endl;
-}
-
-void Player::DisplayPlayerToriesToDefend()
-{
-	const std::vector<Territory*> plToriesToDefend = this->getTerritoriesToDefend();
-
-	//std::cout << std::endl;
-	std::cout << "Displaying " << getPlayerName() << "'s Territories to Defend." << std::endl;
-	std::cout << std::setfill('*') << std::setw(100) << "" << std::endl;
-	std::cout << std::setfill(' ') << "* Territory #:  " << std::setw(10) << " Territory Name " 
-			  << std::setw(15) << "# of Armies" << std::setw(5) << "Adjacent Enemy Territories" << std::endl;
-	std::cout << std::setfill('*') << std::setw(100) << "" << std::endl;
-	std::cout << std::setfill(' ') << std::endl;
-	for (int i = 0; i < plToriesToDefend.size(); ++i)
-	{
-		if (plToriesToDefend[i] != nullptr)
-		{
-			std::cout << plToriesToDefend[i]->getID() << std::setw(5 - std::to_string(i).size()) << " : "
-				<< plToriesToDefend[i]->getName() << " : " << plToriesToDefend[i]->getNbArmy()
-				<< std::endl;
-
-			std::map<int, std::vector<Territory*>> neighbourPlTories;
-
-			for (const auto& neighbour : plToriesToDefend[i]->getBorderList())
-			{
-				if (neighbour == nullptr || neighbour->getPlayer() == nullptr)
-				{
-					std::cout << "A neighbour territory is null" << std::endl;
-					continue;
-				}
-
-				if (neighbour->getPlayer() == nullptr)
-				{
-					std::cout << "A neighbour territory player is null" << std::endl;
-					continue;
-				}
-
-				neighbourPlTories[neighbour->getPlayer()->getPlayerID()].push_back(neighbour);
-			}
-
-			for (const auto& [key, value] : neighbourPlTories)
-			{
-				std::cout << std::setw(35);
-				std::cout << value[0]->getPlayer()->getPlayerName() << ":" << std::endl;
-				for (const auto& tory : value)
-				{
-					std::cout << std::setw(35 + tory->getName().size());
-					std::cout << tory->getName() << "(" << tory->getNbArmy() << ")" << std::endl;
-				}
-			}
-		}
-		else
-		{
-			std::cout << "A territory in DisplayPlayerToriesToDefend is null." << std::endl;
-		}
-	}
-
-	std::cout << std::endl;
 }
 
 void Player::setPlayerTurnPhase(int inPhase)
@@ -1194,7 +349,7 @@ void Player::setPlayerTurnPhase(EPlayerTurnPhase inPhase)
 	this->_currentPhase = inPhase;
 }
 
-Player::EPlayerTurnPhase Player::getPlayerTurnPhase() const
+EPlayerTurnPhase Player::getPlayerTurnPhase() const
 {
 	return this->_currentPhase;
 }
@@ -1250,25 +405,6 @@ void Player::IssueNegotiateOrder(Player* inTarget)
 void Player::setCommandProcessor(CommandProcessor* inProcessor)
 {
 	this->commandProcess = inProcessor;
-}
-
-std::string Player::GetUserInput(Command*& userCommand)
-{
-	if (commandProcess == nullptr)
-	{
-		std::cout << "Command Process isn't assigned to player." << std::endl;
-		return "";
-	}
-
-	userCommand = commandProcess->getCommand();
-
-	if (&userCommand == nullptr)
-	{
-		std::cout << "User Command is null." << std::endl;
-		return "";
-	}
-
-	return userCommand->getCommand();
 }
 
 void Player::HandleSaveEffect(Command* userCommand, std::string inMsg)
