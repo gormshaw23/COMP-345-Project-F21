@@ -130,7 +130,7 @@ private:
 	void DisplayPlayerToriesToDefend();
 	void DisplayPlayerToriesToAttack();
 
-	std::string GetUserInput(Command* userCommand);
+	std::string GetUserInput(Command *& userCommand);
 	void HandleSaveEffect(Command* inCommand, std::string inMsg);
 
 	// tracks subphase of issueingOrders phase

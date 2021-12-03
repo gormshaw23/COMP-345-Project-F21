@@ -487,6 +487,7 @@ void GameEngine::gamestart() {
 	int remainder = numberOfTerritory % playercount;
 	for (int i = 0; i < remainder; i++) {
 		t = mapToUse->listTerritory.at(round * playercount);
+		t->setPlayer(playerlist[i]);
 		playerlist[i]->getTerritoriesOwned().push_back(t);
 	}
 
@@ -518,7 +519,7 @@ void GameEngine::gamestart() {
 	std::cout << "player name        quantity of armies" << std::endl;
 	for (int i = 0; i < playercount; i++) {
 		std::cout << playerlist.at(i)->getPlayerName();
-		std::cout << "                       ";
+		std::cout << std::setw(25 - playerlist.at(i)->getPlayerName().size());
 		std::cout << ReinforcementPools.at(i) << std::endl;
 	}
 	std::cout << std::endl;
@@ -539,8 +540,8 @@ void GameEngine::gamestart() {
 		{
 			std::cout << "\t" << *card << std::endl;
 		}
-		std::cout << std::endl;
 	}
+	std::cout << std::endl;
 }
 
 /*
