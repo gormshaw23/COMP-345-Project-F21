@@ -70,7 +70,3 @@ private:
 
     bool isATournament; //Determines if a game is part of a tournament
 };
-
-
-
-

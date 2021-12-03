@@ -707,7 +707,7 @@ void GameEngine::startupPhase() {
 */
 void GameEngine::mainGameLoop(vector<Player*> players, Map* map, int maxNumberOfTurns) {
 	int turn = 1; //Turn counter
-	while (players.size() != 1 && turn > maxNumberOfTurns) { //Loop if there are 2 or more players left
+	while (players.size() != 1 && turn < maxNumberOfTurns) { //Loop if there are 2 or more players left
 		int initPlayersSize = players.size();
 
 		//Give a number of armies to each player
@@ -740,6 +740,7 @@ void GameEngine::mainGameLoop(vector<Player*> players, Map* map, int maxNumberOf
 	std::string endGameMessage = (players.size() == 1) ? "Game over, " + players.at(0)->getPlayerName() + " wins\n"
 		: "The game has exceeded the amount of turns, therefore the game is a draw.\n";
 	std::cout << endGameMessage;
+	//TODO: Code to log result?
 }
 
 /*
@@ -818,6 +819,9 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 	std::vector<Territory*> inTerritories;
 	std::vector<int> inArmies;
 
+	//Get player's strategy
+
+
 	/*
 	Initialization of variables for the option
 	to play a card
@@ -830,6 +834,7 @@ const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
 	std::cout << "Issuing orders for " << p->getPlayerName() << "\n";
 	if (isATournament) {
 		//TODO: Code to add for issuing orders without human interactions
+		
 	}
 	else {
 		while (!turnEnded) {
