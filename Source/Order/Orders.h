@@ -20,6 +20,7 @@
 
 class Territory;
 class Player;
+class GameEngine;
 
 enum class EOrderType
 {
@@ -133,11 +134,13 @@ private:
 class Blockade : public Order
 {
 public:
-    Blockade();                                                        //Constructor
-    Blockade(Player* inOwner, Territory* inTarget);
-    ~Blockade();                                                       //Destructor
-    Blockade(const Blockade &blo);                                     //Copy constructor
-    Blockade &operator=(const Blockade &blo);                          //Assignment operator
+    /* ctors */
+    Blockade();
+    Blockade(GameEngine* inCurrentInstance, Player* inOwner, Territory* inTarget);
+    ~Blockade();
+    Blockade(const Blockade &blo);
+    /* operators */
+    Blockade &operator=(const Blockade &blo);
 
     virtual void execute() override;
     virtual bool validate() override;
@@ -146,6 +149,7 @@ public:
 private:
     Player* owner = nullptr;
     Territory* target = nullptr;
+    GameEngine* currentInstance;
 };
 
 /**

@@ -530,29 +530,35 @@ bool Bomb::validate()
 
 Blockade::Blockade() : Order(EOrderType::Blockade, BLOCKADE_DESC)
 {
+    this->currentInstance = nullptr;
 }
 
-Blockade::Blockade(Player* inOwner, Territory* inTarget)
+Blockade::Blockade(GameEngine* inCurrentInstance, Player* inOwner, Territory* inTarget)
 {
     this->owner = inOwner;
     this->target = inTarget;
+    this->currentInstance = inCurrentInstance;
 }
 
 Blockade::~Blockade() 
 {
     this->owner = nullptr;
     this->target = nullptr;
+    this->currentInstance = nullptr;
 }
 
 Blockade::Blockade(const Blockade &blo) : Order(blo)
 {
     this->owner = blo.owner;
     this->target = blo.target;
+    this->currentInstance = blo.currentInstance;
 }
 
 Blockade &Blockade::operator=(const Blockade &blo)
 {
     Order::operator=(blo);
+    this->target = blo.target;
+    this->currentInstance = blo.currentInstance;
     return *this;
 }
 
@@ -567,7 +573,12 @@ void Blockade::execute()
     if (validate())
     {
         // add the target territory to the neutral player and double the number of troops
-        Player* neutralPlayer = GameEngine::getInstance().getNeutralPlayer();
+        Player* neutralPlayer = nullptr;
+        if (currentInstance != nullptr)
+        {
+            neutralPlayer = currentInstance->getNeutralPlayer();
+        }
+
         if (neutralPlayer != nullptr)
         {
             neutralPlayer->getTerritoriesOwned().push_back(target);
@@ -590,7 +601,7 @@ void Blockade::execute()
 bool Blockade::validate()
 {
     // check to make sure interactable objects exist
-    if (owner == nullptr || target == nullptr)
+    if (owner == nullptr || target == nullptr || currentInstance == nullptr)
     {
         return false;
     }
