@@ -35,6 +35,7 @@
     <ClCompile Include="Source\PlayerStrategiesDriver.cpp" />
     <ClCompile Include="Source\Player\Player.cpp" />
     <ClCompile Include="Source\Strategy\PlayerStrategies.cpp" />
+    <ClCompile Include="Source\TournamentDriver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Cards\Cards.h" />
@@ -118,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
