@@ -48,7 +48,6 @@ public:
 
     Player* getNeutralPlayer() const;
     std::vector<Player*> getPlayerList() const;
-    std::vector<Player*>& getPlayerList();
 
     std::string mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns); //Game loop function
 

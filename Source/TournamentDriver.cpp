@@ -35,12 +35,34 @@ int main() {
 	//Create players
 	Player* p1 = new Player("player1");
 	Player* p2 = new Player("player2");
-	p1->setPlayerStrategy(new AggressivePlayerStrategy());
-	p1->setReinforcementPool(50);
-	p2->setPlayerStrategy(new BenevolentPlayerStrategy());
-	p2->setReinforcementPool(50);
-	std::vector<Player*> players = { p1, p2 };
 
-	ge->mainGameLoop(players, map, 5);
+	p1->setPlayerStrategy(new AggressivePlayerStrategy());
+	p2->setPlayerStrategy(new BenevolentPlayerStrategy());
+	p1->setReinforcementPool(50);
+	p2->setReinforcementPool(50);
+
+	//Set territories
+	std::vector<Territory*> p1Territories;
+	std::vector<Territory*> p2Territories;
+
+	for (int i = 0; i < map->listTerritory.size(); i++) {
+		Territory* t = map->listTerritory.at(i);
+		if (i < map->listTerritory.size() - 1) {
+			t->setPlayer(p1);
+			p1Territories.push_back(t);
+		}
+		else {
+			t->setPlayer(p2);
+			p2Territories.push_back(t);
+		}
+	}
+
+	p1->setTerritoriesOwned(p1Territories);
+	p2->setTerritoriesOwned(p2Territories);
+
+	std::vector<Player*> players = {p1, p2};
+	std::string result = ge->mainGameLoop(players, map, 50);
+	std::cout << "Player strategy winner : " << result << std::endl;
+
 	return 0;
 }
