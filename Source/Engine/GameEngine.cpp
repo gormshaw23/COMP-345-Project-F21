@@ -13,6 +13,7 @@
 #include <vector>
 #include <random>
 #include <iomanip>
+#include <sstream>
 
 std::vector<std::string> splitString(std::string str)
 {
@@ -273,6 +274,14 @@ std::string GameEngine::extractName(std::string str) {
 	return strNew;
 }
 
+std::string GameEngine::extractPlayerStrategy(std::string str)
+{
+	unsigned first = str.find("[");
+	unsigned last = str.find("]");
+	std::string strNew = str.substr(first + 1, last - first - 1);
+	return strNew;
+}
+
 /**
  * private function addPlayer(string) of GameEngine class
  * @param string str user input
@@ -280,8 +289,62 @@ std::string GameEngine::extractName(std::string str) {
  */
 
 void GameEngine::addPlayer(std::string user_input) {
-	playername = extractName(user_input);
-	Player* p = new Player(playername);
+	std::string tmp = "";
+	std::vector<std::string> words;
+	std::string strat = "";
+	while (std::stringstream(user_input) >> tmp)
+	{
+		words.push_back(tmp);
+	}
+
+	Player* p;
+	if (words.size() == 1)
+	{
+		playername = extractName(words[0]);
+		p = new Player(playername);
+		p->setPlayerStrategy(new HumanPlayerStrategy(p));
+	}
+	else if (words.size() == 2)
+	{
+		playername = extractName(words[0]);
+		// get ai
+		strat = extractPlayerStrategy(words[1]);
+		p = new Player(playername);
+
+		if (strat.compare("aggressive") || strat.compare("Aggressive"))
+		{
+			p->setPlayerStrategy(new AggressivePlayerStrategy());
+		}
+
+		if (strat.compare("benevolent") || strat.compare("Benevolent"))
+		{
+			p->setPlayerStrategy(new BenevolentPlayerStrategy());
+		}
+
+		if (strat.compare("neutral") || strat.compare("Neutral"))
+		{
+			p->setPlayerStrategy(new NeutralPlayerStrategy());
+		}
+
+		if (strat.compare("cheater") || strat.compare("Cheater"))
+		{
+			p->setPlayerStrategy(new CheaterPlayerStrategy());
+		}
+
+		if (strat.compare("human") || strat.compare("Human"))
+		{
+			p->setPlayerStrategy(new HumanPlayerStrategy(p));
+		}
+
+		std::cout << "The player with strategy " << strat << " is added." << std::endl;
+	}
+	else
+	{
+		playername = extractName(user_input);
+		p = new Player(playername);
+		p->setPlayerStrategy(new HumanPlayerStrategy(p));
+	}
+
 	p->setCurrentGameInstance(this);
 	p->setCommandProcessor(commandProces);
 	playerlist.push_back(p);
@@ -533,6 +596,7 @@ void GameEngine::startupPhase() {
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
 				userCommand->saveEffect("Passing from  <GAME_STATE_MAP_VALIDATED> to <GAME_STATE_PLAYERS_ADDED> , new player added");
 				std::cout << "New player added!\nPlease enter: \"addplayer\" command to continue adding players." << "\n";
+				std::cout << "Add [aggressive] or [benevolent] or [neutral] or [cheater] to be AI'd, or [human] or don't for User control." << "\n";
 			}
 			else {
 				std::cout << "Error input(please try: \"addplayer <playername>\" to add a player."<< "\n";

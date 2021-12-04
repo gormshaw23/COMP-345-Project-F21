@@ -81,6 +81,7 @@ private:
     const void executeOrdersPhase(Player* p);
     void gamestart();
     std::string extractName(std::string);//extract name from loadmap and addplayer command
+    std::string extractPlayerStrategy(std::string str);
     void addPlayer(std::string);//add player
 
     std::vector<Player*> playerlist;
