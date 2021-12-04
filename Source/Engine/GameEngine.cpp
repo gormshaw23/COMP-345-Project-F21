@@ -1,32 +1,50 @@
+#include "Engine/GameEngine.h"
+#include "Player/Player.h"
+#include "Map/map.h"
+#include "Cards/Cards.h"
+#include "Common/CommonTypes.h"
+#include "Strategy/PlayerStrategies.h"
+#include "../CommandProcessor/CommandProcessor.h"
+
 #include <iostream>
 #include <map>
 #include <string>
 #include <algorithm>
 #include <vector>
-#include <Common/CommonTypes.h>
-#include <vector>
+#include <random>
+#include <iomanip>
 
-#include "Engine/GameEngine.h"
-#include "Player/Player.h"
-#include "Map/map.h"
-#include "Cards/Cards.h"
-
-
-vector<string> splitString(std::string str)
+std::vector<std::string> splitString(std::string str)
 {
 	std::string word = "";
-	std::vector<string> splitstring;
+	std::vector<std::string> splitstring;
+	bool betwenbrakets = false;
+
 	for (auto x : str)
 	{
-		if (x == ' ')
-		{
-			//cout << word << endl;
-			splitstring.push_back(word);
-			word = "";
+		if (x == '<') {
+			betwenbrakets = true;
+		}
+		if (betwenbrakets == false) {
+			if (x == ' ')
+			{
+				//cout << word << endl;
+				splitstring.push_back(word);
+				word = "";
+			}
+			else {
+				word = word + x;
+			}
 		}
 		else {
-			word = word + x;
+			if (x == '>') {
+				betwenbrakets = false;
+			}
+			else {
+				word = word + x;
+			}
 		}
+		
 	}
 	splitstring.push_back(word);
 	return splitstring;
@@ -37,8 +55,9 @@ vector<string> splitString(std::string str)
 GameEngine::GameEngine()
 {
 	eState = new GameState(GAME_STATE_UNKNOWN);
+	isATournament = false;
 #ifdef DEBUG_ENABLE
-	cout << "constructor\n";
+	std::cout << "constructor\n";
 #endif
 }
 /**
@@ -49,15 +68,15 @@ GameEngine::GameEngine(const GameEngine& obj)
 	eState = new GameState;
 	*eState = *obj.eState;
 	commandProces = obj.commandProces;
+	isATournament = false;
 
 }
-
-
 
 GameEngine::GameEngine(Observer* list) 
 {
     eState = new GameState(GAME_STATE_UNKNOWN);
 	commandProces = nullptr;
+	isATournament = false;
 	std::string inputType;
 	std::vector<std::string> proccesInput;
 	bool goodInput = false;
@@ -85,11 +104,8 @@ GameEngine::GameEngine(Observer* list)
 		}
 	}
 	
-	
-	
-
 #ifdef DEBUG_ENABLE
-    cout << "constructor\n";
+	std::cout << "constructor\n";
 #endif
 }
 /**
@@ -100,7 +116,7 @@ GameEngine::~GameEngine()
 	delete eState;
 	eState = NULL;
 #ifdef DEBUG_ENABLE
-	cout << "destructor\n";
+	std::cout << "destructor\n";
 #endif
 }
 
@@ -135,12 +151,6 @@ GameEngine& GameEngine::operator=(const GameEngine& obj)
 Player* GameEngine::getNeutralPlayer() const
 {
     return neutralPlayer;
-}
-
-GameEngine& GameEngine::getInstance()
-{
-    static GameEngine instance;
-    return instance;
 }
 
 /**
@@ -192,197 +202,12 @@ void showPossibleAction(GameState lstate) {
 std::string get_user_input(GameState lState, GameEngine* reference) {
 	std::string Name = "";
 
-	
 	showPossibleAction(lState);
 	Command* userCommand = reference->commandProces->getCommand(); // use the command processor to enable the loging of information and the file reading
 	Name = userCommand->getCommand();
 	return Name;
 }
 
-
-
-
-
-/*
- * function game_run() of GameEngine class
- * To update the current state by a valid command, reject the command if it is invalid
- /*
-/*
-void GameEngine::game_run() {
-    //set start state
-    GameEngine::setCurrentState(GAME_STATE_START);
-    std::string user_input;
-    // map a key to the value
-    std::map<game_user_input, std::string> user_input_list;
-    user_input_list[LOADMAP] = "loadmap";
-    user_input_list[VALIDATEMAP] = "validatemap";
-    user_input_list[ADDPLAYER] = "addplayer";
-    user_input_list[ASSIGNCOUNTRIES] = "assigncountries";
-    user_input_list[ISSUEORDER] = "issueorder";
-    user_input_list[ENDEXECORDERS] = "endexecorders";
-    user_input_list[EXECORDER] = "execorder";
-    user_input_list[ENDISSUEORDERS] = "endissueorders";
-    user_input_list[WIN] = "win";
-    user_input_list[PLAY] = "play";
-    user_input_list[END] = "end";
-    //using a loop to read the input until the end of the state
-
-    Command* useCommand;
-    while (true) {
-
-        user_input = "get_user_input(*eState)";
-         useCommand =  commandProces->getCommand();
-
-        //compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
-        switch (*eState) {
-
-            case  GAME_STATE_START:
-                if (commandProces->validate(useCommand,"loadmap")) {
-                    useCommand->saveEffect(" from Game state start to load map");
-                    setCurrentState(GAME_STATE_MAP_LOAD);
-                    std::cout << "Will it finaly work ?"<<std::endl;
-                }
-                else {
-                    useCommand->saveEffect(" Invalid command in game state start");
-					std::cout << "Error input(please try: loadmap)\n";
-                }
-                break;
-            case  GAME_STATE_MAP_LOAD:
-                if (commandProces->validate(useCommand, "loadmap")) {
-                    useCommand->saveEffect(" from load map  to load map");
-                    setCurrentState(GAME_STATE_MAP_LOAD);
-
-                }
-                else if (commandProces->validate(useCommand, "validatemap")){
-                    useCommand->saveEffect(" from load map to validate  map");
-                    setCurrentState(GAME_STATE_MAP_VALIDATED);
-                    std::cout << " Map validated " << std::endl;
-                }
-                else {
-                    useCommand->saveEffect(" Invalide commandd in map load");
-					std::cout << "Error input(please try: "<< user_input_list[VALIDATEMAP] << " or "
-                        << user_input_list[LOADMAP] <<"\n" ;
-                }
-                break;
-            case GAME_STATE_MAP_VALIDATED:
-                if (commandProces->validate(useCommand, "addplayer")) {
-                    useCommand->saveEffect(" from Game state map validate to add player");
-                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
-                    std::cout << "|| entering player added||" << std::endl;
-                }
-                else {
-                    useCommand->saveEffect(" Invlid in map validated");
-					std::cout << "Error input(please try: " << user_input_list[ADDPLAYER] << "\n";
-                }
-                break;
-            case GAME_STATE_PLAYERS_ADDED:
-                if (commandProces->validate(useCommand, "assigncountries")) {
-                    useCommand->saveEffect(" from Game state player added to assigne countries");
-                    setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
-                    std::cout << "|| entering assigne countries||" << std::endl;
-                    
-                }
-                else if (commandProces->validate(useCommand, "addplayer")) {
-                    useCommand->saveEffect(" from Game state add player to addplayer");
-                    setCurrentState(GAME_STATE_PLAYERS_ADDED);
-                    std::cout << "|| entering player added||" << std::endl;
-                }
-                else {
-                    useCommand->saveEffect("Invalid in player added ");
-					std::cout << "Error input(please try: " << user_input_list[ADDPLAYER] <<" or "
-                        << user_input_list[ASSIGNCOUNTRIES] << ")\n";
-                }
-                break;
-            case GAME_STATE_ASSIGN_REINFORCEMENT:
-
-                if (commandProces->validate(useCommand, "issueorder")) {
-                    useCommand->saveEffect(" from Game state assigne reinforcement to issue order");
-                    setCurrentState(GAME_STATE_ISSUE_ORDERS);
-                    std::cout << "|| entering issue Order||" << std::endl;
-                }
-                else {
-                    useCommand->saveEffect(" invalid in assigne reinforcement");
-					std::cout << "Error input(please try: " << user_input_list[ISSUEORDER] <<")\n";
-                }
-
-                break;
-            case GAME_STATE_ISSUE_ORDERS:
-                if (commandProces->validate(useCommand, "endissueorders")) {
-                    useCommand->saveEffect(" from Game state issue order to execute order order");
-                    setCurrentState(GAME_STATE_EXECUTE_ORDERS);
-                    std::cout << "|| entering end issue order||" << std::endl;
-                }
-                
-                else if(commandProces->validate(useCommand, "issueorder")) {
-                    useCommand->saveEffect(" from Game state issue order to issue order");
-                    setCurrentState(GAME_STATE_ISSUE_ORDERS);
-                    std::cout << "|| entering issue Order||" << std::endl;
-                }
-                else {
-                    useCommand->saveEffect(" invalid in issue order");
-					std::cout << "Error input(please try: " << user_input_list[ISSUEORDER] << " or "
-                        << user_input_list[ENDISSUEORDERS] << ")\n";
-                }
-                break;
-
-            case GAME_STATE_EXECUTE_ORDERS:
-                if (commandProces->validate(useCommand, "execorder")) {
-                    useCommand->saveEffect(" from Game stat ececutte order to execute order");
-                    setCurrentState(GAME_STATE_EXECUTE_ORDERS);
-                    std::cout << "|| entering execute Order||" << std::endl;
-                    
-                }
-                else if (commandProces->validate(useCommand, "endexecorders")) {
-                    useCommand->saveEffect(" from Game state execute order  to end execute order");
-                    setCurrentState(GAME_STATE_ASSIGN_REINFORCEMENT);
-                    std::cout << "|| entering end execute Order||" << std::endl;
-                }
-                else if (commandProces->validate(useCommand, "win")) {
-                    useCommand->saveEffect(" from Game state execute order to win");
-                    setCurrentState(GAME_STATE_WIN);
-                    std::cout << "|| entering win||" << std::endl;
-                }
-                else {
-                    useCommand->saveEffect(" invalid in exec order");
-					std::cout << "Error input(please try: " << user_input_list[EXECORDER] << " or "
-                        << user_input_list[ENDEXECORDERS] <<" or "
-                        << user_input_list[WIN] << ")\n";
-                }
-                break;
-            case GAME_STATE_WIN:
-                if (commandProces->validate(useCommand, "play")) {
-                    useCommand->saveEffect(" from Game state win to start");
-                    setCurrentState(GAME_STATE_START);
-                    std::cout << "|| entering play||" << std::endl;
-
-                }
-                else if (commandProces->validate(useCommand, "end")) {
-                    useCommand->saveEffect(" from Game state win to end");
-                    setCurrentState(GAME_STATE_END);
-                    std::cout << "|| entering end||" << std::endl;
-                }
-                else {
-                    useCommand->saveEffect(" Invalid in win");
-					std::cout << "Error input(please try: " << user_input_list[PLAY] << " or "
-                        << user_input_list[END] << ")\n";
-                }
-                break;
-            case GAME_STATE_END:
-                std::cout << "|| we reached the end||" << std::endl;
-                break;
-            default:
-
-                break;
-        }
-        useCommand = NULL;
-
-        if (*eState == GAME_STATE_END) {
-
-            break;
-        }
-    }//end of while loop
-}//end of game_run()
-*/
 
 std::string GameEngine::stringToLog() {
     std::string toLog  = "New game state : ";
@@ -404,22 +229,33 @@ std::string GameEngine::stringToLog() {
     case GAME_STATE_PLAYERS_ADDED:
         toLog = toLog + "player added";
         break;
+	case GAME_STATE_FINISHED:
+		toLog = toLog + "player added";
+		break;
   
     default:
+		toLog = "Tournament Mode : \n-M:	";
+		for (int x = 0; x < listMapName.size(); x++) {
+			toLog = toLog + listMapName.at(x) + ",	";
+		}
+		toLog = toLog + "\n-P:	";
+		for (int y = 0; y < listPlayerFromConsole.size(); y++) {
+			toLog = toLog + listPlayerFromConsole.at(y) + ",	";
+		}
+		toLog = toLog + "\n-G: " + std::to_string(numberGamePrint) + "\n -D: " + std::to_string(drawTurnLimitPrint)+"\n"+ gameresult;
         break;
     }
     return  toLog;
 }
 
-static string filename;
-static string playername;
+static std::string filename;
+static std::string playername;
 static int playercount = 0;
 MapLoader* newmap = new MapLoader();
 Map* mapToUse = new Map();
-vector<Player*> playerlist;
 Deck* newDeck = new Deck(30);
 Card* newCard = newDeck->drawCard_Deck();
-vector<int> ReinforcementPools;
+std::vector<int> ReinforcementPools;
 
 /**
  * private function extractName(string) of GameEngine class
@@ -429,11 +265,11 @@ vector<int> ReinforcementPools;
 
 
 
-string GameEngine::extractName(string str) {
+std::string GameEngine::extractName(std::string str) {
 
 	unsigned first = str.find("<");
 	unsigned last = str.find(">");
-	string strNew = str.substr(first + 1, last - first - 1);
+	std::string strNew = str.substr(first + 1, last - first - 1);
 	return strNew;
 }
 
@@ -443,22 +279,21 @@ string GameEngine::extractName(string str) {
  * @return void
  */
 
-void GameEngine::addPlayer(string user_input) {
-	std::cout << "-Please enter the player name. "<<std::endl;
-	Command * userCommand = commandProces->getCommand();
-
-	playername = extractName(userCommand->getCommand());
+void GameEngine::addPlayer(std::string user_input) {
+	playername = extractName(user_input);
 	Player* p = new Player(playername);
+	p->setCurrentGameInstance(this);
+	p->setCommandProcessor(commandProces);
 	playerlist.push_back(p);
 	playercount++;
-	cout << "The player " << playername << " is added." << endl;
-	cout << "There should be 2-6 players in this game. Now we have " << playercount << " players." << endl;
-	cout << endl << "Player#    PlayerName" << endl;
-	for (int i = 0; i < (int)playerlist.size(); i++) {
-		cout << i + 1 << "             " << playerlist.at(i)->getPlayerName() << endl;
+	std::cout << "The player " << playername << " is added." << std::endl;
+	std::cout << "There should be 2-6 players in this game. Now we have " << playercount << " players." << std::endl;
+	std::cout << std::endl << "Player#    PlayerName" << std::endl;
+	for (int i = 0; i < (int)playerlist.size(); i++)
+	{
+		std::cout << i + 1 << "             " << playerlist.at(i)->getPlayerName() << std::endl;
 	}
-	cout << endl;
-
+	std::cout << std::endl;
 }
 
 
@@ -472,74 +307,83 @@ void GameEngine::gamestart() {
 
 	//a) fairly distribute all the territories to the players
 
+	std::random_device rd;
+	std::mt19937 g(rd());
+
 	int numberOfTerritory = mapToUse->listTerritory.size();
-	cout << endl << "The numberOfTerritory in the map is: " << numberOfTerritory << endl;
+	std::cout << std::endl << "The numberOfTerritory in the map is: " << numberOfTerritory << std::endl;
 	Territory* t = new Territory();
 	int round = numberOfTerritory / playercount;
 	for (int ii = 0; ii < round; ii++) {
 		for (int i = 0; i < playercount; i++) {
 			t = mapToUse->listTerritory.at(i + ii * playercount);
+			t->setPlayer(playerlist[i]);
 			playerlist[i]->getTerritoriesOwned().push_back(t);
 		}
 	}
 	int remainder = numberOfTerritory % playercount;
 	for (int i = 0; i < remainder; i++) {
 		t = mapToUse->listTerritory.at(round * playercount);
+		t->setPlayer(playerlist[i]);
 		playerlist[i]->getTerritoriesOwned().push_back(t);
-
 	}
 
-	cout << "Fairly distribute all the territories to the players>>>>>>>" << endl;
-	for (int i = 0; i < playercount; i++) {
-		cout << *(playerlist.at(i)) << endl;
+	std::cout << "Fairly distribute all the territories to the players>>>>>>>" << std::endl;
+	for (int i = 0; i < playercount; i++)
+	{
+		std::cout << *(playerlist.at(i)) << std::endl;
 	}
 
 	//b) determine randomly the order of play of the players in the game
-	cout << endl << "Determine randomly the order of play of the players in the game>>>>>>" << endl;
-	cout << "Before shuffle, the order of play is: ";
-	for (vector<Player*>::iterator it = playerlist.begin(); it != playerlist.end(); ++it) {
-		cout << " " << (*it)->getPlayerName();
+	std::cout << std::endl << "Determine randomly the order of play of the players in the game>>>>>>" << std::endl;
+	std::cout << "Before shuffle, the order of play is: ";
+	for (std::vector<Player*>::iterator it = playerlist.begin(); it != playerlist.end(); ++it) {
+		std::cout << " " << (*it)->getPlayerName();
 	}
 
-	random_shuffle(playerlist.begin(), playerlist.end());
+	std::shuffle(playerlist.begin(), playerlist.end(), g);
 
-	cout << endl << "After shuffle, the order of play is: ";
-	for (vector<Player*>::iterator it = playerlist.begin(); it != playerlist.end(); ++it) {
-		cout << " " << (*it)->getPlayerName();
+	std::cout << std::endl << "After shuffle, the order of play is: ";
+	for (std::vector<Player*>::iterator it = playerlist.begin(); it != playerlist.end(); ++it)
+	{
+		std::cout << " " << (*it)->getPlayerName();
 	}
-	cout << endl;
+	std::cout << std::endl;
 
 	//c) give 50 initial armies to the players, which are placed in their respective reinforcement pool
-	cout << endl << "Give 50 initial armies to the players>>>>>>" << endl;
-	for (int i = 0; i < playercount; i++) {
+	std::cout << std::endl << "Give 50 initial armies to the players>>>>>>" << std::endl;
+	for (int i = 0; i < playercount; i++)
+	{
 		ReinforcementPools.push_back(50);
 	}
-	cout << "player name        quantity of armies" << endl;
-	for (int i = 0; i < playercount; i++) {
-		cout << playerlist.at(i)->getPlayerName();
-		cout << "                       ";
-		cout << ReinforcementPools.at(i) << endl;
+	std::cout << "player name        quantity of armies" << std::endl;
+	for (int i = 0; i < playercount; i++)
+	{
+		std::cout << playerlist.at(i)->getPlayerName();
+		std::cout << std::setw(25 - playerlist.at(i)->getPlayerName().size());
+		std::cout << ReinforcementPools.at(i) << std::endl;
 	}
-	cout << endl;
+	std::cout << std::endl;
 	//d) let each player draw 2 initial cards from the deck using the deck�s draw() method
 
 	for (int i = 0; i < playercount; i++) {
-
 		playerlist.at(i)->getCurrentHand()->insertCard_Hand(newCard);
 		newCard = newDeck->drawCard_Deck();
 		playerlist.at(i)->getCurrentHand()->insertCard_Hand(newCard);
-
 	}
-	cout << "Let each player draw 2 initial cards from the deck>>>>>>>" << endl;
-	cout << "players' initial cards are: " << endl;
-	cout << "player name        cards" << endl;
-	for (int i = 0; i < playercount; i++) {
-
-		cout << playerlist.at(i)->getPlayerName() << "              ";
-		playerlist.at(i)->getCurrentHand()->showHand();
-		cout << endl;
+	std::cout << "Let each player draw 2 initial cards from the deck>>>>>>>" << std::endl;
+	std::cout << "players' initial cards are: " << std::endl;
+	std::cout << "player name        cards" << std::endl;
+	for (int i = 0; i < playercount; i++)
+	{
+		std::cout << playerlist.at(i)->getPlayerName() << std::endl;
+		const Hand* plHand = playerlist[i]->getCurrentHand();
+		for (const auto& card : plHand->getHand())
+		{
+			std::cout << "\t" << *card << std::endl;
+		}
 	}
-
+	std::cout << std::endl;
 }
 
 /*
@@ -549,147 +393,210 @@ void GameEngine::startupPhase() {
 	//set start state
 	GameEngine::setCurrentState(GAME_STATE_START);
 	
-	
-	cout << "********************************************************************" << endl; 
-	cout << "			Welcome to Warzone!" << endl; 
-	cout << "********************************************************************\n" << endl;
-	cout << "Please enter \"loadmap <filename>\" in the mentioned format to start playing. " << endl;
+	std::cout << "********************************************************************" << std::endl;
+	std::cout << "			Welcome to Warzone!" << std::endl;
+	std::cout << "********************************************************************\n" << std::endl;
+	std::cout << "Please enter \"loadmap <filename>\" in the mentioned format to start playing. " << std::endl;
 
-	string user_input;
+	std::string user_input;
 	// map a key to the value
-	map<game_user_input, string> user_input_list;
+	std::map<game_user_input, std::string> user_input_list;
 	user_input_list[LOADMAP] = "loadmap";
 	user_input_list[VALIDATEMAP] = "validatemap";
 	user_input_list[ADDPLAYER] = "addplayer";
 	user_input_list[GAMESTART] = "gamestart";
+	user_input_list[TOURNAMENT] = "tournament";
 
 	//using a loop to read the input until the end of the state
 	while (true) {
+		//We need to use command processor insted
+		Command* userCommand = commandProces->getCommand();
+		user_input = userCommand->getCommand();
 
-		user_input = get_user_input(*eState, this);
-
-		//compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
+		//Compare the user input with game_user_input, if valid, update the state; if invalid, reject the command and remain the current state
 		switch (*eState) {
-
 		case  GAME_STATE_START:
-			if (!user_input.substr(0, 7).compare(user_input_list[LOADMAP])) {
+			if (/*!user_input.substr(0, 7).compare(user_input_list[LOADMAP])*/commandProces->validate(userCommand, user_input_list[LOADMAP])) {
 				//do mapload
 				filename = extractName(user_input);
 				setCurrentState(GAME_STATE_MAP_LOAD);
-				cout << "Map loaded!\nPlease try: " << "\"" << user_input_list[VALIDATEMAP] << "\" to validate the current map, or " 
+				userCommand->saveEffect("Passing from  <GAME_STATE_START> to <GAME_STATE_MAP_LOAD>");
+				std::cout << "Map loaded!\nPlease try: " << "\"" << user_input_list[VALIDATEMAP] << "\" to validate the current map, or "
 					<< "\"" << user_input_list[LOADMAP] << " <filename>\" to load another map." << "\n";
 			}
-			else {
+			else if(commandProces->validate(userCommand, user_input_list[TOURNAMENT])) {
+				//To do :  add the process to creat the tournament  here
+				std::cout << "pass the validation" << std::endl;
+				std::vector<std::string> inTournamentCommend = splitString(user_input);
+				std::string listMapCommand = "null"; // The list of map file name to load for the tournament;
+				std::string listPLayerStrategyCommand = "null" ; // The list of player strategies
+				int nbGameCommand = 0; // The number of game 
+				int maxNbTurnCommand = 0; //inTournamentCommend.at(8);
+				bool valideTournamentCommend = false;
+				
+				//int a =  std::find(inTournamentCommend.begin(),inTournamentCommend.end() , "-p");
 
-				cout << "Error input(please try: \"loadmap <filename>)\"\n";
+
+				int tournyCommendSize = inTournamentCommend.size();
+				for (int i = 0; i < tournyCommendSize; i++) {
+					//find the appropriate pre data word ( EX: -M) and add the  value of the next  word in the associate variable;
+					if (inTournamentCommend.at(i) == "-M") {
+						i++;
+						listMapCommand = extractName(inTournamentCommend.at(i));
+					}
+					else if (inTournamentCommend.at(i) == "-P") {
+						i++;
+						listPLayerStrategyCommand = extractName(inTournamentCommend.at(i));
+					}
+					else if (inTournamentCommend.at(i) == "-G") {
+						i++;
+						nbGameCommand = std::stoi(extractName(inTournamentCommend.at(i)));
+					}
+					else if (inTournamentCommend.at(i) == "-D") {
+						i++;
+						maxNbTurnCommand = std::stoi(extractName(inTournamentCommend.at(i)));
+					}
+				}
+				// Testing if the command is valid / if all the info are correcly entered 
+
+				if (listMapCommand != "null") {
+					if (listPLayerStrategyCommand != "null") {
+						std::vector<std::string> strategyTypeCheck = splitString(listPLayerStrategyCommand);
+						bool typeCheckBool = false;
+						for (int j = 0; j < strategyTypeCheck.size(); j++) {
+							if (strategyTypeCheck.at(j) == "Human" || strategyTypeCheck.at(j) == "Aggressive" || strategyTypeCheck.at(j) == "Benevolent" || strategyTypeCheck.at(j) == "Neutral" || strategyTypeCheck.at(j) == "Cheater") {
+								typeCheckBool = true;
+							}
+							
+							if (typeCheckBool == false) {
+								return;
+							}
+						}
+						
+						if (nbGameCommand > 0 && nbGameCommand <= 5) {
+							if (maxNbTurnCommand >= 10) {
+								valideTournamentCommend = true;
+							}
+						}
+					}
+				}
+				 
+				//use this part and all the  extracted parameter to start the tournament 
+				if (valideTournamentCommend) {
+					userCommand->saveEffect("Creating a tournament with the parameter : -M <" + listMapCommand + ">  -P <" + listPLayerStrategyCommand + ">  -G <" + std::to_string(nbGameCommand) + ">  -D <" + std::to_string(maxNbTurnCommand) + ">.");
+					TournamentMode(listMapCommand, listPLayerStrategyCommand, nbGameCommand, maxNbTurnCommand);
+
+					//void GameEngine::TournamentMode(int M, int P, int G, int D) {
+				}
+				
+			}
+			else {
+				std::cout << "Error input(please try: \"loadmap <filename>)\"\n";
 			}
 			break;
 		case  GAME_STATE_MAP_LOAD:
-			if (!user_input.substr(0, 7).compare(user_input_list[LOADMAP])) {
-				//do mapload
+			if (commandProces->validate(userCommand, user_input_list[LOADMAP])) {
+				//do mapload	
 				filename = extractName(user_input);
 				setCurrentState(GAME_STATE_MAP_LOAD);
-				cout << "Map loaded!\nPlease try: " << "\"" << user_input_list[VALIDATEMAP] << "\" to validate the current map, or "
+				userCommand->saveEffect("Passing from  <GAME_STATE_START> to <GAME_STATE_MAP_LOAD>");
+				std::cout << "Map loaded!\nPlease try: " << "\"" << user_input_list[VALIDATEMAP] << "\" to validate the current map, or "
 					<< "\"" << user_input_list[LOADMAP] << " <filename>\" to load another map." << "\n";
-				
 			}
-			else if (!user_input.compare(user_input_list[VALIDATEMAP])) {
-
-
-				cout << "filename: " << filename << endl;
+			else if (commandProces->validate(userCommand, user_input_list[VALIDATEMAP]))
+			{
+				std::cout << "filename: " << filename << std::endl;
 				bool mapload = newmap->MapLoader::loadMap(filename);
 
 				if (mapload == true) {
 					mapToUse = newmap->getListMap()->at(0);
 					setCurrentState(GAME_STATE_MAP_VALIDATED);
-					cout << "Map validated!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add a player." << "\n";
+					userCommand->saveEffect("Passing from  <GAME_STATE_MAP_LOAD> to <GAME_STATE_MAP_VALIDATED> : Map validated :"+ filename);
+					std::cout << "Map validated!\nPlease enter: \"addplayer\" command to begin adding players." << "\n";
+					
 				}
 				else {
 					setCurrentState(GAME_STATE_START);
-					cout << "The map is invalid, let's try that again!" << endl; 
-					cout << "Please enter \"loadmap <filename>\" in the mentioned format to start playing. " << endl;
-					
+					userCommand->saveEffect("Passing from  <GAME_STATE_MAP_LOAD> to <GAME_STATE_START>");
+					std::cout << "The map is invalid, let's try that again!" << std::endl;
+					std::cout << "Please enter \"loadmap <filename>\" in the mentioned format to start playing. " << std::endl;
 				}
-
 			}
 			else {
-
-				cout << "Error input(please try: " << user_input_list[VALIDATEMAP] << " or "
+				std::cout << "Error input(please try: " << user_input_list[VALIDATEMAP] << " or "
 					<< user_input_list[LOADMAP] << "\n";
 			}
 			break;
 		case GAME_STATE_MAP_VALIDATED:
-
-			if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
-
-				addPlayer(user_input);
+			if (commandProces->validate(userCommand, user_input_list[ADDPLAYER])) {
+				addPlayer(user_input.substr(user_input_list[ADDPLAYER].size() + 1, user_input.size()));
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
-				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player." << "\n";
+				userCommand->saveEffect("Passing from  <GAME_STATE_MAP_VALIDATED> to <GAME_STATE_PLAYERS_ADDED> , new player added");
+				std::cout << "New player added!\nPlease enter: \"addplayer\" command to continue adding players." << "\n";
 			}
 			else {
-				cout << "Error input(please try: \"addplayer <playername>\" to add a player."<< "\n";
+				std::cout << "Error input(please try: \"addplayer <playername>\" to add a player."<< "\n";
 			}
 			break;
-
 		case GAME_STATE_PLAYERS_ADDED:
 			if (playercount < 2) {
-				if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
-
-					addPlayer(user_input);
+				if (commandProces->validate(userCommand, user_input_list[ADDPLAYER]))
+				{
+					addPlayer(user_input.substr(user_input_list[ADDPLAYER].size() + 1, user_input.size()));
 					setCurrentState(GAME_STATE_PLAYERS_ADDED);
-					cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
-						<< "\"" << user_input_list[GAMESTART] << "\" to begin playing." << "\n";
-	
+					userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAYERS_ADDED> , new player added");
+					std::cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << "\" to add another player, or "
+						<< "\"" << user_input_list[GAMESTART] << "\" to begin playing.Duh" << "\n";
 				}
-				else {
-					cout << "The players are less than 2, there should be 2-6 players in this game." << endl;
-					cout << "Please enter \"addplayer <playername>.\"" << endl;
+				else
+				{
+					std::cout << "The players are less than 2, there should be 2-6 players in this game." << std::endl;
+					std::cout << "Please enter \"addplayer <playername>.\"" << std::endl;
 				}
 			}
-
 			else if (playercount >= 6) {
-				if (!user_input.compare(user_input_list[GAMESTART])) {
-
+				if (commandProces->validate(userCommand, user_input_list[GAMESTART])) {
 					GameEngine::gamestart();
 					setCurrentState(GAME_STATE_PLAY);
-					cout << "Player limit reached! There is a limit of 6." << endl;
-					cout << "All set! Ready to play!" << endl;
-					mainGameLoop(playerlist, mapToUse);
+					userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAY> , The game will start");
+					std::cout << "Player limit reached! There is a limit of 6." << std::endl;
+					std::cout << "All set! Ready to play!" << std::endl;
+					//TODO: Add variable for maxNumberOfTurns
+					int tempMaxTurn = 10;//Samuel temp fix Potato 
+					mainGameLoop(playerlist, mapToUse, tempMaxTurn);
 				}
 				else {
-					cout << "Error input! The players have reached to upper limit of 6. Please enter gamestart." << endl;
+					std::cout << "Error input! The players have reached to upper limit of 6. Please enter gamestart." << std::endl;
 				}
-
 			}
-			else if (!user_input.substr(0, 9).compare(user_input_list[ADDPLAYER])) {
-
+			else if (commandProces->validate(userCommand, user_input_list[ADDPLAYER])) {
 				addPlayer(user_input);
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
-				cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << " <playername>\" to add another player, or "
-					<< "\"" << user_input_list[GAMESTART] << " <filename>\" to begin playing." << "\n";
+				userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAYERS_ADDED> , new player added ");
+				std::cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << "\" to add another player, or "
+					<< "\"" << user_input_list[GAMESTART] << "\" to begin playing." << "\n";
 
 			}
-			else if (!user_input.compare(user_input_list[GAMESTART])) {
-
+			else if (commandProces->validate(userCommand, user_input_list[GAMESTART])) {
 				GameEngine::gamestart();
 				setCurrentState(GAME_STATE_PLAY);
-				cout << "All set! Ready to play!" << endl; 
-				mainGameLoop(playerlist, mapToUse);
+				userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAY> , The game will start");
+				std::cout << "All set! Ready to play!" << std::endl;
+				//TODO: Add variable for maxNumberOfTurns
+				int tempMaxTurn = 10;//Samuel temp fix Potato
+				mainGameLoop(playerlist, mapToUse, tempMaxTurn);
 			}
 			else {
-				cout << "Error input(please try: " << user_input_list[ADDPLAYER] << " or "
+				std::cout << "Error input(please try: " << user_input_list[ADDPLAYER] << " or "
 					<< user_input_list[GAMESTART] << ")\n";
 			}
 			break;
-		case GAME_STATE_PLAY:
-			
+		case GAME_STATE_PLAY:			
 			break;
 		default:
-
 			break;
 		}
 		if (*eState == GAME_STATE_PLAY) {
-
 			break;
 		}
 	}//end of while loop
@@ -698,10 +605,27 @@ void GameEngine::startupPhase() {
 
 /*
 * The main game loop of the Warzone game
+* 
+* @param players A vector of players
+* @param map The current game map
+* @param maxNumberOfTurns The maximum number of turns
 */
-void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
-	while (players.size() != 1) { //Loop if there are 2 or more players left
+std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns)
+{
+	int turn = 1; //Turn counter
+	while (players.size() != 1 && turn < maxNumberOfTurns)
+	{ //Loop if there are 2 or more players left
 		int initPlayersSize = players.size();
+
+		for (Player* p : players)
+		{
+			if (p->getPlayerStrategy() == nullptr) continue;
+			if (p->getPlayerWasAttacked() && dynamic_cast<NeutralPlayerStrategy*>(p->getPlayerStrategy()))
+			{
+				delete p->getPlayerStrategy();
+				p->setPlayerStrategy(new AggressivePlayerStrategy());
+			}
+		}
 
 		//Give a number of armies to each player
 		for (Player* p : players)
@@ -727,8 +651,35 @@ void GameEngine::mainGameLoop(vector<Player*> players, Map* map) {
 				playerIndex++;
 			}
 		}
+		//Increment turn counter
+		turn++;
 	}//end while
-	std::cout << "Game over, " << players.at(0)->getPlayerName() << " wins\n";
+	std::string endGameMessage = (players.size() == 1) ? "Game over, " + players.at(0)->getPlayerName() + " wins\n"
+		: "The game has exceeded the amount of turns, therefore the game is a draw.\n";
+	std::cout << endGameMessage;
+
+	//Return player strategy of the winning player or draw
+	std::string result = "";
+	if (players.size() != 1) {
+		result = "Draw";
+	}
+	else {
+		PlayerStrategies* ps = players.at(0)->getPlayerStrategy();
+		if (dynamic_cast<AggressivePlayerStrategy*>(ps)) {
+			result = "Aggressive";
+		}
+		else if (dynamic_cast<BenevolentPlayerStrategy*>(ps)) {
+			result = "Benevolent";
+		}
+		else if (dynamic_cast<NeutralPlayerStrategy*>(ps)){
+			result = "Neutral";
+		}
+		else if (dynamic_cast<CheaterPlayerStrategy*>(ps)) {
+			result = "Cheater";
+		}
+	}
+
+	return result;
 }
 
 /*
@@ -795,304 +746,29 @@ const void GameEngine::reinforcementPhase(Player* p, Map* map) {
 	std::cout << p->getPlayerName() << "\'s reinforcement pool: " << currentRPool << "\n" << std::endl;
 }
 
+const std::vector<Territory*> GameEngine::GetEnemyTerritoriesOfCurrentPlayer(Player* p)
+{
+	std::vector<Territory*> allEnemyTerritories;
+	std::vector<Player*> allPlayers = getPlayerList();
+	for (auto& enemy : allPlayers)
+	{
+		allEnemyTerritories.insert(
+			allEnemyTerritories.end(),
+			enemy->getTerritoriesOwned().begin(),
+			enemy->getTerritoriesOwned().end()
+		);
+	}
+
+	return allEnemyTerritories;
+}
+
 /*
 * Issue players orders and place them in their order list
 *
 * @param *p pointer to a Player object
 */
 const void GameEngine::issueOrdersPhase(Player* p, Map* map) {
-	int currentRPool = 0;
-	bool turnEnded = false;
-	std::vector<int> territoryIds = map->getTerritoryIds();
-	std::vector<Territory*> inTerritories;
-	std::vector<int> inArmies;
-
-	/*
-	Initialization of variables for the option
-	to play a card
-	*/
-	Hand* h = p->getCurrentHand();
-	//Deck* d_temp = new Deck(); //Temporary deck variable
-	//d_temp->setDeckSize(20);
-	int handSize = h->getHandSize();
-
-	std::cout << "Issuing orders for " << p->getPlayerName() << "\n";
-	while (!turnEnded) {
-		//Input player order
-		int input;
-		bool isValidInput = false;
-		std::cout << "Enter a number for the given options:\n"
-			<< "1 - Deploy Armies\n"
-			<< "2 - Advance Armies\n"
-			<< "3 - Play Card\n"
-			<< "4 - End turn\n";
-		std::cin >> input;
-
-		//Check if the input is valid
-		switch (input) {
-		case 1: //Deploy armies
-			currentRPool = p->getReinforcementPoolSize();
-			while (!isValidInput)
-			{
-				//Input territory id
-				int territory;
-				std::cout << "Enter the territory id you would like to deploy to: \n";
-				std::cout << "Territory name and Id----------Number of units" << std::endl;
-				int  nbTerritory = p->getTerritoriesOwned().size();
-				for (size_t i = 0; i < nbTerritory; i++)
-				{
-					Territory* currentTerritory = p->getTerritoriesOwned().at(i);
-					std::cout << currentTerritory->getName() << " : " << currentTerritory->getID()<<"-------" << currentTerritory->getNbArmy()<<std::endl;
-
-				}
-				std::cin >> territory;
-
-				//Check if territory exists
-				if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
-				{
-					//Add to list of territories for deploy order
-					inTerritories.push_back(map->listTerritory.at(territory - 1));
-
-					//Input number of armies to deploy
-					int armies;
-					std::cout << "Current reinfrocement pool: " << currentRPool << "\nEnter the number of armies you would like to deploy: \n";
-					std::cin >> armies;
-
-					//Check if number of armies is greater than 0 and less or equal than the reinforcement pool
-					if (armies > 0 && armies <= currentRPool)
-					{
-						inArmies.push_back(armies);
-						currentRPool -= armies;
-						p->setReinforcementPool(currentRPool);
-
-						//Input user if they would like to add another territory
-						string yesOrNo;
-						std::cout << "Would you like to add another territory? (y/n)\n";
-						std::cin >> yesOrNo;
-						if (yesOrNo.compare("n") == 0) {
-							isValidInput = true;
-						}
-					}
-					else
-					{
-						std::cout << "The given number of armies is invalid\n";
-					}//end inner if-else
-				}
-				else
-				{
-					std::cout << "The given territory does not exist\n";
-				}//end outer if-else
-			}//end while loop
-			//Create deploy order
-			p->issueOrder(EOrderType::Deploy, std::vector<Player*>(), inTerritories, inArmies);
-
-			//Clear vectors
-			inTerritories.clear();
-			inArmies.clear();
-			break;
-
-		case 2: //Advance armies
-			if (p->getReinforcementPoolSize() != 0) {
-				std::cout << "You must deploy all armies before issuing other orders\n";
-			}
-			else {
-				while (!isValidInput)
-				{
-					//Input territory id
-					int territory;
-					std::cout << "Enter the territory id you would like to advance to: \n";
-					std::cin >> territory;
-
-					//Check if territory exists
-					if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end()) {
-						//Add to list of territories for advance order
-						Territory* t = map->listTerritory.at(territory - 1);
-						inTerritories.push_back(t);
-
-						//Input number of armies to advance
-						int armies;
-						std::cout << "Enter the number of armies you would like to advance: \n";
-						std::cin >> armies;
-
-						//Check if number of armies is greater than 0
-						if (armies > 0) {
-							inArmies.push_back(armies);
-
-							//Input user if they would like to add another territory
-							string yesOrNo;
-							std::cout << "Would you like to add another territory? (y/n)\n";
-							std::cin >> yesOrNo;
-							if (yesOrNo.compare("n") == 0) {
-								isValidInput = true;
-							}
-						}
-						else
-						{
-							cout << "The given number of armies is invalid\n";
-						}//end inner if-else
-					}
-					else
-					{
-						cout << "The given territory does not exist\n";
-					}//end outer if-else
-				}//end loop
-				//Create advance order
-				p->issueOrder(EOrderType::Advance, std::vector<Player*>(), inTerritories, inArmies);
-
-				//Clear vectors
-				inTerritories.clear();
-				inArmies.clear();
-			}//end if
-			break;
-
-		case 3: //Play card
-			if (p->getReinforcementPoolSize() != 0) {
-				std::cout << "You must deploy all armies before issuing other orders\n";
-			}
-			else {
-				bool playedCard = false;
-
-				//Retrieve player's hand		
-				Card* c;
-				std::cout << p->getPlayerName() << "\'s hand\n";
-				h->showHand();
-
-				//Input card
-				if (handSize > 0)
-				{
-					int cardInput;
-					std::string prompt = (handSize == 1) ? "Enter 1 " : "Enter a number between 1 and " + handSize;
-					std::cout << prompt << " to play a card or 0 to return to the menu";
-					std::cin >> cardInput;
-					if (cardInput > 0)
-					{
-						//Iterate through hand
-						for (int i = handSize - 1; i >= 0; i--)
-						{
-							if (playedCard)
-								break; //End for loop since a card was played
-
-							c = h->drawCard_Hand();
-							if (i == cardInput - 1)
-							{
-								//Play card from the given input
-								EOrderType e = h->play(c);
-								if (c->getNewCardType() == Card::Reinforcement)
-								{
-									p->setReinforcementPool(p->getReinforcementPoolSize() + 5);
-									std::cout << "Adding 5 armies to reinforcement pool\n" << std::endl;
-									playedCard = true;
-								}
-								else
-								{
-									switch (e)
-									{
-									case EOrderType::Bomb:
-										while (!isValidInput)
-										{
-											//Input territory id
-											int territory;
-											std::cout << "Enter the territory id you would like to bomb: \n";
-											std::cin >> territory;
-
-											if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
-											{
-												//Add to list of territories for bomb order
-												inTerritories.push_back(map->listTerritory.at(territory - 1));
-												isValidInput = true;
-											}
-											else
-											{
-												std::cout << "The given territory does not exist\n";
-											}
-										} // end while loop
-										//Issue bomb order
-										p->issueOrder(e, std::vector<Player*>(), inTerritories, inArmies);
-										playedCard = true;
-										break;
-
-									case EOrderType::Blockade:
-										while (!isValidInput)
-										{
-											//Input territory id
-											int territory;
-											std::cout << "Enter the territory id you would like to initiate a blockade: \n";
-											std::cin >> territory;
-
-											if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
-											{
-												//Add to list of territories for blockade order
-												inTerritories.push_back(map->listTerritory.at(territory - 1));
-												isValidInput = true;
-											}
-											else
-											{
-												std::cout << "The given territory does not exist\n";
-											}
-										} // end while loop
-										//Issue blockade order
-										p->issueOrder(e, std::vector<Player*>(), inTerritories, inArmies);
-										break;
-
-									case EOrderType::Airlift:
-										while (!isValidInput)
-										{
-											//Input territory id
-											int territory;
-											std::cout << "Enter the territory id you would like to airlift to: \n";
-											std::cin >> territory;
-
-											//Check if territory exists
-											if (std::find(territoryIds.begin(), territoryIds.end(), territory) != territoryIds.end())
-											{
-												//Add to list of territories for Airlift order
-												inTerritories.push_back(map->listTerritory.at(territory - 1));
-
-												//Input number of armies to airlift
-												int armies;
-												std::cout << "Enter the number of armies you would like to airlift: \n";
-												std::cin >> armies;
-												inArmies.push_back(armies);
-												isValidInput = true;
-											}
-											else
-											{
-												std::cout << "The given territory does not exist\n";
-											}
-										}//end loop
-										//Issue airlift order
-										p->issueOrder(e, std::vector<Player*>(), inTerritories, inArmies);
-										break;
-
-									case EOrderType::Negotiate:
-										//Issue negotiate order
-										std::cout << "Playing negotiate card\n";
-										p->issueOrder(e, std::vector<Player*>(), inTerritories, inArmies);
-										break;
-									}//end switch 
-									//Clear vectors
-									inTerritories.clear();
-									inArmies.clear();
-								}//end 4th inner if-else (Play card from the given input)
-							}//end 3rd inner if (i == cardInput - 1)
-						}//end for loop (Iterate through hand)
-					}//end 2nd inner if (cardInput > 0)
-				} //end if (Input card)
-				else
-				{
-					std::cout << "You have no cards available";
-				}//end inner if-else
-			}//end outer if-else
-			break;
-		case 4: //End turn
-			std::cout << "Ending turn\n" << std::endl;
-			turnEnded = true;
-			break;
-		default:
-			std::cout << "The given input is invalid\n";
-			break;
-		}//end switch
-	}//end while - continue if turnEnded is false
+	p->issueOrder();
 }
 
 /*
@@ -1124,3 +800,166 @@ const void GameEngine::executeOrdersPhase(Player* p) {
 		ol->remove(0);
 	}
 }
+
+const std::vector<Player*>& GameEngine::getPlayerList() const
+{
+	return this->playerlist;
+}
+
+std::vector<Player*>& GameEngine::getPlayerList()
+{
+	return this->playerlist;
+}
+
+/*
+* Getter for the isATournament member
+*/
+bool GameEngine::getIsATournament()
+{
+	return isATournament;
+}
+
+/*
+* Setter for the isATournament member
+* 
+* @param tournamentValue A true/false value to determine if the game is part of a tournament
+*/
+void GameEngine::setIsATournament(bool tournamentValue) {
+	isATournament = tournamentValue;
+}
+
+/**
+* function of TournamentMode in GameEngine class
+* @param: int M listofmapfiles, int P listofplayerstrategies, int G numberofgames, int D maxnumberofturns
+* @return: void
+*/
+void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
+	this->numberGamePrint = G;
+	this->drawTurnLimitPrint = D;
+	// create map list
+	MapLoader* newmap = new MapLoader();
+	Map* map = new Map();
+	std::vector<Map*> maps;
+	listMapName = splitString(M);
+	int nbGameFromMap = listMapName.size();
+
+
+	
+	for (int x = 0; x < listMapName.size(); x++) {
+		if (newmap->loadMap(listMapName.at(x))) {
+			map = newmap->getListMap()->at(x);
+			maps.push_back(map);
+		}
+		else {
+			std::cout << "The map in invalid the default one will be use insted.\n ";
+			newmap->MapLoader::loadMap("canada");
+			exit(1);
+			map = newmap->getListMap()->at(0);
+			maps.push_back(map);
+		}
+	}
+	/*
+	//map1
+	newmap->MapLoader::loadMap("canada");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	//map2
+	newmap->MapLoader::loadMap("caribbean");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	//map3
+	newmap->MapLoader::loadMap("chutes");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	//map4
+	newmap->MapLoader::loadMap("myImortal");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	//map5
+	newmap->MapLoader::loadMap("simpsons_world");
+	map = newmap->getListMap()->at(0);
+	maps.push_back(map);
+	*/
+	listPlayerFromConsole = splitString(P);
+	Player* p = nullptr;
+	std::vector<Player*> playerlist;
+	std::string playerName;
+	for (int y = 0; y < listPlayerFromConsole.size(); y++) {
+		playerName = "player " + std::to_string(y);
+		if (listPlayerFromConsole.at(y) == "Human") {
+			
+			p = new Player(playerName);
+		}
+		if (listPlayerFromConsole.at(y) == "Aggressive") {
+			p = new Player(new AggressivePlayerStrategy(), playerName);
+
+		}
+		if (listPlayerFromConsole.at(y) == "Benevolent") {
+			p = new Player(new BenevolentPlayerStrategy(), playerName);
+
+		}
+		if (listPlayerFromConsole.at(y) == "Neutral") {
+			p = new Player(new NeutralPlayerStrategy(), playerName);
+
+		}
+		if (listPlayerFromConsole.at(y) == "Cheater") {
+			p = new Player(new CheaterPlayerStrategy(), playerName);
+
+		}
+		playerlist.push_back(p);
+
+	}
+	/*
+	// create player list
+	Player* p1 = new Player();
+	p1->setPlayerStrategy(new AggressivePlayerStrategy());
+	std::vector<Player*> playerlist;
+	playerlist.push_back(p1);
+	p1->setPlayerStrategy(new BenevolentPlayerStrategy());
+	playerlist.push_back(p1);
+	p1->setPlayerStrategy(new NeutralPlayerStrategy());
+	playerlist.push_back(p1);
+	p1->setPlayerStrategy(new CheaterPlayerStrategy());
+	playerlist.push_back(p1);
+	Player* p2 = new Player(new BenevolentPlayerStrategy());
+	//p1->setPlayerStrategy();
+	playerlist.push_back(p2);
+
+	Player* p3 = new Player(new NeutralPlayerStrategy());	
+	playerlist.push_back(p3);
+	
+	Player* p4 = new Player(new CheaterPlayerStrategy());
+	playerlist.push_back(p4);
+	*/
+
+	// create current player list
+	std::vector<Player*> currentPlayerlist;
+	for (int i = 0; i < 2/*P*/; i++)
+	{
+		currentPlayerlist.push_back(playerlist.at(i));
+	}
+
+
+	Map* currentMap = nullptr;
+	// outer loop for listofmapfiles
+	std::string gameresult = "Result :\n";
+	std::string winer = "";
+	for (int i = 0; i < nbGameFromMap; i++) {
+		currentMap = maps.at(i);
+		gameresult = "Map " + std::to_string(i) + " : ";
+		// inner loop for numberofgames
+		
+		for (int j = 0; j < G; j++) {
+			for (int i = 0; i < 2/*P*/; i++) {
+				currentPlayerlist.push_back(playerlist.at(i));
+			}
+			
+			/*winer =*/mainGameLoop(currentPlayerlist, currentMap, D);
+
+			gameresult = gameresult + "      " + winer;
+			currentPlayerlist.clear();
+		}//end of inner loop
+		gameresult = gameresult + "\n";
+	}//end of outer loop
+	setCurrentState(GAME_STATE_FINISHED);
+}//end of TournamentMode

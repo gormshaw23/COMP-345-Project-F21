@@ -15,6 +15,7 @@ private:
 	std::string name;
 	
 	std::vector<Territory*> listBorder;
+	int value;
 public:
 	void setId(int inID);
 	void setContinent(int inContinentID);
@@ -30,8 +31,15 @@ public:
 	int getPosy();
 	std::string getName();
 	Player* getPlayer();
-	int getNbArmy();
+	int getNbArmy() const;
 	std::vector<Territory*>& getBorderList();
+
+	// sets the value or probable interest the territory holds
+	void setValue(int inValue);
+	// gets the value or probable level of interest of the territory
+	int getValue() const;
+	// calculates the probable value/interest of the territory
+	int CalculateValue(bool& bIsEnemyAdjacent);
 
 	friend std::ostream& operator << (std::ostream& out, Territory& t);
 	//friend std::istream& operator >> (std::istream& in, Territory& t);
@@ -118,7 +126,7 @@ public:
 	~Map();
 
 private:
-	bool isValidFile ;
+	bool isValidFile;
 	
 	//Continent* arrayContinent[];
 };

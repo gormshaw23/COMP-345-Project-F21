@@ -1,0 +1,6 @@
+loadmap <Canada>
+validatemap
+addplayer bob
+bob
+addplayer alice
+alice

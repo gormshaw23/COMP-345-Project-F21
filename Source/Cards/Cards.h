@@ -6,172 +6,117 @@
 #ifdef _DEBUG
 #define new new( _NORMAL_BLOCK , __FILE__ , __LINE__ )
 #endif
-using namespace std; 
+
+#define REINFORCEMENT_SIZE 5
 
 enum class EOrderType;
+enum class ECardTypes;
 
 class Card {
 
 public: 
-	enum cardType {
-		Bomb,
-		Reinforcement,
-		Blockade,
-		Airlift,
-		Diplomacy
-	};
 
 	/* Accesors and mutators */
 
-	cardType getNewCardType(); 
-	void setNewCardType(cardType); 
+	ECardTypes getCardType() const; 
+	void setCardType(ECardTypes inCardType); 
 
-	/* Default Constructor */
-
-	Card();
-
-	/* Destructor */
-
+	/* ctors */
+	Card(ECardTypes inCardType); 
+	Card(Card& cType); 
 	~Card();
 
-	/* Param constructor */
-
-	Card(cardType); 
-
-	/* Copy constructor */
-
-	Card(Card& cType); 
-
-	/* Assignment operator overloading constructor */
-
+	/* ops */
 	Card operator=(Card& cType);
 
-	/* Insertion operator overloading function*/
+	/* Insertion operator */
+	friend std::ostream& operator<<(std::ostream& o, Card& cType);
 
-	friend ostream& operator<<(ostream& o, Card& cType);
-
+protected:
+	// to prevent instantiation of default cards
+	Card();
 private:
-
-	cardType* newCardType;
-	
-	
+	ECardTypes cardType;
 };
 
 
 class Deck {
-
 public: 
-
-	
-
 	/* Accesors and mutators */
 
 	int getCurrentCard();
 	void setCurrentCard(int);
 
-	int getDeckSize();
-	void setDeckSize(int); 
+	int getDeckSize() const;
+	void setDeckSize(int inNewDeckSize); 
 
-	/* Default Constructor */
-
+	/* ctors */
 	Deck();
-
-	/* Default Constructor */
-
 	Deck(int);
-
-	/* Shuffle method */
-
-	void ShuffleDeck();  
-
-	/* Destructor */
-
+	Deck(const Deck& aDeck);
 	~Deck();
 
-	/* Copy constructor */
+	/* Shuffle method */
+	void ShuffleDeck();
 
-	Deck(const Deck& aDeck);
-
-	/* Assignment operator overloading constructor */
-
+	/* operators */
 	Deck operator=(Deck& aDeck);
 
 	/* Insertion operator overloading function*/
-
-	friend ostream& operator<<(ostream& o, Deck& aDeck);
+	friend std::ostream& operator<<(std::ostream& o, Deck& aDeck);
 
 	/* Special method draw() */
-
 	Card* drawCard_Deck();
 	
 	/* Special method insert() */
-
-	void insertCard_Deck(Card*); 
+	void insertCard_Deck(Card* inNewCard); 
 
 	/* Show the deck method */
-
 	void showDeck(); 
 
-	
-	
 private:
-	vector<Card*>* newDeck;
-	int* currentCard; /* not sure if i need this later */
-	int* deckSize;
-	
-	 
+	std::vector<Card*> deck;
+	int currentCard; /* not sure if i need this later */
+	int deckSize;	 
 };
 
 /* Hand Class */
-
 class Hand {
 public: 
-	/* Accesors and mutators */
-	int getHandSize();
-	void setHandSize(int);
-
-	/* Default constructor */
-
+	/* ctors */
 	Hand(); 
-
-	/* Destructor */
-
+	Hand(int inInitialHandSize);
+	Hand(const Hand& aHand);
 	~Hand(); 
 
-	/* Param constructor */
-
-	Hand(int); 
-
-	/* Copy constructor */
-
-	Hand(const Hand& aHand);
-
-	/* Assignment operator overloading constructor */
-
+	/* operators */
 	Hand operator=(Hand& aHand);
 
-	/* Show Hand method */
+	/* Accesors and mutators */
+	int getHandSize() const;
+	void setHandSize(int inNewHandSize);
 
+	/* Show Hand method */
 	void showHand();
 
 	/* Insert Cards inside the Hand */
+	void insertCard_Hand(Card* inNewCard);
 
-	void insertCard_Hand(Card*);
-
-	/* Draw cards into the deck*/
-
+	/* Draw cards into the deck */
 	Card* drawCard_Hand();
 
 	/* Special play() method */
-
 	EOrderType play(Card*);
 
+	std::vector<Card*>& getHand();
+	const std::vector<Card*>& getHand() const;
+
 private: 
-	vector<Card*>* newHand; 
-	int* handSize; 
+	std::vector<Card*> hand; 
+	int handSize; 
 };
 
 /* Dummy vector to put in Orders */
 
-	static vector<Card*>* newOrder;
-	static int* orderSize;
+static std::vector<Card*>* newOrder;
+static int* orderSize;

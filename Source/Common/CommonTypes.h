@@ -9,5 +9,12 @@ enum class ECardTypes
 	Diplomacy
 };
 
+enum class EPlayerTurnPhase {
+	DeployingArmies,
+	AdvancingArmies,
+	PlayingCards,
+	EndOfTurn
+};
+
 typedef signed int int32;
 typedef unsigned int uint32;

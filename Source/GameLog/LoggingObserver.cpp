@@ -43,14 +43,22 @@ void Subject::Notify(ILoggable& iLoggable) {
 	}
 }
 
+void reset() {
+	std::ofstream ofs;
+	ofs.open("Log.txt", std::ofstream::out | std::ofstream::trunc);
+	ofs.close();
+}
+
 LogObserver::LogObserver() {
 	_subject = NULL;
 	_subjectList = NULL;
+	reset();
 };
 
 LogObserver::LogObserver(const LogObserver& l) {
 	_subject = l._subject;
 	_subjectList = l._subjectList;
+	reset();
 
 };
 
@@ -58,7 +66,7 @@ LogObserver::LogObserver(Subject * s) {
 	_subject = s;
 	_subject->Attach(this);
 	_subjectList = NULL;
-
+	reset();
 
 };
 
@@ -68,6 +76,7 @@ LogObserver::LogObserver(std::list<Subject*>* s) {
 	for (; i != s->end(); i++) {					//Loop trought the list of subject and attach them.
 		(*i)->Attach(this);
 	}
+	reset();
 	
 
 };

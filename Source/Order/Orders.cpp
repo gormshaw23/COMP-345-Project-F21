@@ -174,6 +174,10 @@ const std::string Order::getDescription()
     return description;
 }
 
+void Order::setDescrption(std::string inOrderEffect)
+{
+    description = inOrderEffect;
+}
 
 
 std::string Order::stringToLog() {
@@ -237,9 +241,20 @@ void Deploy::execute()
         */
         std::size_t armies = std::min(armiesToDeploy, owner->getReinforcementPoolSize());
         owner->setReinforcementPool(owner->getReinforcementPoolSize() - armies);
+        
+        // Pizza start
+        // Get the effect of the order into a string 
+        std::string orderEffect = "Order type : " + getTypeName() +", With the effect :  Owner : "+owner->getPlayerName() + ", Target territory : "+ targetTerritory->getName() + ", Number of army added  : " + " added army to Todo find how to add armiesToDeploy to the string "+ "" ;
+       
+        // change the description with the new string 
+        setDescrption(orderEffect);
+        // Pizza end
+
         targetTerritory->setNbArmy(armies);
     }
-    Notify(*this);
+    // Pizza  
+    // call notify at the end of the execute function
+     Notify(*this);
 }
 
 bool Deploy::validate()
@@ -334,6 +349,7 @@ void Advance::execute()
         }
         else
         {
+            Player* defender = dest->getPlayer();
             // WAAAAAGH!!!! The enemy territory has defenders! o7
             if (dest->getNbArmy() > 0)
             {
@@ -342,18 +358,15 @@ void Advance::execute()
                 std::random_device dev;
                 std::mt19937 rng(dev());
                 std::uniform_int_distribution<std::mt19937::result_type> dist100(1, 100);
-                while (remainingAdvancingArmies > 0 && dest->getNbArmy() > 0)
+                for (int i = 0; i < initialAdvancingArmies; ++i)
                 {
-                    // assumed that basically every attacking unit gets a chance to attack
-                    // and the unit that is defending gets a chance to fire back; with dmg
-                    // calculated at the sametime.
-                    for (int i = 0; i < remainingAdvancingArmies; ++i)
+                    if (dest->getNbArmy() > 0)
                     {
                         int attackResult = dist100(rng);
                         // 60% chance to eliminate a defending unit
                         if (attackResult <= ATTACKER_CHANCE)
                         {
-                            dest->setNbArmy(dest->getNbArmy() - 1);
+                            dest->setNbArmy(std::max(0, dest->getNbArmy() - 1));
                         }
 
                         int defendResult = dist100(rng);
@@ -368,7 +381,7 @@ void Advance::execute()
                     }
                 }
 
-                if (remainingAdvancingArmies > 0)
+                if (remainingAdvancingArmies > 0 && dest->getNbArmy() <= 0)
                 {
                     // defender loses, move to occupy with
                     // remaining forces.
@@ -387,6 +400,8 @@ void Advance::execute()
                 dest->setNbArmy(remainingAdvancingArmies);
                 src->setNbArmy(src->getNbArmy() - initialAdvancingArmies);
             }
+
+            defender->setPlayerWasAttacked(true);
         }
     }
 }
@@ -530,29 +545,35 @@ bool Bomb::validate()
 
 Blockade::Blockade() : Order(EOrderType::Blockade, BLOCKADE_DESC)
 {
+    this->currentInstance = nullptr;
 }
 
-Blockade::Blockade(Player* inOwner, Territory* inTarget)
+Blockade::Blockade(GameEngine* inCurrentInstance, Player* inOwner, Territory* inTarget)
 {
     this->owner = inOwner;
     this->target = inTarget;
+    this->currentInstance = inCurrentInstance;
 }
 
 Blockade::~Blockade() 
 {
     this->owner = nullptr;
     this->target = nullptr;
+    this->currentInstance = nullptr;
 }
 
 Blockade::Blockade(const Blockade &blo) : Order(blo)
 {
     this->owner = blo.owner;
     this->target = blo.target;
+    this->currentInstance = blo.currentInstance;
 }
 
 Blockade &Blockade::operator=(const Blockade &blo)
 {
     Order::operator=(blo);
+    this->target = blo.target;
+    this->currentInstance = blo.currentInstance;
     return *this;
 }
 
@@ -567,7 +588,12 @@ void Blockade::execute()
     if (validate())
     {
         // add the target territory to the neutral player and double the number of troops
-        Player* neutralPlayer = GameEngine::getInstance().getNeutralPlayer();
+        Player* neutralPlayer = nullptr;
+        if (currentInstance != nullptr)
+        {
+            neutralPlayer = currentInstance->getNeutralPlayer();
+        }
+
         if (neutralPlayer != nullptr)
         {
             neutralPlayer->getTerritoriesOwned().push_back(target);
@@ -590,7 +616,7 @@ void Blockade::execute()
 bool Blockade::validate()
 {
     // check to make sure interactable objects exist
-    if (owner == nullptr || target == nullptr)
+    if (owner == nullptr || target == nullptr || currentInstance == nullptr)
     {
         return false;
     }
