@@ -65,11 +65,28 @@ private:
 	std::string GetUserInput(Command*& userCommand);
 };
 
+/*
+	Aggressive Player:
+	computer player that focuses on attack (deploys or advances armies on its strongest
+	country, then always advances to enemy territories until it cannot do so anymore).
+
+	BB notes: I think I will have them push generally into the weakest territories on their border
+	and avoid attritioning themselves against strong opponents.
+
+*/
 class AggressivePlayerStrategy : public PlayerStrategies {
 public:
 	virtual void issueOrder() override;
 	virtual void toAttack() override;
 	virtual void toDefend() override;
+protected:
+	void DeployArmies(int& inAvailableReserves) override;
+	void AdvanceArmies() override;
+	void PlayingCards() override;
+	void PlayingBombCard() override;
+	void PlayingBlockadeCard() override;
+	void PlayingAirliftCard() override;
+	void PlayingDiplomacyCard() override;
 private:
 
 };
