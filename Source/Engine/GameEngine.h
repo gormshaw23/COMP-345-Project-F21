@@ -57,20 +57,18 @@ public:
 
 
     Player* getNeutralPlayer() const;
-    std::vector<Player*> getPlayerList() const;
+    const std::vector<Player*>& getPlayerList() const;
     std::vector<Player*>& getPlayerList();
 
-    void mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns); //Game loop function
+    std::string mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns); //Game loop function
 
     void startupPhase();
 
-    bool isATournament;
-
-
-    static GameEngine& getInstance();
-
-    void TournamentMode(int M, int P, int G, int D); //Original to erase later
     void TournamentMode(std::string M, std::string P, int G, int D); //map and player set up for tournament mode
+    void TournamentMode(int M, int P, int G, int D); //map and player set up for tournament mode
+
+    bool getIsATournament();
+    void setIsATournament(bool tournamentValue);
 
     const std::vector<Territory*> GetEnemyTerritoriesOfCurrentPlayer(Player* p);
 private:
@@ -88,9 +86,5 @@ private:
     std::vector<Player*> playerlist;
     Player* neutralPlayer = nullptr;
 
-   // bool isATournament; //Determines if a game is part of a tournament
+    bool isATournament; //Determines if a game is part of a tournament
 };
-
-
-
-

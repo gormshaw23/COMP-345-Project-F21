@@ -610,7 +610,7 @@ void GameEngine::startupPhase() {
 * @param map The current game map
 * @param maxNumberOfTurns The maximum number of turns
 */
-void GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns)
+std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns)
 {
 	int turn = 1; //Turn counter
 	while (players.size() != 1 && turn < maxNumberOfTurns)
@@ -647,6 +647,29 @@ void GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNum
 	std::string endGameMessage = (players.size() == 1) ? "Game over, " + players.at(0)->getPlayerName() + " wins\n"
 		: "The game has exceeded the amount of turns, therefore the game is a draw.\n";
 	std::cout << endGameMessage;
+
+	//Return player strategy of the winning player or draw
+	std::string result = "";
+	if (players.size() != 1) {
+		result = "Draw";
+	}
+	else {
+		PlayerStrategies* ps = players.at(0)->getPlayerStrategy();
+		if (dynamic_cast<AggressivePlayerStrategy*>(ps)) {
+			result = "Aggressive";
+		}
+		else if (dynamic_cast<BenevolentPlayerStrategy*>(ps)) {
+			result = "Benevolent";
+		}
+		else if (dynamic_cast<NeutralPlayerStrategy*>(ps)){
+			result = "Neutral";
+		}
+		else if (dynamic_cast<CheaterPlayerStrategy*>(ps)) {
+			result = "Cheater";
+		}
+	}
+
+	return result;
 }
 
 /*
@@ -768,7 +791,7 @@ const void GameEngine::executeOrdersPhase(Player* p) {
 	}
 }
 
-std::vector<Player*> GameEngine::getPlayerList() const
+const std::vector<Player*>& GameEngine::getPlayerList() const
 {
 	return this->playerlist;
 }
@@ -778,6 +801,22 @@ std::vector<Player*>& GameEngine::getPlayerList()
 	return this->playerlist;
 }
 
+/*
+* Getter for the isATournament member
+*/
+bool GameEngine::getIsATournament()
+{
+	return isATournament;
+}
+
+/*
+* Setter for the isATournament member
+* 
+* @param tournamentValue A true/false value to determine if the game is part of a tournament
+*/
+void GameEngine::setIsATournament(bool tournamentValue) {
+	isATournament = tournamentValue;
+}
 
 /**
 * function of TournamentMode in GameEngine class
@@ -862,8 +901,15 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 	}
 	/*
 	// create player list
-	Player* p1 = new Player (new AggressivePlayerStrategy());
-	
+	Player* p1 = new Player();
+	p1->setPlayerStrategy(new AggressivePlayerStrategy());
+	std::vector<Player*> playerlist;
+	playerlist.push_back(p1);
+	p1->setPlayerStrategy(new BenevolentPlayerStrategy());
+	playerlist.push_back(p1);
+	p1->setPlayerStrategy(new NeutralPlayerStrategy());
+	playerlist.push_back(p1);
+	p1->setPlayerStrategy(new CheaterPlayerStrategy());
 	playerlist.push_back(p1);
 	Player* p2 = new Player(new BenevolentPlayerStrategy());
 	//p1->setPlayerStrategy();
@@ -878,8 +924,8 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 
 	// create current player list
 	std::vector<Player*> currentPlayerlist;
-	
-	for (int i = 0; i < 2/*P*/; i++) {
+	for (int i = 0; i < 2/*P*/; i++)
+	{
 		currentPlayerlist.push_back(playerlist.at(i));
 	}
 
@@ -907,4 +953,3 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 	}//end of outer loop
 	setCurrentState(GAME_STATE_FINISHED);
 }//end of TournamentMode
-//<<<<<<< HEAD
