@@ -13,6 +13,7 @@
 #include <vector>
 #include <random>
 #include <iomanip>
+#include <sstream>
 
 std::vector<std::string> splitString(std::string str)
 {
@@ -273,6 +274,14 @@ std::string GameEngine::extractName(std::string str) {
 	return strNew;
 }
 
+std::string GameEngine::extractPlayerStrategy(std::string str)
+{
+	unsigned first = str.find("[");
+	unsigned last = str.find("]");
+	std::string strNew = str.substr(first + 1, last - first - 1);
+	return strNew;
+}
+
 /**
  * private function addPlayer(string) of GameEngine class
  * @param string str user input
@@ -280,8 +289,65 @@ std::string GameEngine::extractName(std::string str) {
  */
 
 void GameEngine::addPlayer(std::string user_input) {
-	playername = extractName(user_input);
-	Player* p = new Player(playername);
+	std::string tmp = "";
+	std::vector<std::string> words;
+	std::string strat = "";
+
+	std::stringstream myStream(user_input);
+
+	while (myStream >> tmp)
+	{
+		words.push_back(tmp);
+	}
+
+	Player* p;
+	if (words.size() == 1)
+	{
+		playername = extractName(words[0]);
+		p = new Player(playername);
+		p->setPlayerStrategy(new HumanPlayerStrategy(p));
+	}
+	else if (words.size() == 2)
+	{
+		playername = extractName(words[0]);
+		// get ai
+		strat = extractPlayerStrategy(words[1]);
+		p = new Player(playername);
+
+		if (strat.compare("aggressive") == 0 || strat.compare("Aggressive") == 0)
+		{
+			p->setPlayerStrategy(new AggressivePlayerStrategy());
+		}
+
+		if (strat.compare("benevolent") == 0 || strat.compare("Benevolent") == 0)
+		{
+			p->setPlayerStrategy(new BenevolentPlayerStrategy());
+		}
+
+		if (strat.compare("neutral") == 0 || strat.compare("Neutral") == 0)
+		{
+			p->setPlayerStrategy(new NeutralPlayerStrategy());
+		}
+
+		if (strat.compare("cheater") == 0 || strat.compare("Cheater") == 0)
+		{
+			p->setPlayerStrategy(new CheaterPlayerStrategy());
+		}
+
+		if (strat.compare("human") == 0 || strat.compare("Human") == 0)
+		{
+			p->setPlayerStrategy(new HumanPlayerStrategy(p));
+		}
+
+		std::cout << "The player with strategy " << strat << " is added." << std::endl;
+	}
+	else
+	{
+		playername = extractName(user_input);
+		p = new Player(playername);
+		p->setPlayerStrategy(new HumanPlayerStrategy(p));
+	}
+
 	p->setCurrentGameInstance(this);
 	p->setCommandProcessor(commandProces);
 	playerlist.push_back(p);
@@ -533,6 +599,7 @@ void GameEngine::startupPhase() {
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
 				userCommand->saveEffect("Passing from  <GAME_STATE_MAP_VALIDATED> to <GAME_STATE_PLAYERS_ADDED> , new player added");
 				std::cout << "New player added!\nPlease enter: \"addplayer\" command to continue adding players." << "\n";
+				std::cout << "Add [aggressive] or [benevolent] or [neutral] or [cheater] to be AI'd, or [human] or don't for User control." << "\n";
 			}
 			else {
 				std::cout << "Error input(please try: \"addplayer <playername>\" to add a player."<< "\n";
@@ -842,8 +909,6 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 	std::vector<Map*> maps;
 	listMapName = splitString(M);
 	int nbGameFromMap = listMapName.size();
-
-
 	
 	for (int x = 0; x < listMapName.size(); x++) {
 		if (newmap->loadMap(listMapName.at(x))) {
@@ -882,7 +947,6 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 	*/
 	listPlayerFromConsole = splitString(P);
 	Player* p = nullptr;
-	std::vector<Player*> playerlist;
 	std::string playerName;
 	for (int y = 0; y < listPlayerFromConsole.size(); y++) {
 		playerName = "player " + std::to_string(y);
@@ -907,30 +971,9 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 
 		}
 		playerlist.push_back(p);
-
+		
 	}
-	/*
-	// create player list
-	Player* p1 = new Player();
-	p1->setPlayerStrategy(new AggressivePlayerStrategy());
-	std::vector<Player*> playerlist;
-	playerlist.push_back(p1);
-	p1->setPlayerStrategy(new BenevolentPlayerStrategy());
-	playerlist.push_back(p1);
-	p1->setPlayerStrategy(new NeutralPlayerStrategy());
-	playerlist.push_back(p1);
-	p1->setPlayerStrategy(new CheaterPlayerStrategy());
-	playerlist.push_back(p1);
-	Player* p2 = new Player(new BenevolentPlayerStrategy());
-	//p1->setPlayerStrategy();
-	playerlist.push_back(p2);
-
-	Player* p3 = new Player(new NeutralPlayerStrategy());	
-	playerlist.push_back(p3);
-	
-	Player* p4 = new Player(new CheaterPlayerStrategy());
-	playerlist.push_back(p4);
-	*/
+	playercount = playerlist.size();
 
 	// create current player list
 	std::vector<Player*> currentPlayerlist;
@@ -943,9 +986,10 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 	Map* currentMap = nullptr;
 	// outer loop for listofmapfiles
 	std::string gameresult = "Result :\n";
-	std::string winer = "";
+	std::string winner = "";
 	for (int i = 0; i < nbGameFromMap; i++) {
 		currentMap = maps.at(i);
+		mapToUse = currentMap;
 		gameresult = "Map " + std::to_string(i) + " : ";
 		// inner loop for numberofgames
 		
@@ -953,10 +997,10 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 			for (int i = 0; i < 2/*P*/; i++) {
 				currentPlayerlist.push_back(playerlist.at(i));
 			}
-			
-			/*winer =*/mainGameLoop(currentPlayerlist, currentMap, D);
+			GameEngine::gamestart();
+			/*winner =*/mainGameLoop(currentPlayerlist, currentMap, D);
 
-			gameresult = gameresult + "      " + winer;
+			gameresult = gameresult + "      " + winner;
 			currentPlayerlist.clear();
 		}//end of inner loop
 		gameresult = gameresult + "\n";

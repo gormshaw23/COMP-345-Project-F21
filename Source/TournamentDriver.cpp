@@ -20,27 +20,14 @@ int main() {
 		number of turns and the execution of tournament mode
 	-----------------------------------------------------------------
 	*/
-	//Testing the main game loop with a number of maximum turns
-	int maxTurns = 5;
+	std::string map = "canada";
+	std::string pStrategies = "Aggressive Benevolent Neutral Cheater";
+	int games = 4;
+	int maxTurns = 30;
 
-	//Load map
-	MapLoader* mapL = new MapLoader();
-	mapL->loadMap("canada");
-	Map* map = mapL->getListMap()->at(0);
-
-	//Create game engine
 	GameEngine* ge = new GameEngine();
-	ge->setIsATournament(true);
+	ge->TournamentMode(map, pStrategies, games, maxTurns);
 
-	//Create players
-	Player* p1 = new Player("player1");
-	Player* p2 = new Player("player2");
-	p1->setPlayerStrategy(new AggressivePlayerStrategy());
-	p1->setReinforcementPool(50);
-	p2->setPlayerStrategy(new BenevolentPlayerStrategy());
-	p2->setReinforcementPool(50);
-	std::vector<Player*> players = { p1, p2 };
-
-	ge->mainGameLoop(players, map, 5);
+	delete ge;
 	return 0;
 }

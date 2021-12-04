@@ -12,6 +12,8 @@ using std::vector;
 #include "Cards/Cards.h"
 #include "GameLog/LoggingObserver.h"
 #include "CommandProcessor/CommandProcessor.h"
+
+#ifdef MAINGAMELOOPDRIVER
 int main() {
   /*
 	//Load map
@@ -89,3 +91,4 @@ int main() {
 
 	return 0;
 }
+#endif
