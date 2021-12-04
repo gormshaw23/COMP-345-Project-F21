@@ -832,8 +832,6 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 	std::vector<Map*> maps;
 	listMapName = splitString(M);
 	int nbGameFromMap = listMapName.size();
-
-
 	
 	for (int x = 0; x < listMapName.size(); x++) {
 		if (newmap->loadMap(listMapName.at(x))) {
@@ -872,7 +870,6 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 	*/
 	listPlayerFromConsole = splitString(P);
 	Player* p = nullptr;
-	std::vector<Player*> playerlist;
 	std::string playerName;
 	for (int y = 0; y < listPlayerFromConsole.size(); y++) {
 		playerName = "player " + std::to_string(y);
@@ -897,30 +894,9 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 
 		}
 		playerlist.push_back(p);
-
+		
 	}
-	/*
-	// create player list
-	Player* p1 = new Player();
-	p1->setPlayerStrategy(new AggressivePlayerStrategy());
-	std::vector<Player*> playerlist;
-	playerlist.push_back(p1);
-	p1->setPlayerStrategy(new BenevolentPlayerStrategy());
-	playerlist.push_back(p1);
-	p1->setPlayerStrategy(new NeutralPlayerStrategy());
-	playerlist.push_back(p1);
-	p1->setPlayerStrategy(new CheaterPlayerStrategy());
-	playerlist.push_back(p1);
-	Player* p2 = new Player(new BenevolentPlayerStrategy());
-	//p1->setPlayerStrategy();
-	playerlist.push_back(p2);
-
-	Player* p3 = new Player(new NeutralPlayerStrategy());	
-	playerlist.push_back(p3);
-	
-	Player* p4 = new Player(new CheaterPlayerStrategy());
-	playerlist.push_back(p4);
-	*/
+	playercount = playerlist.size();
 
 	// create current player list
 	std::vector<Player*> currentPlayerlist;
@@ -933,9 +909,10 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 	Map* currentMap = nullptr;
 	// outer loop for listofmapfiles
 	std::string gameresult = "Result :\n";
-	std::string winer = "";
+	std::string winner = "";
 	for (int i = 0; i < nbGameFromMap; i++) {
 		currentMap = maps.at(i);
+		mapToUse = currentMap;
 		gameresult = "Map " + std::to_string(i) + " : ";
 		// inner loop for numberofgames
 		
@@ -943,10 +920,10 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 			for (int i = 0; i < 2/*P*/; i++) {
 				currentPlayerlist.push_back(playerlist.at(i));
 			}
-			
-			/*winer =*/mainGameLoop(currentPlayerlist, currentMap, D);
+			GameEngine::gamestart();
+			/*winner =*/mainGameLoop(currentPlayerlist, currentMap, D);
 
-			gameresult = gameresult + "      " + winer;
+			gameresult = gameresult + "      " + winner;
 			currentPlayerlist.clear();
 		}//end of inner loop
 		gameresult = gameresult + "\n";
