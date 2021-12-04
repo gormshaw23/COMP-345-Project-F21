@@ -96,6 +96,14 @@ public:
 	virtual void issueOrder() override;
 	virtual void toAttack() override;
 	virtual void toDefend() override;
+protected:
+	void DeployArmies(int& inAvailableReserves) override;
+	void AdvanceArmies() override;
+	void PlayingCards() override;
+	void PlayingBombCard() override;
+	void PlayingBlockadeCard() override;
+	void PlayingAirliftCard() override;
+	void PlayingDiplomacyCard() override;
 private:
 
 };
@@ -105,6 +113,14 @@ public:
 	virtual void issueOrder() override;
 	virtual void toAttack() override;
 	virtual void toDefend() override;
+protected:
+	void DeployArmies(int& inAvailableReserves) override;
+	void AdvanceArmies() override;
+	void PlayingCards() override;
+	void PlayingBombCard() override;
+	void PlayingBlockadeCard() override;
+	void PlayingAirliftCard() override;
+	void PlayingDiplomacyCard() override;
 private:
 
 };
@@ -114,6 +130,14 @@ public:
 	virtual void issueOrder() override;
 	virtual void toAttack() override;
 	virtual void toDefend() override;
+protected:
+	void DeployArmies(int& inAvailableReserves) override;
+	void AdvanceArmies() override;
+	void PlayingCards() override;
+	void PlayingBombCard() override;
+	void PlayingBlockadeCard() override;
+	void PlayingAirliftCard() override;
+	void PlayingDiplomacyCard() override;
 private:
 
 };
