@@ -13,7 +13,7 @@ using std::vector;
 #include "GameLog/LoggingObserver.h"
 #include "CommandProcessor/CommandProcessor.h"
 
-#ifdef GAMELOOPDRIVER
+#ifdef MAINGAMELOOPDRIVER
 int main() {
   /*
 	//Load map
