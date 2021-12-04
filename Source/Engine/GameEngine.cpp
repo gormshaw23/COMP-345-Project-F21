@@ -292,7 +292,10 @@ void GameEngine::addPlayer(std::string user_input) {
 	std::string tmp = "";
 	std::vector<std::string> words;
 	std::string strat = "";
-	while (std::stringstream(user_input) >> tmp)
+
+	std::stringstream myStream(user_input);
+
+	while (myStream >> tmp)
 	{
 		words.push_back(tmp);
 	}
@@ -311,27 +314,27 @@ void GameEngine::addPlayer(std::string user_input) {
 		strat = extractPlayerStrategy(words[1]);
 		p = new Player(playername);
 
-		if (strat.compare("aggressive") || strat.compare("Aggressive"))
+		if (strat.compare("aggressive") == 0 || strat.compare("Aggressive") == 0)
 		{
 			p->setPlayerStrategy(new AggressivePlayerStrategy());
 		}
 
-		if (strat.compare("benevolent") || strat.compare("Benevolent"))
+		if (strat.compare("benevolent") == 0 || strat.compare("Benevolent") == 0)
 		{
 			p->setPlayerStrategy(new BenevolentPlayerStrategy());
 		}
 
-		if (strat.compare("neutral") || strat.compare("Neutral"))
+		if (strat.compare("neutral") == 0 || strat.compare("Neutral") == 0)
 		{
 			p->setPlayerStrategy(new NeutralPlayerStrategy());
 		}
 
-		if (strat.compare("cheater") || strat.compare("Cheater"))
+		if (strat.compare("cheater") == 0 || strat.compare("Cheater") == 0)
 		{
 			p->setPlayerStrategy(new CheaterPlayerStrategy());
 		}
 
-		if (strat.compare("human") || strat.compare("Human"))
+		if (strat.compare("human") == 0 || strat.compare("Human") == 0)
 		{
 			p->setPlayerStrategy(new HumanPlayerStrategy(p));
 		}
