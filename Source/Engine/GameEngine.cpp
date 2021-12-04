@@ -684,7 +684,7 @@ void GameEngine::startupPhase() {
 * @param map The current game map
 * @param maxNumberOfTurns The maximum number of turns
 */
-void GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns) {
+std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns) {
 	int turn = 1; //Turn counter
 
 	//Loop if there are 2 or more players left and if the current turn count does not exceed the max number of turns
@@ -721,6 +721,29 @@ void GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNum
 	std::string endGameMessage = (players.size() == 1) ? "Game over, " + players.at(0)->getPlayerName() + " wins\n"
 		: "The game has exceeded the amount of turns, therefore the game is a draw.\n";
 	std::cout << endGameMessage;
+
+	//Return player strategy of the winning player or draw
+	std::string result = "";
+	if (players.size() != 1) {
+		result = "Draw";
+	}
+	else {
+		PlayerStrategies* ps = players.at(0)->getPlayerStrategy();
+		if (dynamic_cast<AggressivePlayerStrategy*>(ps)) {
+			result = "Aggressive";
+		}
+		else if (dynamic_cast<BenevolentPlayerStrategy*>(ps)) {
+			result = "Benevolent";
+		}
+		else if (dynamic_cast<NeutralPlayerStrategy*>(ps)){
+			result = "Neutral";
+		}
+		else if (dynamic_cast<CheaterPlayerStrategy*>(ps)) {
+			result = "Cheater";
+		}
+	}
+
+	return result;
 }
 
 /*
