@@ -12,6 +12,9 @@
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <random>
 
 Player* PlayerStrategies::getPlayer() const
 {
@@ -56,9 +59,6 @@ void HumanPlayerStrategy::issueOrder()
 	const std::vector<Territory*> plToriesToAttack = currentPlayer->getTerritoriesToAttack();
 	// Get territories to defend in order of priority
 	const std::vector<Territory*> plToriesToDefend = currentPlayer->getTerritoriesToDefend();
-
-	// Get the player's current hand 
-	Hand* currentPlayerHand = currentPlayer->getCurrentHand();
 
 	std::cout << "Issuing orders for " << currentPlayer->getPlayerName() << "\n";
 	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
@@ -180,9 +180,9 @@ void HumanPlayerStrategy::toDefend()
 		currentPlayerToriesByPriority.begin(),
 		currentPlayerToriesByPriority.end(),
 		[](const std::pair<Territory*, int>& a, std::pair<Territory*, int>& b) -> bool
-	{
-		return a.second > b.second;
-	}
+		{
+			return a.second > b.second;
+		}
 	);
 
 	currentPlayer->getTerritoriesToDefend().clear();
@@ -394,19 +394,26 @@ void HumanPlayerStrategy::PlayingCards()
 		return;
 	}
 
+	if (currentPlayer->getCurrentHand() == nullptr)
+	{
+		return;
+	}
+
+	Hand* currentHand = currentPlayer->getCurrentHand();
+
 	Command* userCommand = nullptr;
 
-	if (currentPlayer->getCurrentHand()->getHand().size() > 0)
+	if (currentHand->getHand().size() > 0)
 	{
-		std::cout << currentPlayer->getPlayerName() << " has " << currentPlayer->getCurrentHand()->getHand().size() 
+		std::cout << currentPlayer->getPlayerName() << " has " << currentHand->getHand().size()
 			<< " cards to play." << std::endl;
 		std::cout << "Displaying current hand:" << std::endl;
 
-		for (int i = 0; i < currentPlayer->getCurrentHand()->getHand().size(); i++)
+		for (int i = 0; i < currentHand->getHand().size(); i++)
 		{
-			if (currentPlayer->getCurrentHand()->getHand()[i] != nullptr)
+			if (currentHand->getHand()[i] != nullptr)
 			{
-				std::cout << i << " : " << *currentPlayer->getCurrentHand()->getHand()[i] << std::endl;
+				std::cout << i << " : " << *currentHand->getHand()[i] << std::endl;
 			}
 			else
 			{
@@ -431,12 +438,12 @@ void HumanPlayerStrategy::PlayingCards()
 		{
 			if ((std::stringstream(words[0]) >> selectedCard))
 			{
-				if (selectedCard >= 0 && selectedCard < currentPlayer->getCurrentHand()->getHand().size())
+				if (selectedCard >= 0 && selectedCard < currentHand->getHand().size())
 				{
 					// play card
-					std::cout << "Playing card... " << *currentPlayer->getCurrentHand()->getHand()[selectedCard] << std::endl;
+					std::cout << "Playing card... " << *currentHand->getHand()[selectedCard] << std::endl;
 
-					switch (currentPlayer->getCurrentHand()->getHand()[selectedCard]->getCardType())
+					switch (currentHand->getHand()[selectedCard]->getCardType())
 					{
 					case ECardTypes::Bomb:
 						PlayingBombCard();
@@ -454,6 +461,14 @@ void HumanPlayerStrategy::PlayingCards()
 						std::cout << "Invalid card" << std::endl;
 						break;
 					}
+
+					delete currentHand->getHand()[selectedCard];
+
+					currentHand->getHand().erase(
+						currentHand->getHand().begin(),
+						currentHand->getHand().begin() + selectedCard
+					);
+
 					// change state
 					currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 				}
@@ -1025,15 +1040,401 @@ std::string HumanPlayerStrategy::GetUserInput(Command*& userCommand)
 
 void AggressivePlayerStrategy::issueOrder()
 {
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	toAttack();
+	toDefend();
+	// Get territories to attack in order of priority
+	const std::vector<Territory*> plToriesToAttack = currentPlayer->getTerritoriesToAttack();
+	// Get territories to defend in order of priority
+	const std::vector<Territory*> plToriesToDefend = currentPlayer->getTerritoriesToDefend();
+
+	std::cout << "Issuing orders for " << currentPlayer->getPlayerName() << "\n";
+	std::cout << "They are a CPU! " << std::endl;
+
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
+	int availableReserves = currentPlayer->getReinforcementPoolSize();
+
+	while (currentPlayer->getPlayerTurnPhase() != EPlayerTurnPhase::EndOfTurn)
+	{
+		switch (currentPlayer->getPlayerTurnPhase())
+		{
+		case EPlayerTurnPhase::DeployingArmies:
+			DeployArmies(availableReserves);
+			break;
+		case EPlayerTurnPhase::AdvancingArmies:
+			AdvanceArmies();
+			break;
+		case EPlayerTurnPhase::PlayingCards:
+			PlayingCards();
+			break;
+		case EPlayerTurnPhase::EndOfTurn:
+			std::cout << "End of " << currentPlayer->getPlayerName() << "'s turn" << std::endl;
+			break;
+		default:
+			currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
+			break;
+		}
+	}
 }
 
 void AggressivePlayerStrategy::toAttack()
 {
+	/*
+		The Aggressive player will prioritize territories with the least troops to Advance
+	*/
+
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	// toAttack will turn a list of all adjacent enemy territories, in order of territories with the least troops
+	std::vector<Territory*> enemyTerritoryByPriority;
+
+	const std::vector<Territory*> allCurrentPlayerTerritories = currentPlayer->getTerritoriesOwned();
+
+	// loop through all territories adjacent 
+	for (auto& ownedTerritory : allCurrentPlayerTerritories)
+	{
+		if (ownedTerritory != nullptr)
+		{
+			for (auto& adjacentTerritory : ownedTerritory->getBorderList())
+			{
+				if (adjacentTerritory->getPlayer() == nullptr)
+				{
+					std::cout << "Warning! Territory has no owner!" << std::endl;
+					continue;
+				}
+
+				if (adjacentTerritory->getPlayer()->getPlayerID() != currentPlayer->getPlayerID())
+				{
+					// making sure no dupes
+					if (enemyTerritoryByPriority.empty() ||
+						std::find
+						(
+							enemyTerritoryByPriority.begin(),
+							enemyTerritoryByPriority.end(),
+							adjacentTerritory
+						) == enemyTerritoryByPriority.end())
+					{
+						enemyTerritoryByPriority.push_back(adjacentTerritory);
+					}
+				}
+			}
+		}
+	}
+
+	std::sort(enemyTerritoryByPriority.begin(), enemyTerritoryByPriority.end(), Utilities::SortByArmyAscendingSize);
+
+	currentPlayer->getTerritoriesToAttack().clear();
+
+	currentPlayer->getTerritoriesToAttack().insert(
+		currentPlayer->getTerritoriesToAttack().begin(),
+		enemyTerritoryByPriority.begin(),
+		enemyTerritoryByPriority.end()
+	);
 }
 
 void AggressivePlayerStrategy::toDefend()
 {
+	/*
+		Aggressive player will prioritize territories with the most troops to deploy troops
+	*/
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	const std::vector<Territory*> currentPlayerTories = currentPlayer->getTerritoriesOwned();
+
+	std::vector<Territory*> plToriesSorted;
+	plToriesSorted.insert(plToriesSorted.begin(), currentPlayerTories.begin(), currentPlayerTories.end());
+	// sorts player's territories in descending order by troop numbers
+	std::sort(plToriesSorted.begin(), plToriesSorted.end(), Utilities::SortByArmySize);
+
+	currentPlayer->getTerritoriesToDefend().clear();
+	currentPlayer->getTerritoriesToDefend().insert(
+		currentPlayer->getTerritoriesToDefend().begin(), currentPlayerTories.begin(), currentPlayerTories.end()
+	);
 }
+
+void AggressivePlayerStrategy::DeployArmies(int& inAvailableReserves)
+{
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	if (currentPlayer->getTerritoriesToDefend().size() > 0)
+	{
+		currentPlayer->IssueDeployOrder(currentPlayer->getTerritoriesToDefend()[0], inAvailableReserves);
+		inAvailableReserves -= inAvailableReserves;
+	}
+
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+}
+
+void AggressivePlayerStrategy::AdvanceArmies()
+{
+	// find territories with troops and advance them into player territories with the least
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	for (const auto& plTory : currentPlayer->getTerritoriesToDefend())
+	{
+		if (plTory->getNbArmy() > 0)
+		{
+			std::vector<Territory*> adjacents;
+			adjacents.insert(adjacents.begin(), plTory->getBorderList().begin(), plTory->getBorderList().end());
+			std::sort(adjacents.begin(), adjacents.end(), Utilities::SortByArmyAscendingSize);
+
+			bool enemyfound = false;
+			for (const auto& adjTory : adjacents)
+			{
+				if (adjTory->getPlayer() != currentPlayer)
+				{
+					enemyfound = true;
+					currentPlayer->IssueAdvanceOrder(plTory, adjTory, plTory->getNbArmy());
+				}
+			}
+
+			// if there's no enemy then just move troops to territory with the most armies
+			if (!enemyfound)
+			{
+				Territory* dst = nullptr;
+				if (adjacents.size() > 0)
+				{
+					dst = adjacents[adjacents.size() - 1];
+				}
+				currentPlayer->IssueAdvanceOrder(plTory, dst, plTory->getNbArmy());
+			}
+		}
+	}
+
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::PlayingCards);
+}
+
+void AggressivePlayerStrategy::PlayingCards()
+{
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	if (currentPlayer->getCurrentHand() == nullptr)
+	{
+		return;
+	}
+
+	Command* userCommand = nullptr;
+
+	// AI will play a card at random
+	if (currentPlayer->getCurrentHand()->getHand().size() > 0)
+	{
+		Hand* hand = currentPlayer->getCurrentHand();
+		auto randomClock = std::chrono::high_resolution_clock::now();
+		auto seed = randomClock.time_since_epoch().count();
+		auto randomizer = std::default_random_engine(seed);
+		std::shuffle(hand->getHand().begin(), hand->getHand().end(), randomizer);
+
+		Card* card = hand->drawCard_Hand();
+
+		switch (card->getCardType())
+		{
+		case ECardTypes::Bomb:
+			PlayingBombCard();
+			break;
+		case ECardTypes::Blockade:
+			PlayingBlockadeCard();
+			break;
+		case ECardTypes::Airlift:
+			PlayingAirliftCard();
+			break;
+		case ECardTypes::Diplomacy:
+			PlayingDiplomacyCard();
+			break;
+		default:
+			std::cout << "Invalid card" << std::endl;
+			break;
+		}
+
+		delete card;
+		// change state
+		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
+	}
+}
+
+void AggressivePlayerStrategy::PlayingBombCard()
+{
+	// Aggressive player will bomb the neighbour territory with the most troops
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	Command* userCommand = nullptr;
+
+	const std::vector<Territory*> plToriesToAttack = currentPlayer->getTerritoriesToAttack();
+
+	if (plToriesToAttack.size() > 0)
+	{
+		currentPlayer->IssueBombOrder(plToriesToAttack[plToriesToAttack.size() - 1]);
+	}
+}
+
+void AggressivePlayerStrategy::PlayingBlockadeCard()
+{
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	const std::vector<Territory*> currentPlayerBorderTories = currentPlayer->getTerritoriesToDefend();
+
+	// I think the smart decision is to blow up your territory that's at most risk of
+	// falling to the enemy
+	std::vector<std::pair<Territory*, int>> currentPlayerToriesByPriority;
+
+	// loop through all territories adjacent 
+	for (auto& ownedTerritory : currentPlayerBorderTories)
+	{
+		if (ownedTerritory != nullptr)
+		{
+			// if territory has an enemy territory adjacent to it OR has troops present, return it
+			bool enemyAdjacent = false;
+			// players are generally interested in territories where their armies are
+			int threat = ownedTerritory->CalculateValue(enemyAdjacent);
+
+			if (enemyAdjacent || ownedTerritory->getNbArmy() > 0)
+			{
+				currentPlayerToriesByPriority.push_back(std::pair<Territory*, int>(ownedTerritory, threat));
+			}
+		}
+	}
+
+	// sorts in descending order
+	std::sort
+	(
+		currentPlayerToriesByPriority.begin(),
+		currentPlayerToriesByPriority.end(),
+		[](const std::pair<Territory*, int>& a, std::pair<Territory*, int>& b) -> bool
+		{
+			return a.second > b.second;
+		}
+	);
+
+	// pick first element (one with highest threat) to blockade
+	if (currentPlayerToriesByPriority.size() > 0)
+	{
+		currentPlayer->IssueBlockadeOrder(currentPlayerToriesByPriority[0].first);
+	}
+}
+
+void AggressivePlayerStrategy::PlayingAirliftCard()
+{
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	// find all territories that aren't on the border
+	std::vector<Territory*> innerTories;
+
+	const std::vector<Territory*> plTories = currentPlayer->getTerritoriesOwned();
+	const std::vector<Territory*> plToriesToDefend = currentPlayer->getTerritoriesToDefend();
+
+	for (const auto& tory : plTories)
+	{
+		bool isInner = true;
+		for (const auto& adjTory : tory->getBorderList())
+		{
+			if (adjTory->getPlayer() != currentPlayer)
+			{
+				isInner = false;
+				break;
+			}
+		}
+
+		if (isInner)
+		{
+			innerTories.push_back(tory);
+		}
+	}
+
+	std::sort(innerTories.begin(), innerTories.end(), Utilities::SortByArmySize);
+
+	if (innerTories.size() > 0 && plToriesToDefend.size() > 0)
+	{
+		currentPlayer->IssueAirliftOrder(innerTories[0], plToriesToDefend[0], innerTories[0]->getNbArmy());
+	}
+}
+
+void AggressivePlayerStrategy::PlayingDiplomacyCard()
+{
+	Player* currentPlayer = getPlayer();
+	if (currentPlayer == nullptr)
+	{
+		return;
+	}
+
+	// Wants to NAP the most threatening player
+	const std::vector<Territory*> plToriesToAttack = currentPlayer->getTerritoriesToAttack();
+
+	if (currentPlayer->getCurrentGameInstance() == nullptr)
+	{
+		return;
+	}
+
+	std::vector<Player*> allPlayers = currentPlayer->getCurrentGameInstance()->getPlayerList();
+
+	std::map<Player*, int> otherPlayers;
+
+	for (const auto& player : allPlayers)
+	{
+		if (player != currentPlayer)
+		{
+			otherPlayers[player] = 0;
+		}
+	}
+
+	for (const auto& tory : plToriesToAttack)
+	{
+		otherPlayers[tory->getPlayer()] += tory->getNbArmy();
+	}
+
+	std::vector<std::pair<int, Player*>> sortedPlayers;
+
+	for (const auto& [key, value] : otherPlayers)
+	{
+		sortedPlayers.push_back(std::pair<int, Player*>(value, key));
+	}
+
+	// descending order
+	std::sort(sortedPlayers.begin(), sortedPlayers.end(), [=](std::pair<int, Player*>& a, std::pair<int, Player*>& b) {
+		return a.first > b.first;
+	});
+
+	if (sortedPlayers.size() > 0)
+	{
+		currentPlayer->IssueNegotiateOrder(sortedPlayers[0].second);
+	}
+}
+
 
 void BenevolentPlayerStrategy::issueOrder()
 {
