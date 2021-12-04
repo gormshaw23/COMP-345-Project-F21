@@ -215,6 +215,7 @@ const std::string Player::getPlayerName() const
 void Player::setPlayerStrategy(PlayerStrategies* inPlayerStrategy)
 {
 	this->_playerStrategy = inPlayerStrategy;
+	this->_playerStrategy->setPlayer(this);
 }
 
 PlayerStrategies* Player::getPlayerStrategy() const
@@ -427,4 +428,15 @@ void Player::HandleSaveEffect(Command* userCommand, std::string inMsg)
 	{
 		userCommand->saveEffect(inMsg);
 	}
+}
+
+// sets that the current player had their territory taken
+void Player::setPlayerWasAttacked(bool bInFlag)
+{
+	this->bWasAttacked = bInFlag;
+}
+// gets that the current player had their territory taken
+bool Player::getPlayerWasAttacked() const
+{
+	return this->bWasAttacked;
 }

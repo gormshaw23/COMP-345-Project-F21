@@ -349,6 +349,7 @@ void Advance::execute()
         }
         else
         {
+            Player* defender = dest->getPlayer();
             // WAAAAAGH!!!! The enemy territory has defenders! o7
             if (dest->getNbArmy() > 0)
             {
@@ -357,18 +358,15 @@ void Advance::execute()
                 std::random_device dev;
                 std::mt19937 rng(dev());
                 std::uniform_int_distribution<std::mt19937::result_type> dist100(1, 100);
-                while (remainingAdvancingArmies > 0 && dest->getNbArmy() > 0)
+                for (int i = 0; i < initialAdvancingArmies; ++i)
                 {
-                    // assumed that basically every attacking unit gets a chance to attack
-                    // and the unit that is defending gets a chance to fire back; with dmg
-                    // calculated at the sametime.
-                    for (int i = 0; i < remainingAdvancingArmies; ++i)
+                    if (dest->getNbArmy() > 0)
                     {
                         int attackResult = dist100(rng);
                         // 60% chance to eliminate a defending unit
                         if (attackResult <= ATTACKER_CHANCE)
                         {
-                            dest->setNbArmy(dest->getNbArmy() - 1);
+                            dest->setNbArmy(std::max(0, dest->getNbArmy() - 1));
                         }
 
                         int defendResult = dist100(rng);
@@ -383,7 +381,7 @@ void Advance::execute()
                     }
                 }
 
-                if (remainingAdvancingArmies > 0)
+                if (remainingAdvancingArmies > 0 && dest->getNbArmy() <= 0)
                 {
                     // defender loses, move to occupy with
                     // remaining forces.
@@ -402,6 +400,8 @@ void Advance::execute()
                 dest->setNbArmy(remainingAdvancingArmies);
                 src->setNbArmy(src->getNbArmy() - initialAdvancingArmies);
             }
+
+            defender->setPlayerWasAttacked(true);
         }
     }
 }
