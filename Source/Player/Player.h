@@ -90,6 +90,8 @@ public:
 	void setReinforcementPool(const std::size_t inPoolSize);
 	std::size_t getReinforcementPoolSize() const;
 
+	int numDeployments = 0;
+
 	// sets that the current player has taken territory
 	void setCapturedTerritoryFlag(bool bInFlag);
 	// gets that the current player has taken territory
@@ -99,6 +101,8 @@ public:
 	void setPlayerWasAttacked(bool bInFlag);
 	// gets that the current player had their territory taken
 	bool getPlayerWasAttacked() const;
+
+	void clearPlayersNotToAttack();
 
 	void setCommandProcessor(CommandProcessor* inProcessor);
 

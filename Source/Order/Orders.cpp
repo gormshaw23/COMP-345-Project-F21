@@ -349,6 +349,7 @@ void Advance::execute()
             // we move either the specified number or if larger than what is available
             // we move all available troops.
             dest->setNbArmy(remainingAdvancingArmies + dest->getNbArmy());
+            src->setNbArmy(src->getNbArmy() - remainingAdvancingArmies);
 
             std::cout << owner->getPlayerName() << " moved " << std::to_string(remainingAdvancingArmies)
                 << " units from " << src->getName() << " to " << dest->getName() << "!" << std::endl;
@@ -423,12 +424,23 @@ void Advance::execute()
             else
             {
                 // move to occupy
-                dest->setPlayer(src->getPlayer());
-                dest->setNbArmy(remainingAdvancingArmies);
-                src->setNbArmy(src->getNbArmy() - initialAdvancingArmies);
+                std::vector<Territory*>::iterator itor;
+                itor = std::find(defender->getTerritoriesOwned().begin(), defender->getTerritoriesOwned().end(), dest);
+                if (itor != defender->getTerritoriesOwned().end())
+                {
+                    defender->getTerritoriesOwned().erase(itor);
+                    dest->setPlayer(src->getPlayer());                
+                    dest->setNbArmy(remainingAdvancingArmies);
+                    src->setNbArmy(src->getNbArmy() - initialAdvancingArmies);
+                    owner->getTerritoriesOwned().push_back(dest);
 
-                std::cout << src->getPlayer()->getPlayerName() << " took " << dest->getName()
-                    << " from " << defender->getPlayerName() << "!" << std::endl;
+                    std::cout << src->getPlayer()->getPlayerName() << " took " << dest->getName()
+                        << " from " << defender->getPlayerName() << "!" << std::endl;
+                }
+                else
+                {
+                    std::cout << "error, territory not found to remove" << std::endl;
+                }
             }
 
             defender->setPlayerWasAttacked(true);
@@ -628,7 +640,7 @@ void Blockade::execute()
             neutralPlayer = currentInstance->getNeutralPlayer();
             if (neutralPlayer == nullptr)
             {
-                currentInstance->setNeutralPlayer("theneutralzone");
+                currentInstance->setNeutralPlayer("cpu");
                 neutralPlayer = currentInstance->getNeutralPlayer();
                 currentInstance->getPlayerList().push_back(neutralPlayer);
             }

@@ -152,6 +152,7 @@ GameEngine& GameEngine::operator=(const GameEngine& obj)
 void GameEngine::setNeutralPlayer(std::string inNeutralPlName)
 {
 	neutralPlayer = new Player(inNeutralPlName);
+	neutralPlayer->setPlayerName(neutralPlayer->getPlayerName() + std::to_string(neutralPlayer->getPlayerID()));
 	neutralPlayer->setPlayerStrategy(new NeutralPlayerStrategy());
 	this->playerlist.push_back(neutralPlayer);
 }
@@ -379,6 +380,9 @@ void GameEngine::gamestart() {
 	std::mt19937 g(rd());
 
 	int numberOfTerritory = mapToUse->listTerritory.size();
+
+	//std::shuffle(mapToUse->listTerritory.begin(), mapToUse->listTerritory.end(), g);
+
 	std::cout << std::endl << "The numberOfTerritory in the map is: " << numberOfTerritory << std::endl;
 	Territory* t = new Territory();
 	int round = numberOfTerritory / playercount;
@@ -420,16 +424,20 @@ void GameEngine::gamestart() {
 
 	//c) give 50 initial armies to the players, which are placed in their respective reinforcement pool
 	std::cout << std::endl << "Give 50 initial armies to the players>>>>>>" << std::endl;
-	for (int i = 0; i < playercount; i++)
+	for (auto& pl : playerlist)
 	{
-		ReinforcementPools.push_back(50);
+		if (pl != nullptr)
+		{
+			pl->setReinforcementPool(50);
+		}
 	}
+
 	std::cout << "player name        quantity of armies" << std::endl;
 	for (int i = 0; i < playercount; i++)
 	{
 		std::cout << playerlist.at(i)->getPlayerName();
 		std::cout << std::setw(25 - playerlist.at(i)->getPlayerName().size());
-		std::cout << ReinforcementPools.at(i) << std::endl;
+		std::cout << playerlist.at(i)->getReinforcementPoolSize() << std::endl;
 	}
 	std::cout << std::endl;
 	//d) let each player draw 2 initial cards from the deck using the deck�s draw() method
@@ -638,7 +646,7 @@ void GameEngine::startupPhase() {
 				}
 			}
 			else if (commandProces->validate(userCommand, user_input_list[ADDPLAYER])) {
-				addPlayer(user_input);
+				addPlayer(user_input.substr(user_input_list[ADDPLAYER].size() + 1, user_input.size()));
 				setCurrentState(GAME_STATE_PLAYERS_ADDED);
 				userCommand->saveEffect("Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAYERS_ADDED> , new player added ");
 				std::cout << "Player added!\nPlease try: " << "\"" << user_input_list[ADDPLAYER] << "\" to add another player, or "
@@ -680,9 +688,11 @@ void GameEngine::startupPhase() {
 */
 std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns)
 {
-	int turn = 1; //Turn counter
+	int turn = 0; //Turn counter
 	while (players.size() != 1 && turn < maxNumberOfTurns)
 	{ //Loop if there are 2 or more players left
+		std::cout << "It is now turn: " << std::to_string(turn + 1) << "!" << std::endl << std::endl;
+
 		int initPlayersSize = players.size();
 
 		for (Player* p : players)
@@ -697,14 +707,18 @@ std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int
 
 		for (Player* p : players)
 		{
+			if (p == nullptr) continue;
 			if (p->getCapturedTerritoryFlag())
 			{
 				std::cout << p->getPlayerName() << "gets to draw a card!" << std::endl;
 				Card* newCard = _deck->drawCard_Deck();
-				std::cout << p->getPlayerName() << "drew " << *newCard << "!" << std::endl;
+				std::cout << p->getPlayerName() << " drew " << *newCard << "!" << std::endl;
 				p->getCurrentHand()->insertCard_Hand(newCard);
 				p->setCapturedTerritoryFlag(false);
 			}
+
+			p->clearPlayersNotToAttack();
+			p->setCapturedTerritoryFlag(false);
 		}
 
 		//Give a number of armies to each player
@@ -737,6 +751,14 @@ std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int
 	std::string endGameMessage = (players.size() == 1) ? "Game over, " + players.at(0)->getPlayerName() + " wins\n"
 		: "The game has exceeded the amount of turns, therefore the game is a draw.\n";
 	std::cout << endGameMessage;
+	std::cout << std::endl;
+	for (Player* p : players)
+	{
+		if (p == nullptr) continue;
+		
+		std::cout << p->getPlayerName() << " ended the game with " << std::to_string(p->getTerritoriesOwned().size())
+			<< " territories under their control." << std::endl;
+	}
 
 	//Return player strategy of the winning player or draw
 	std::string result = "";
