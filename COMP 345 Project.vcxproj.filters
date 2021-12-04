@@ -90,7 +90,10 @@
     <ClCompile Include="Source\Strategy\PlayerStrategies.cpp">
       <Filter>Source Files\Strategy</Filter>
     </ClCompile>
-    <ClCompile Include="Source\TournamentDriver.cpp">
+    <ClCompile Include="Source\Common\Utilities.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+     <ClCompile Include="Source\TournamentDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="Source\Strategy\PlayerStrategies.h">
       <Filter>Source Files\Strategy</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Common\Utilities.h">
+      <Filter>Source Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
