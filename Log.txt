@@ -1,9 +1,0 @@
-<CommandProcessor> Command saved : loadmap <Canada>
-<Command> Command :loadmap <Canada> with the effect : Passing from  <GAME_STATE_START> to <GAME_STATE_MAP_LOAD>
-<CommandProcessor> Command saved : valiatemap
-<CommandProcessor> Command saved : validatemap
-<Command> Command :validatemap with the effect : Passing from  <GAME_STATE_MAP_LOAD> to <GAME_STATE_MAP_VALIDATED> : Map validated :Canada
-<CommandProcessor> Command saved : addplayer <Bob> [Human]
-<Command> Command :addplayer <Bob> [Human] with the effect : Passing from  <GAME_STATE_MAP_VALIDATED> to <GAME_STATE_PLAYERS_ADDED> , new player added
-<CommandProcessor> Command saved : addplayer Eve neutral
-<Command> Command :addplayer Eve neutral with the effect : Passing from  <GAME_STATE_PLAYERS_ADDED> to <GAME_STATE_PLAYERS_ADDED> , new player added

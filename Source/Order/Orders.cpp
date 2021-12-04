@@ -251,6 +251,9 @@ void Deploy::execute()
         // Pizza end
 
         targetTerritory->setNbArmy(armies);
+
+        std::cout << owner->getPlayerName() << " placed " << std::to_string(armies)
+            << " units on " << targetTerritory->getName() << "." << std::endl;
     }
     // Pizza  
     // call notify at the end of the execute function
@@ -346,10 +349,18 @@ void Advance::execute()
             // we move either the specified number or if larger than what is available
             // we move all available troops.
             dest->setNbArmy(remainingAdvancingArmies + dest->getNbArmy());
+
+            std::cout << owner->getPlayerName() << " moved " << std::to_string(remainingAdvancingArmies)
+                << " units from " << src->getName() << " to " << dest->getName() << "!" << std::endl;
         }
         else
         {
             Player* defender = dest->getPlayer();
+
+            std::cout << owner->getPlayerName() << " is attacking " << dest->getName() << " owned by "
+                << dest->getPlayer()->getPlayerName() << " with " << std::to_string(remainingAdvancingArmies)
+                << " units from " << src->getName() << "!" << std::endl;
+
             // WAAAAAGH!!!! The enemy territory has defenders! o7
             if (dest->getNbArmy() > 0)
             {
@@ -388,10 +399,26 @@ void Advance::execute()
                     dest->setPlayer(src->getPlayer());
                     dest->setNbArmy(remainingAdvancingArmies);
                     owner->setCapturedTerritoryFlag(true);
+
+                    std::cout << src->getPlayer()->getPlayerName() << " took " << dest->getName()
+                        << " from " << defender->getPlayerName() << "!" << std::endl;
+                }
+                else
+                {
+                    std::cout << src->getPlayer()->getPlayerName() << " failed to take " << dest->getName()
+                        << " from " << defender->getPlayerName() << "!" << std::endl;
+
+                    std::cout << defender->getPlayerName() << " has "
+                        << std::to_string(dest->getNbArmy())
+                        << " troops remaining. " << std::endl;
                 }
 
                 // happens either way
                 src->setNbArmy(src->getNbArmy() - initialAdvancingArmies);
+
+                std::cout << src->getPlayer()->getPlayerName() << " lost "
+                    << std::to_string(initialAdvancingArmies - remainingAdvancingArmies)
+                    << " troops. " << std::endl;
             }
             else
             {
@@ -399,6 +426,9 @@ void Advance::execute()
                 dest->setPlayer(src->getPlayer());
                 dest->setNbArmy(remainingAdvancingArmies);
                 src->setNbArmy(src->getNbArmy() - initialAdvancingArmies);
+
+                std::cout << src->getPlayer()->getPlayerName() << " took " << dest->getName()
+                    << " from " << defender->getPlayerName() << "!" << std::endl;
             }
 
             defender->setPlayerWasAttacked(true);
@@ -487,6 +517,10 @@ void Bomb::execute()
     if (validate())
     {
         target->setNbArmy(target->getNbArmy() / 2);
+
+        std::cout << owner->getPlayerName() << " bombed " << target->getName()
+            << " owned by " << target->getPlayer()->getPlayerName() << " destroying " 
+            << std::to_string(target->getNbArmy()) << " units!" << std::endl;
     }
 }
 
@@ -592,6 +626,12 @@ void Blockade::execute()
         if (currentInstance != nullptr)
         {
             neutralPlayer = currentInstance->getNeutralPlayer();
+            if (neutralPlayer == nullptr)
+            {
+                currentInstance->setNeutralPlayer("theneutralzone");
+                neutralPlayer = currentInstance->getNeutralPlayer();
+                currentInstance->getPlayerList().push_back(neutralPlayer);
+            }
         }
 
         if (neutralPlayer != nullptr)
@@ -609,6 +649,8 @@ void Blockade::execute()
             );
 
             target->setNbArmy(target->getNbArmy() * 2);
+
+            std::cout << owner->getPlayerName() << " blockaded " << target->getName() << std::endl;
         }
     }
 }
@@ -681,6 +723,12 @@ void Airlift::execute()
         const std::size_t initialArmiesToAirlift = std::min(static_cast<std::size_t>(src->getNbArmy()), armiesToAirlift);
         src->setNbArmy(src->getNbArmy() - initialArmiesToAirlift);
         dest->setNbArmy(dest->getNbArmy() + initialArmiesToAirlift);
+
+        std::cout << owner->getPlayerName() << " airlifted " << std::to_string(initialArmiesToAirlift) 
+            << " units from " << src->getName() << " to " << dest->getName() << std::endl;
+
+        std::cout << src->getName() << " now has " << src->getNbArmy() << " units." << std::endl;
+        std::cout << dest->getName() << " now has " << dest->getNbArmy() << " units." << std::endl;
     }
 }
 
@@ -748,6 +796,7 @@ void Negotiate::execute()
         if (std::find(targetPlayerNegotiatees.begin(), targetPlayerNegotiatees.end(), owner) == targetPlayerNegotiatees.end())
         {
             target->getNotAttackablePlayers().push_back(owner);
+            std::cout << owner->getPlayerName() << " now has a NAP with " << target->getPlayerName() << "!" << std::endl;
         }
     }
 }

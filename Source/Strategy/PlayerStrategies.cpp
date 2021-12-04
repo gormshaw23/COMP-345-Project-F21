@@ -1276,9 +1276,9 @@ void AggressivePlayerStrategy::PlayingCards()
 		}
 
 		delete card;
-		// change state
-		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 	}
+	// change state
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 }
 
 void AggressivePlayerStrategy::PlayingBombCard()
@@ -1551,6 +1551,11 @@ void BenevolentPlayerStrategy::AdvanceArmies()
 
 	for (const auto& plTory : allTories)
 	{
+		if (plTory->getNbArmy() == 0)
+		{
+			continue;
+		}
+
 		std::vector<Territory*> allPlAdjTories;
 		const std::vector<Territory*> neighbours = plTory->getBorderList();
 
@@ -1639,9 +1644,9 @@ void BenevolentPlayerStrategy::PlayingCards()
 		}
 
 		delete card;
-		// change state
-		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 	}
+	// change state
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 }
 
 void BenevolentPlayerStrategy::PlayingBombCard()
@@ -2196,9 +2201,10 @@ void CheaterPlayerStrategy::PlayingCards()
 		}
 
 		delete card;
-		// change state
-		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 	}
+
+	// change state
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 }
 
 void CheaterPlayerStrategy::PlayingBombCard()

@@ -149,6 +149,13 @@ GameEngine& GameEngine::operator=(const GameEngine& obj)
 	return *this;
 }
 
+void GameEngine::setNeutralPlayer(std::string inNeutralPlName)
+{
+	neutralPlayer = new Player(inNeutralPlName);
+	neutralPlayer->setPlayerStrategy(new NeutralPlayerStrategy());
+	this->playerlist.push_back(neutralPlayer);
+}
+
 Player* GameEngine::getNeutralPlayer() const
 {
     return neutralPlayer;
@@ -254,8 +261,6 @@ static std::string playername;
 static int playercount = 0;
 MapLoader* newmap = new MapLoader();
 Map* mapToUse = new Map();
-Deck* newDeck = new Deck(30);
-Card* newCard = newDeck->drawCard_Deck();
 std::vector<int> ReinforcementPools;
 
 /**
@@ -318,24 +323,21 @@ void GameEngine::addPlayer(std::string user_input) {
 		{
 			p->setPlayerStrategy(new AggressivePlayerStrategy());
 		}
-
-		if (strat.compare("benevolent") == 0 || strat.compare("Benevolent") == 0)
+		else if (strat.compare("benevolent") == 0 || strat.compare("Benevolent") == 0)
 		{
 			p->setPlayerStrategy(new BenevolentPlayerStrategy());
 		}
-
-		if (strat.compare("neutral") == 0 || strat.compare("Neutral") == 0)
+		else if (strat.compare("neutral") == 0 || strat.compare("Neutral") == 0)
 		{
 			p->setPlayerStrategy(new NeutralPlayerStrategy());
 		}
-
-		if (strat.compare("cheater") == 0 || strat.compare("Cheater") == 0)
+		else if (strat.compare("cheater") == 0 || strat.compare("Cheater") == 0)
 		{
 			p->setPlayerStrategy(new CheaterPlayerStrategy());
 		}
-
-		if (strat.compare("human") == 0 || strat.compare("Human") == 0)
+		else
 		{
+			// defaults to human if input error
 			p->setPlayerStrategy(new HumanPlayerStrategy(p));
 		}
 
@@ -370,7 +372,7 @@ void GameEngine::addPlayer(std::string user_input) {
  */
 
 void GameEngine::gamestart() {
-
+	_deck = new Deck(30);
 	//a) fairly distribute all the territories to the players
 
 	std::random_device rd;
@@ -433,9 +435,8 @@ void GameEngine::gamestart() {
 	//d) let each player draw 2 initial cards from the deck using the deck�s draw() method
 
 	for (int i = 0; i < playercount; i++) {
-		playerlist.at(i)->getCurrentHand()->insertCard_Hand(newCard);
-		newCard = newDeck->drawCard_Deck();
-		playerlist.at(i)->getCurrentHand()->insertCard_Hand(newCard);
+		playerlist.at(i)->getCurrentHand()->insertCard_Hand(_deck->drawCard_Deck());
+		playerlist.at(i)->getCurrentHand()->insertCard_Hand(_deck->drawCard_Deck());
 	}
 	std::cout << "Let each player draw 2 initial cards from the deck>>>>>>>" << std::endl;
 	std::cout << "players' initial cards are: " << std::endl;
@@ -579,7 +580,7 @@ void GameEngine::startupPhase() {
 					setCurrentState(GAME_STATE_MAP_VALIDATED);
 					userCommand->saveEffect("Passing from  <GAME_STATE_MAP_LOAD> to <GAME_STATE_MAP_VALIDATED> : Map validated :"+ filename);
 					std::cout << "Map validated!\nPlease enter: \"addplayer\" command to begin adding players." << "\n";
-					
+					std::cout << "Add [aggressive] or [benevolent] or [neutral] or [cheater] to be AI'd, or [human] or don't for User control." << "\n";
 				}
 				else {
 					setCurrentState(GAME_STATE_START);
@@ -691,6 +692,18 @@ std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int
 			{
 				delete p->getPlayerStrategy();
 				p->setPlayerStrategy(new AggressivePlayerStrategy());
+			}
+		}
+
+		for (Player* p : players)
+		{
+			if (p->getCapturedTerritoryFlag())
+			{
+				std::cout << p->getPlayerName() << "gets to draw a card!" << std::endl;
+				Card* newCard = _deck->drawCard_Deck();
+				std::cout << p->getPlayerName() << "drew " << *newCard << "!" << std::endl;
+				p->getCurrentHand()->insertCard_Hand(newCard);
+				p->setCapturedTerritoryFlag(false);
 			}
 		}
 

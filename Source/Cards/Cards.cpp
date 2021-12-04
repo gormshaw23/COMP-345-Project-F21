@@ -186,10 +186,15 @@ void Deck::ShuffleDeck() {
 
 /* Draw method */
 Card* Deck::drawCard_Deck() {
-	Card* topOfDeck = deck.back();
-	deck.pop_back();
-	this->ShuffleDeck(); 
-	deckSize--;
+	Card* topOfDeck = nullptr;
+	if (deckSize > 0)
+	{
+		topOfDeck = deck.back();
+		deck.pop_back();
+		this->ShuffleDeck(); 
+		deckSize--;
+	}
+
 	return topOfDeck; 
 }
 
@@ -302,8 +307,11 @@ void Hand::showHand() {
 
 void Hand::insertCard_Hand(Card* someCards)
 {
-	hand.push_back(someCards);
-	handSize++;
+	if (someCards != nullptr)
+	{
+		hand.push_back(someCards);
+		handSize++;
+	}
 }
 
 Card* Hand::drawCard_Hand()

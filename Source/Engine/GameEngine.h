@@ -9,6 +9,7 @@
 class Territory;
 class Player;
 class Map;
+class Deck;
 class CommandProcessor;
 
 //game state
@@ -21,7 +22,7 @@ enum GameState
     GAME_STATE_PLAYERS_ADDED = 4,
     GAME_STATE_PLAY = 5,
     GAME_STATE_FINISHED = 6,
-    GAME_STATE_MAX = 0XFFFF,//set a max value to prevent overflow
+    GAME_STATE_MAX = 0XFFFF//set a max value to prevent overflow
 
 };
 //user input
@@ -30,7 +31,7 @@ enum game_user_input {
     VALIDATEMAP,
     ADDPLAYER,
     GAMESTART,
-    TOURNAMENT,
+    TOURNAMENT
 };
 
 class GameEngine : virtual public Subject, virtual  public ILoggable /*,  public CommandProcessor*/ {
@@ -57,6 +58,7 @@ public:
 
 
     Player* getNeutralPlayer() const;
+    void setNeutralPlayer(std::string inNeutralPlName);
     const std::vector<Player*>& getPlayerList() const;
     std::vector<Player*>& getPlayerList();
 
@@ -83,6 +85,8 @@ private:
     std::string extractName(std::string);//extract name from loadmap and addplayer command
     std::string extractPlayerStrategy(std::string str);
     void addPlayer(std::string);//add player
+
+    Deck* _deck = nullptr;
 
     std::vector<Player*> playerlist;
     Player* neutralPlayer = nullptr;
