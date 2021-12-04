@@ -21,6 +21,11 @@ Player* PlayerStrategies::getPlayer() const
 	return this->_player;
 }
 
+void PlayerStrategies::setPlayer(Player* inPlayer)
+{
+	this->_player = inPlayer;
+}
+
 void PlayerStrategies::HandleSaveEffect(Command* inCommand, std::string inMsg)
 {
 	if (commandProcess == nullptr)

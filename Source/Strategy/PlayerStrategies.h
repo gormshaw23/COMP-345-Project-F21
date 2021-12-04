@@ -21,6 +21,7 @@ public:
 	virtual void toDefend() = 0;
 
 	virtual Player* getPlayer() const;
+	virtual void setPlayer(Player* inPlayer);
 protected:
 	virtual void DeployArmies(int& inAvailableReserves) = 0;
 	virtual void AdvanceArmies() = 0;

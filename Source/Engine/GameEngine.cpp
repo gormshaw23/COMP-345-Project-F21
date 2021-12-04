@@ -617,6 +617,16 @@ std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int
 	{ //Loop if there are 2 or more players left
 		int initPlayersSize = players.size();
 
+		for (Player* p : players)
+		{
+			if (p->getPlayerStrategy() == nullptr) continue;
+			if (p->getPlayerWasAttacked() && dynamic_cast<NeutralPlayerStrategy*>(p->getPlayerStrategy()))
+			{
+				delete p->getPlayerStrategy();
+				p->setPlayerStrategy(new AggressivePlayerStrategy());
+			}
+		}
+
 		//Give a number of armies to each player
 		for (Player* p : players)
 			reinforcementPhase(p, map);

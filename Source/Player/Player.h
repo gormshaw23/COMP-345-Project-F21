@@ -90,8 +90,15 @@ public:
 	void setReinforcementPool(const std::size_t inPoolSize);
 	std::size_t getReinforcementPoolSize() const;
 
+	// sets that the current player has taken territory
 	void setCapturedTerritoryFlag(bool bInFlag);
+	// gets that the current player has taken territory
 	bool getCapturedTerritoryFlag() const;
+
+	// sets that the current player had their territory taken
+	void setPlayerWasAttacked(bool bInFlag);
+	// gets that the current player had their territory taken
+	bool getPlayerWasAttacked() const;
 
 	void setCommandProcessor(CommandProcessor* inProcessor);
 
@@ -121,6 +128,7 @@ private:
 
 	// flag for whether territory was taken this turn
 	bool bTookTerritory = false;
+	bool bWasAttacked = false;
 
 	std::vector<Player*> _playersNotToAttack;
 
