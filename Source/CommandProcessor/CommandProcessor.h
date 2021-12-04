@@ -70,7 +70,7 @@ private:
 	std::vector<Command*> listOfCommands;
 	std::string commandINMemmory;
 	int posInFile;
-
+	std::string stringToLog();
 	virtual Command* saveCommand(std::string fromReadCommand);
 	
 

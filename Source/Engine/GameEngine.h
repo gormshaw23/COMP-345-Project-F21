@@ -4,12 +4,12 @@
 #include <vector>
 #include <string>
 
-#include "Player/Player.h"
 #include "../GameLog/LoggingObserver.h"
-#include "../CommandProcessor/CommandProcessor.h"
 
+class Territory;
 class Player;
 class Map;
+class CommandProcessor;
 
 //game state
 enum GameState
@@ -20,6 +20,7 @@ enum GameState
     GAME_STATE_MAP_VALIDATED = 3,
     GAME_STATE_PLAYERS_ADDED = 4,
     GAME_STATE_PLAY = 5,
+    GAME_STATE_FINISHED = 6,
     GAME_STATE_MAX = 0XFFFF,//set a max value to prevent overflow
 
 };
@@ -29,6 +30,7 @@ enum game_user_input {
     VALIDATEMAP,
     ADDPLAYER,
     GAMESTART,
+    TOURNAMENT,
 };
 
 class GameEngine : virtual public Subject, virtual  public ILoggable /*,  public CommandProcessor*/ {
@@ -46,13 +48,29 @@ public:
     virtual std::string stringToLog() override;
     GameEngine& operator=(const GameEngine& obj);//Assignment operator
 
+    /* variable to print the tournament result*/
+    std::vector<std::string> listPlayerFromConsole;
+    std::vector<std::string> listMapName;
+    int numberGamePrint;
+    int drawTurnLimitPrint;
+    std::string gameresult;
+
+
     Player* getNeutralPlayer() const;
     std::vector<Player*> getPlayerList() const;
     std::vector<Player*>& getPlayerList();
 
-    void mainGameLoop(std::vector<Player*> players, Map* map); //Game loop function
+    void mainGameLoop(std::vector<Player*> players, Map* map, int maxNumberOfTurns); //Game loop function
 
     void startupPhase();
+
+    bool isATournament;
+
+
+    static GameEngine& getInstance();
+
+    void TournamentMode(int M, int P, int G, int D); //Original to erase later
+    void TournamentMode(std::string M, std::string P, int G, int D); //map and player set up for tournament mode
 
     const std::vector<Territory*> GetEnemyTerritoriesOfCurrentPlayer(Player* p);
 private:
@@ -69,6 +87,8 @@ private:
 
     std::vector<Player*> playerlist;
     Player* neutralPlayer = nullptr;
+
+   // bool isATournament; //Determines if a game is part of a tournament
 };
 
 

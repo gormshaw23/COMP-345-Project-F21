@@ -1,9 +1,7 @@
-loadmap
+loadmap <canada>
 validatemap
 addplayer
-assigncountries
-issueorder
-endissueorders
-win
-end
-
+marta 
+addplayer 
+mourtinia
+startgame

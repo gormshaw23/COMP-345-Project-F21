@@ -34,6 +34,7 @@ public:
 	Player(std::string inPlayerName, PlayerStrategies* inPS);
 	Player(PlayerStrategies* inPS);
 	Player(const Player& inPlayer);
+	Player(PlayerStrategies* playerStrat, std::string playerName);
 	~Player();
 
 	friend class PlayerStrategies;
@@ -52,6 +53,9 @@ public:
 
 	void setPlayerStrategy(PlayerStrategies* inPlayerStrategy);
 	PlayerStrategies* getPlayerStrategy() const;
+
+	
+
 
 	const std::size_t getPlayerID() const;
 	// returns list of owned territories adjacent to enemy territories in order of owned army strength
