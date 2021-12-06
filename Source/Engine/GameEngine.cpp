@@ -381,6 +381,21 @@ void GameEngine::gamestart() {
 
 	int numberOfTerritory = mapToUse->listTerritory.size();
 
+	for (auto& pl : playerlist)
+	{
+		pl->getTerritoriesOwned().clear();
+		pl->setReinforcementPool(0);
+		Hand* plHand = pl->getCurrentHand();
+		if (plHand != nullptr)
+		{
+			while (plHand->getHand().size() > 0)
+			{
+				Card* plCard = plHand->drawCard_Hand();
+				delete plCard;
+			}
+		}
+	}
+
 	//std::shuffle(mapToUse->listTerritory.begin(), mapToUse->listTerritory.end(), g);
 
 	std::cout << std::endl << "The numberOfTerritory in the map is: " << numberOfTerritory << std::endl;
@@ -971,7 +986,6 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 		else {
 			std::cout << "The map in invalid the default one will be use insted.\n ";
 			newmap->MapLoader::loadMap("canada");
-			exit(1);
 			map = newmap->getListMap()->at(0);
 			maps.push_back(map);
 		}
@@ -1006,23 +1020,22 @@ void GameEngine::TournamentMode(std::string M, std::string P, int G, int D) {
 		if (listPlayerFromConsole.at(y) == "Human") {
 			
 			p = new Player(playerName);
+			p->setPlayerStrategy(new HumanPlayerStrategy(p));
 		}
 		if (listPlayerFromConsole.at(y) == "Aggressive") {
 			p = new Player(new AggressivePlayerStrategy(), playerName);
-
 		}
 		if (listPlayerFromConsole.at(y) == "Benevolent") {
 			p = new Player(new BenevolentPlayerStrategy(), playerName);
-
 		}
 		if (listPlayerFromConsole.at(y) == "Neutral") {
 			p = new Player(new NeutralPlayerStrategy(), playerName);
-
 		}
 		if (listPlayerFromConsole.at(y) == "Cheater") {
 			p = new Player(new CheaterPlayerStrategy(), playerName);
-
 		}
+
+		p->setCurrentGameInstance(this);
 		playerlist.push_back(p);
 		
 	}

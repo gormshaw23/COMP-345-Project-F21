@@ -54,8 +54,6 @@ public:
 	void setPlayerStrategy(PlayerStrategies* inPlayerStrategy);
 	PlayerStrategies* getPlayerStrategy() const;
 
-	
-
 
 	const std::size_t getPlayerID() const;
 	// returns list of owned territories adjacent to enemy territories in order of owned army strength
