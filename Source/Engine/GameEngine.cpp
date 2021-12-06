@@ -734,17 +734,35 @@ std::string GameEngine::mainGameLoop(std::vector<Player*> players, Map* map, int
 			executeOrdersPhase(p);
 
 		//Remove player(s) if they have no more territories
-		int playerIndex = 0;
-		for (int i = 0; i < initPlayersSize; i++) {
-			Player* p = players.at(playerIndex);
-			if (p->getTerritoriesOwned().size() == 0) {
-				players.erase(players.begin() + playerIndex);
-				playerIndex--;
-			}
-			else {
-				playerIndex++;
+		//int playerIndex = 0;
+		//for (int i = 0; i < initPlayersSize; i++) {
+		//	Player* p = players.at(playerIndex);
+		//	if (p->getTerritoriesOwned().size() == 0) {
+		//		players.erase(players.begin() + playerIndex);
+		//		playerIndex--;
+		//	}
+		//	else {
+		//		playerIndex++;
+		//	}
+		//}
+
+		std::vector<Player*>::iterator itor;
+		for (auto& player : players)
+		{
+			if (player->getTerritoriesOwned().size() <= 0)
+			{
+				itor = std::find(players.begin(), players.end(), player);
+				if (itor != players.end())
+				{
+					players.erase(itor);
+					if (player != nullptr)
+					{
+						delete player;
+					}
+				}
 			}
 		}
+
 		//Increment turn counter
 		turn++;
 	}//end while
