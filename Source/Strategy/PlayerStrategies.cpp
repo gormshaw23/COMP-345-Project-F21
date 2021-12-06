@@ -1063,6 +1063,7 @@ void AggressivePlayerStrategy::issueOrder()
 
 	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
 	int availableReserves = currentPlayer->getReinforcementPoolSize();
+	currentPlayer->numDeployments = 0;
 
 	while (currentPlayer->getPlayerTurnPhase() != EPlayerTurnPhase::EndOfTurn)
 	{
@@ -1178,13 +1179,51 @@ void AggressivePlayerStrategy::DeployArmies(int& inAvailableReserves)
 		return;
 	}
 
-	if (currentPlayer->getTerritoriesToDefend().size() > 0)
+	if (inAvailableReserves <= 0)
 	{
-		currentPlayer->IssueDeployOrder(currentPlayer->getTerritoriesToDefend()[0], inAvailableReserves);
-		inAvailableReserves -= inAvailableReserves;
+		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+		return;
 	}
 
-	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+	if (currentPlayer->getTerritoriesToDefend().size() > 0)
+	{
+		const int numTerritoriesToDefend = currentPlayer->getTerritoriesToDefend().size();
+		const int totalAvailableReserves = inAvailableReserves;
+
+		int index = currentPlayer->numDeployments % currentPlayer->getTerritoriesToDefend().size();
+
+		int enemyAdjTories = 0;
+		int enemyThreat = 0;
+		std::vector<Territory*> neighbours = currentPlayer->getTerritoriesToDefend()[index]->getBorderList();
+		for (auto& adjTory : neighbours)
+		{
+			if (adjTory != nullptr)
+			{
+				if (adjTory->getPlayer() != currentPlayer)
+				{
+					enemyAdjTories++;
+					enemyThreat += adjTory->getNbArmy();
+				}
+			}
+		}
+
+		enemyThreat = std::max(0, enemyThreat - currentPlayer->getTerritoriesToDefend()[index]->getNbArmy());
+
+		int numToDeploy = std::max(0, std::min(totalAvailableReserves, std::max(5, 2 + enemyAdjTories + enemyThreat)));
+
+		currentPlayer->IssueDeployOrder(
+			currentPlayer->getTerritoriesToDefend()[index],
+			numToDeploy
+		);
+
+		inAvailableReserves -= numToDeploy;
+
+		currentPlayer->numDeployments++;
+	}
+	else
+	{
+		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+	}
 }
 
 void AggressivePlayerStrategy::AdvanceArmies()
@@ -1276,9 +1315,9 @@ void AggressivePlayerStrategy::PlayingCards()
 		}
 
 		delete card;
-		// change state
-		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 	}
+	// change state
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 }
 
 void AggressivePlayerStrategy::PlayingBombCard()
@@ -1461,6 +1500,7 @@ void BenevolentPlayerStrategy::issueOrder()
 
 	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
 	int availableReserves = currentPlayer->getReinforcementPoolSize();
+	currentPlayer->numDeployments = 0;
 
 	while (currentPlayer->getPlayerTurnPhase() != EPlayerTurnPhase::EndOfTurn)
 	{
@@ -1528,13 +1568,52 @@ void BenevolentPlayerStrategy::DeployArmies(int& inAvailableReserves)
 		return;
 	}
 
-	if (currentPlayer->getTerritoriesToDefend().size() > 0)
+	if (inAvailableReserves <= 0)
 	{
-		currentPlayer->IssueDeployOrder(currentPlayer->getTerritoriesToDefend()[0], inAvailableReserves);
-		inAvailableReserves -= inAvailableReserves;
+		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+		return;
 	}
 
-	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+	if (currentPlayer->getTerritoriesToDefend().size() > 0)
+	{
+		const int numTerritoriesToDefend = currentPlayer->getTerritoriesToDefend().size();
+		const int totalAvailableReserves = inAvailableReserves;
+
+		int index = currentPlayer->numDeployments % currentPlayer->getTerritoriesToDefend().size();
+
+		int enemyAdjTories = 0;
+		int enemyThreat = 0;
+		std::vector<Territory*> neighbours = currentPlayer->getTerritoriesToDefend()[index]->getBorderList();
+		for (auto& adjTory : neighbours)
+		{
+			if (adjTory != nullptr)
+			{
+				if (adjTory->getPlayer() != currentPlayer)
+				{
+					enemyAdjTories++;
+					enemyThreat += adjTory->getNbArmy();
+				}
+			}
+		}
+
+		enemyThreat = std::max(0, enemyThreat - currentPlayer->getTerritoriesToDefend()[index]->getNbArmy());
+
+		int numToDeploy = std::max(0, std::min(totalAvailableReserves, std::max(5, enemyAdjTories + enemyThreat)));
+
+		currentPlayer->IssueDeployOrder
+		(
+			currentPlayer->getTerritoriesToDefend()[index],
+			numToDeploy
+		);
+
+		inAvailableReserves -= numToDeploy;
+
+		currentPlayer->numDeployments++;
+	}
+	else
+	{
+		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+	}
 }
 
 void BenevolentPlayerStrategy::AdvanceArmies()
@@ -1551,6 +1630,11 @@ void BenevolentPlayerStrategy::AdvanceArmies()
 
 	for (const auto& plTory : allTories)
 	{
+		if (plTory->getNbArmy() == 0)
+		{
+			continue;
+		}
+
 		std::vector<Territory*> allPlAdjTories;
 		const std::vector<Territory*> neighbours = plTory->getBorderList();
 
@@ -1639,9 +1723,9 @@ void BenevolentPlayerStrategy::PlayingCards()
 		}
 
 		delete card;
-		// change state
-		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 	}
+	// change state
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 }
 
 void BenevolentPlayerStrategy::PlayingBombCard()
@@ -1821,7 +1905,7 @@ void NeutralPlayerStrategy::issueOrder()
 	const std::vector<Territory*> plToriesToDefend = currentPlayer->getTerritoriesToDefend();
 
 	std::cout << "Issuing orders for " << currentPlayer->getPlayerName() << "\n";
-	std::cout << "They are a CPU! " << std::endl;
+	std::cout << "They are a Neutral CPU and will do nothing unless attacked!" << std::endl;
 
 	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::DeployingArmies);
 	int availableReserves = currentPlayer->getReinforcementPoolSize();
@@ -1964,7 +2048,25 @@ void CheaterPlayerStrategy::issueOrder()
 	// once per turn take over all bordering territories
 	for (auto& tory : plToriesToAttack)
 	{
-		tory->setPlayer(currentPlayer);
+		Player* defender = tory->getPlayer();
+		if (defender == nullptr) continue;
+
+		// move to occupy
+		std::vector<Territory*>::iterator itor;
+		itor = std::find(defender->getTerritoriesOwned().begin(), defender->getTerritoriesOwned().end(), tory);
+		if (itor != defender->getTerritoriesOwned().end())
+		{
+			defender->getTerritoriesOwned().erase(itor);
+			tory->setPlayer(currentPlayer);
+			currentPlayer->getTerritoriesOwned().push_back(tory);
+
+			std::cout << currentPlayer->getPlayerName() << " is a cheater! They have stolen " << tory->getName()
+				<< "!" << std::endl;
+		}
+		else
+		{
+			std::cout << "error, territory not found to remove" << std::endl;
+		}
 	}
 
 	// refresh
@@ -2096,6 +2198,12 @@ void CheaterPlayerStrategy::DeployArmies(int& inAvailableReserves)
 		return;
 	}
 
+	if (inAvailableReserves <= 0)
+	{
+		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::AdvancingArmies);
+		return;
+	}
+
 	if (currentPlayer->getTerritoriesToDefend().size() > 0)
 	{
 		currentPlayer->IssueDeployOrder(currentPlayer->getTerritoriesToDefend()[0], inAvailableReserves);
@@ -2196,9 +2304,10 @@ void CheaterPlayerStrategy::PlayingCards()
 		}
 
 		delete card;
-		// change state
-		currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 	}
+
+	// change state
+	currentPlayer->setPlayerTurnPhase(EPlayerTurnPhase::EndOfTurn);
 }
 
 void CheaterPlayerStrategy::PlayingBombCard()

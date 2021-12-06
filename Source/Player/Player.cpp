@@ -440,3 +440,8 @@ bool Player::getPlayerWasAttacked() const
 {
 	return this->bWasAttacked;
 }
+
+void Player::clearPlayersNotToAttack()
+{
+	this->_playersNotToAttack.clear();
+}

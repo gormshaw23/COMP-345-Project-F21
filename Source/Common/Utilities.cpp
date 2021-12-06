@@ -28,5 +28,5 @@ bool Utilities::SortByArmyAscendingSize(const Territory* lhs, const Territory* r
 		return true;
 	}
 
-	return (lhs->getNbArmy() <= rhs->getNbArmy());
+	return (lhs->getNbArmy() < rhs->getNbArmy());
 }
